@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C858BAB7-00F9-4629-9AA1-A2DDEFAD5543}</ProjectGuid>
+    <ProjectGuid>{2A6096FD-73F5-4FA9-AFD3-5185F5F307AA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Nybus</RootNamespace>
-    <AssemblyName>Nybus.Interfaces</AssemblyName>
+    <AssemblyName>Nybus.MassTransit</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -30,6 +30,26 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Magnum, Version=2.1.3.0, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
+      <HintPath>..\..\Packages\Magnum.2.1.3\lib\NET40\Magnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MassTransit, Version=2.10.0.0, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
+      <HintPath>..\..\Packages\MassTransit.2.10.1\lib\net40\MassTransit.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MassTransit.Transports.RabbitMq, Version=2.10.0.0, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
+      <HintPath>..\..\Packages\MassTransit.RabbitMQ.2.10.1\lib\net40\MassTransit.Transports.RabbitMq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\Packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RabbitMQ.Client, Version=3.4.3.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
+      <HintPath>..\..\Packages\RabbitMQ.Client.3.4.3\lib\net35\RabbitMQ.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -40,17 +60,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\IBusBuilder.cs" />
-    <Compile Include="Configuration\IBusConfiguration.cs" />
-    <Compile Include="Container\IContainer.cs" />
-    <Compile Include="IBus.cs" />
-    <Compile Include="ICommand.cs" />
-    <Compile Include="IEvent.cs" />
+    <Compile Include="Configuration\MassTransitBusBuilder.cs" />
+    <Compile Include="Configuration\MassTransitBusConnectionDescriptor.cs" />
+    <Compile Include="Configuration\MassTransitRabbitMqBusConfiguration.cs" />
+    <Compile Include="MassTransit\MassTransitBus.cs" />
+    <Compile Include="MassTransit\MassTransitHandle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\IClock.cs" />
+    <Compile Include="Utils\StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Interfaces.nuspec" />
+    <ProjectReference Include="..\Interfaces\Interfaces.csproj">
+      <Project>{c858bab7-00f9-4629-9aa1-a2ddefad5543}</Project>
+      <Name>Interfaces</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MassTransit.nuspec" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

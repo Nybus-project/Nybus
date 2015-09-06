@@ -16,7 +16,7 @@ namespace Nybus.Configuration
 
         void SubscribeToEvent<TEvent, TEventHandler>(TEventHandler handler) where TEvent : class, IEvent where TEventHandler : IEventHandler<TEvent>;
 
-        void SubscribeToEvent<TEvent>(Func<TEvent, Task> handler) where TEvent : class, IEvent;
+        void SubscribeToEvent<TEvent>(Func<EventContext<TEvent>, Task> handler) where TEvent : class, IEvent;
 
         void SubscribeToCommand<TCommand>() where TCommand : class, ICommand;
 
@@ -24,6 +24,6 @@ namespace Nybus.Configuration
 
         void SubscribeToCommand<TCommand, TCommandHandler>(TCommandHandler handler) where TCommand : class, ICommand where TCommandHandler : ICommandHandler<TCommand>;
 
-        void SubscribeToCommand<TCommand>(Func<TCommand, Task> handler) where TCommand : class, ICommand;
+        void SubscribeToCommand<TCommand>(Func<CommandContext<TCommand>, Task> handler) where TCommand : class, ICommand;
     }
 }
