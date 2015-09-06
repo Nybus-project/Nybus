@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Nybus.Castle.Windsor</id>
+        <version>$version$</version>
+        <title>Nybus Castle Windsor</title>
+        <authors>Renato Golia</authors>
+        <owners>Renato Golia</owners>
+        <licenseUrl>https://github.com/Kralizek/Nybus/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/Kralizek/Nybus</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Castle Windsor support for Nybus</description>
+        <language>en-US</language>
+        <dependencies>
+            <dependency id="Castle.Windsor" version="3.3.0" />
+        </dependencies>
+    </metadata>
+</package>
