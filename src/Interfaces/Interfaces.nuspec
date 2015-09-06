@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Nybus.Interfaces</id>
+        <version>$version$</version>
+        <title>Nybus Interfaces</title>
+        <authors>Renato Golia</authors>
+        <owners>Renato Golia</owners>
+        <licenseUrl>https://github.com/Kralizek/Nybus/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/Kralizek/Nybus</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Nybus makes it easier to decouple the components of your platform by letting you raise events and invoking commands that will be eventually handled by other components.</description>
+        <language>en-US</language>
+    </metadata>
+</package>

@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces", "src\Interfaces\Interfaces.csproj", "{C858BAB7-00F9-4629-9AA1-A2DDEFAD5543}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CastleWindsor", "src\CastleWindsor\CastleWindsor.csproj", "{6021B01C-F24B-48B4-B774-D150ACE2B6C3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C858BAB7-00F9-4629-9AA1-A2DDEFAD5543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C858BAB7-00F9-4629-9AA1-A2DDEFAD5543}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C858BAB7-00F9-4629-9AA1-A2DDEFAD5543}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C858BAB7-00F9-4629-9AA1-A2DDEFAD5543}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6021B01C-F24B-48B4-B774-D150ACE2B6C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6021B01C-F24B-48B4-B774-D150ACE2B6C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6021B01C-F24B-48B4-B774-D150ACE2B6C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6021B01C-F24B-48B4-B774-D150ACE2B6C3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
