@@ -99,7 +99,7 @@ namespace Nybus.Configuration
                 var eventContext = new EventContext<TEvent>(eventMessage, Clock.Default.Now);
                 await handler.Handle(eventContext);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 context.RetryLater();
             }
@@ -156,7 +156,7 @@ namespace Nybus.Configuration
                 var commandContext = new CommandContext<TCommand>(commandMessage, Clock.Default.Now);
                 await handler.Handle(commandContext);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 context.RetryLater();
             }

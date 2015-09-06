@@ -33,16 +33,18 @@ namespace Nybus.MassTransit
         }
 
 
-        public async Task InvokeCommand<TCommand>(TCommand command) where TCommand : class, ICommand
+        public Task InvokeCommand<TCommand>(TCommand command) where TCommand : class, ICommand
         {
             EnsureBrokerIsRunning();
             _serviceBusses[0].Publish(command);
+            return Task.FromResult(0);
         }
 
-        public async Task RaiseEvent<TEvent>(TEvent @event) where TEvent : class, IEvent
+        public Task RaiseEvent<TEvent>(TEvent @event) where TEvent : class, IEvent
         {
             EnsureBrokerIsRunning();
             _serviceBusses[0].Publish(@event);
+            return Task.FromResult(0);
         }
 
         public IHandle Start()

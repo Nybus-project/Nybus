@@ -10,9 +10,9 @@ namespace Tests.Container
 
     public class TestCommandHandler : ICommandHandler<TestCommand>
     {
-        public async Task Handle(CommandContext<TestCommand> commandMessage)
+        public Task Handle(CommandContext<TestCommand> commandMessage)
         {
-            
+            return Task.FromResult(0);
         }
     }
 }

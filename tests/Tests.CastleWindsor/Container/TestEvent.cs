@@ -10,9 +10,9 @@ namespace Tests.Container
 
     public class TestEventHandler : IEventHandler<TestEvent>
     {
-        public async Task Handle(EventContext<TestEvent> eventMessage)
+        public Task Handle(EventContext<TestEvent> eventMessage)
         {
-            
+            return Task.FromResult(0);
         }
     }
 }
