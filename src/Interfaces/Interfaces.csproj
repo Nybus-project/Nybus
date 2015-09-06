@@ -47,6 +47,7 @@
     <Compile Include="ICommand.cs" />
     <Compile Include="IEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\IClock.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Interfaces.nuspec" />
