@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Nybus.MassTransit</id>
-        <version>1.0</version>
+        <version>$version$</version>
         <title>Nybus MassTransit</title>
         <authors>Renato Golia</authors>
         <owners>Renato Golia</owners>
@@ -13,6 +13,7 @@
         <language>en-US</language>
         <dependencies>
             <dependency id="MassTransit" version="2.10.1" />
+            <dependency id="MassTransit.RabbitMQ" version="2.10.1" />
         </dependencies>
     </metadata>
 </package>
