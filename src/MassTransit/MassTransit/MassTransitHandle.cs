@@ -18,10 +18,12 @@ namespace Nybus.MassTransit
             _serviceBusses = serviceBusses;
         }
 
-        public async Task Stop()
+        public Task Stop()
         {
             foreach (var bus in _serviceBusses)
                 bus.Dispose();
+
+            return Task.FromResult(0);
         }
     }
 }
