@@ -12,8 +12,4 @@
         <description>Nybus makes it easier to decouple the components of your platform by letting you raise events and invoking commands that will be eventually handled by other components.</description>
         <language>en-US</language>
     </metadata>
-    <files>
-        <file src="bin\Release\Nybus.Interfaces.dll" target="lib\net40\Nybus.Interfaces.dll" />
-        <file src="bin\Release\Nybus.Interfaces.pdb" target="lib\net40\Nybus.Interfaces.pdb" />
-    </files>
 </package>
