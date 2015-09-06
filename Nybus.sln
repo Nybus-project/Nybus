@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces", "src\Interface
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CastleWindsor", "src\CastleWindsor\CastleWindsor.csproj", "{6021B01C-F24B-48B4-B774-D150ACE2B6C3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libs", "Libs", "{24B882E0-FB4F-476A-8844-06824472BEB0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{31BCDC74-9C21-495F-837D-FC1977CD9F8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.CastleWindsor", "tests\Tests.CastleWindsor\Tests.CastleWindsor.csproj", "{CCC959FC-850D-4A94-864D-3FC00930FB5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,8 +27,17 @@ Global
 		{6021B01C-F24B-48B4-B774-D150ACE2B6C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6021B01C-F24B-48B4-B774-D150ACE2B6C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6021B01C-F24B-48B4-B774-D150ACE2B6C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCC959FC-850D-4A94-864D-3FC00930FB5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCC959FC-850D-4A94-864D-3FC00930FB5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCC959FC-850D-4A94-864D-3FC00930FB5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCC959FC-850D-4A94-864D-3FC00930FB5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C858BAB7-00F9-4629-9AA1-A2DDEFAD5543} = {24B882E0-FB4F-476A-8844-06824472BEB0}
+		{6021B01C-F24B-48B4-B774-D150ACE2B6C3} = {24B882E0-FB4F-476A-8844-06824472BEB0}
+		{CCC959FC-850D-4A94-864D-3FC00930FB5A} = {31BCDC74-9C21-495F-837D-FC1977CD9F8B}
 	EndGlobalSection
 EndGlobal
