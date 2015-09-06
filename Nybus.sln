@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{31BCDC74
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.CastleWindsor", "tests\Tests.CastleWindsor\Tests.CastleWindsor.csproj", "{CCC959FC-850D-4A94-864D-3FC00930FB5A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MassTransit", "src\MassTransit\MassTransit.csproj", "{2A6096FD-73F5-4FA9-AFD3-5185F5F307AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{CCC959FC-850D-4A94-864D-3FC00930FB5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCC959FC-850D-4A94-864D-3FC00930FB5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCC959FC-850D-4A94-864D-3FC00930FB5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A6096FD-73F5-4FA9-AFD3-5185F5F307AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A6096FD-73F5-4FA9-AFD3-5185F5F307AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A6096FD-73F5-4FA9-AFD3-5185F5F307AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A6096FD-73F5-4FA9-AFD3-5185F5F307AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,5 +45,6 @@ Global
 		{C858BAB7-00F9-4629-9AA1-A2DDEFAD5543} = {24B882E0-FB4F-476A-8844-06824472BEB0}
 		{6021B01C-F24B-48B4-B774-D150ACE2B6C3} = {24B882E0-FB4F-476A-8844-06824472BEB0}
 		{CCC959FC-850D-4A94-864D-3FC00930FB5A} = {31BCDC74-9C21-495F-837D-FC1977CD9F8B}
+		{2A6096FD-73F5-4FA9-AFD3-5185F5F307AA} = {24B882E0-FB4F-476A-8844-06824472BEB0}
 	EndGlobalSection
 EndGlobal
