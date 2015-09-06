@@ -25,17 +25,11 @@ namespace Nybus.Configuration
 
         private string _sharedQueueName;
 
-        public string SharedQueueName
-        {
-            get { return _sharedQueueName; }
-        }
+        public string SharedQueueName => _sharedQueueName;
 
         private IContainer _container;
 
-        public IContainer Container
-        {
-            get { return _container; }
-        }
+        public IContainer Container => _container;
 
         public void SetContainer(IContainer container)
         {
@@ -44,17 +38,11 @@ namespace Nybus.Configuration
 
         private readonly List<Action<SubscriptionBusServiceConfigurator>> _eventSubscriptions;
 
-        internal IReadOnlyList<Action<SubscriptionBusServiceConfigurator>> EventSubscriptions
-        {
-            get { return _eventSubscriptions; }
-        }
+        internal IReadOnlyList<Action<SubscriptionBusServiceConfigurator>> EventSubscriptions => _eventSubscriptions;
 
         private readonly List<Action<SubscriptionBusServiceConfigurator>> _commandSubscriptions;
 
-        internal IReadOnlyList<Action<SubscriptionBusServiceConfigurator>> CommandSubscriptions
-        {
-            get { return _commandSubscriptions; }
-        }
+        internal IReadOnlyList<Action<SubscriptionBusServiceConfigurator>> CommandSubscriptions => _commandSubscriptions;
 
         public void SubscribeToEvent<TEvent>() where TEvent : class, IEvent
         {
