@@ -17,13 +17,13 @@ namespace Nybus
     public class CommandContext<TCommand>
         where TCommand : class, ICommand
     {
-        public CommandContext(TCommand commandMessage, DateTimeOffset receivedOn)
+        public CommandContext(TCommand message, DateTimeOffset receivedOn)
         {
-            CommandMessage = commandMessage;
+            Message = message;
             ReceivedOn = receivedOn;
         }
 
-        public TCommand CommandMessage { get; private set; }
+        public TCommand Message { get; private set; }
         public DateTimeOffset ReceivedOn { get; private set; }
     }
 
