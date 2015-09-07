@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -10,6 +11,7 @@ using System.Web.Security;
 using System.Web.SessionState;
 using Castle.MicroKernel.Registration;
 using Castle.Windsor;
+using Castle.Windsor.Installer;
 using Castle.Windsor.Mvc;
 using Messages;
 using Nybus;
@@ -27,10 +29,10 @@ namespace WebProducer
         {
             ConfigureContainer();
 
-            ConfigureControllerFactory(ControllerBuilder.Current);
+            ConfigureControllerFactory();
             ConfigureRoutes(RouteTable.Routes);
             ConfigureFilters(GlobalFilters.Filters);
-            //ConfigureBus();
+            ConfigureBus();
         }
 
         private void ConfigureBus()
@@ -65,16 +67,16 @@ namespace WebProducer
             return connectionDescriptor;
         }
 
-        private void ConfigureControllerFactory(ControllerBuilder current)
+        private void ConfigureControllerFactory()
         {
             var container = (IWindsorContainer) Application[ContainerKey];
-            current.SetControllerFactory(new WindsorControllerFactory(container.Kernel));
+            ControllerBuilder.Current.SetControllerFactory(new WindsorControllerFactory(container.Kernel));
         }
 
         private void ConfigureContainer()
         {
             IWindsorContainer container = new WindsorContainer();
-            container.Install(new DefaultHandlerInstaller());
+            container.Install(FromAssembly.InThisApplication());
 
             Application[ContainerKey] = container;
         }
@@ -88,28 +90,18 @@ namespace WebProducer
         {
             routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
-            routes.MapRoute("HomePage", "", new {controller = "Home", action = "Index"});
-
             routes.MapMvcAttributeRoutes();
         }
 
         protected void Application_End()
         {
-            //var handle = (IHandle) Application[ServiceBusHandleKey];
-            //Task.WaitAll(handle.Stop());
-            
+            var handle = (IHandle)Application[ServiceBusHandleKey];
+            Task.WaitAll(handle.Stop());
+
             var container = (IWindsorContainer)Application[ContainerKey];
             Application[ContainerKey] = null;
 
             container.Dispose();
-        }
-    }
-
-    public class StringReversedEventHandler : IEventHandler<StringReversedEvent>
-    {
-        public Task Handle(EventContext<StringReversedEvent> eventMessage)
-        {
-            return Task.FromResult(0);
         }
     }
 }

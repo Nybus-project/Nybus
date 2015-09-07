@@ -24,13 +24,19 @@ namespace Consumer
 
             var toWait = TimeSpan.FromMilliseconds(Random.Next(500, 5000));
 
+            Console.WriteLine($"Received command to reverse \"{message.Message.Value}\". I will sleep for {toWait.TotalSeconds} seconds.");
+
             await Task.Delay(toWait);
+
+            var reversed = ReverseString(message.Message.Value);
 
             var resultEvent = new StringReversedEvent
             {
-                Result = ReverseString(message.Message.Value),
+                Result = reversed,
                 TimeSlept = toWait.TotalSeconds
             };
+
+            Console.WriteLine($"I reversed \"{message.Message.Value}\" and I got \"{reversed}\"");
 
             await _bus.RaiseEvent(resultEvent);
         }

@@ -3,3 +3,9 @@
 }
 
 <h2>@ViewBag.Title</h2>
+
+@using (Html.BeginForm("PostValue", "Home"))
+{
+    <div>@Html.TextBox("Value", "A random string", new {autocomplete="off"})</div>
+    <div><button type="submit">Reverse the string</button></div>
+}
