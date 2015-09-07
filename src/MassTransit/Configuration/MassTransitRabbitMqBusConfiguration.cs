@@ -15,7 +15,7 @@ namespace Nybus.Configuration
         {
             _eventSubscriptions = new List<Action<SubscriptionBusServiceConfigurator>>();
             _commandSubscriptions = new List<Action<SubscriptionBusServiceConfigurator>>();
-            _sharedQueueName = Assembly.GetEntryAssembly().FullName.Hash();
+            _sharedQueueName = Utilities.GetUniqueNameForApplication();
         }
 
         public void SetSharedQueueName(string queueName)
