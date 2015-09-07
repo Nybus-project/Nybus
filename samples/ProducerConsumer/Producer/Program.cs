@@ -19,7 +19,7 @@ namespace Producer
         {
             using (var container = CreateContainer())
             {
-                var bus = CreateBus(container, "rabbitmq://ec2-52-17-96-97.eu-west-1.compute.amazonaws.com/test-1/");
+                var bus = CreateBus(container, "rabbitmq://localhost/test-1/");
 
                 var handle = bus.Start();
 
