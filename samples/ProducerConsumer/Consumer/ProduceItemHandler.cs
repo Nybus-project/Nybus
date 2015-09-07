@@ -17,14 +17,14 @@ namespace Consumer
 
         public async Task Handle(CommandContext<ProduceItem> command)
         {
-            Console.WriteLine($"Producing item {command.CommandMessage.ItemId}");
+            Console.WriteLine($"Producing item {command.Message.ItemId}");
 
             await Task.Delay(TimeSpan.FromMilliseconds(200));
 
             await _bus.RaiseEvent(new ItemProduced
             {
-                ItemId = command.CommandMessage.ItemId,
-                Quantity = command.CommandMessage.Quantity
+                ItemId = command.Message.ItemId,
+                Quantity = command.Message.Quantity
             });
         }
     }
