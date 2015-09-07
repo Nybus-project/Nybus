@@ -20,7 +20,7 @@ namespace Consumer
             {
                 Console.WriteLine("Initializing the bus");
 
-                var bus = CreateBus(container, "rabbitmq://ec2-52-19-143-100.eu-west-1.compute.amazonaws.com/test-1/");
+                var bus = CreateBus(container, "rabbitmq://localhost/test-1/");
 
                 Console.WriteLine("Bus initialized. Starting.");
 
