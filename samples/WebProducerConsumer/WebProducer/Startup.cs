@@ -9,7 +9,7 @@ namespace WebProducer
     {
         public void Configuration(IAppBuilder app)
         {
-            
+            app.MapSignalR();
         }
     }
 }
