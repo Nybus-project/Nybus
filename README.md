@@ -25,7 +25,7 @@ At the moment there are three packages available:
 
 Beside stabilizing the API, the future plans involves:
 * A reusable host process that scans for handlers in the assemblies contained in the same folder.
-* Some kind of support for [Rx.NET](https://github.com/Reactive-Extensions/Rx.NET) so that events and handlers can be manipulated with LINQ operators.
+* Some kind of support for [Rx.NET](https://github.com/Reactive-Extensions/Rx.NET) so that events can be manipulated with LINQ operators.
 * A binding based on AWS managed services, namely SQS and SNS.
 * A binding based on Azure managed services.
 * A binding based on MassTransit 3.0
