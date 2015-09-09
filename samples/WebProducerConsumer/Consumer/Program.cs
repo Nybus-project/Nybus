@@ -20,7 +20,7 @@ namespace Consumer
         {
             string rabbitmqHost = ConfigurationManager.AppSettings["ServiceBusHost"] ?? "localhost";
 
-            using (var container = CreateContainer($"rabbitmq://{rabbitmqHost}/test-1/"))
+            using (var container = CreateContainer(rabbitmqHost))
             {
                 Console.WriteLine("Initializing the bus");
 
