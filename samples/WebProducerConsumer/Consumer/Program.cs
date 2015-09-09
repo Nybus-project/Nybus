@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Messages;
 using Nybus;
 using Nybus.Configuration;
 using Nybus.Container;
+using Topshelf;
 
 namespace Consumer
 {
@@ -16,33 +18,47 @@ namespace Consumer
     {
         static void Main(string[] args)
         {
-            using (var container = CreateContainer())
+            string rabbitmqHost = ConfigurationManager.AppSettings["ServiceBusHost"] ?? "localhost";
+
+            using (var container = CreateContainer($"rabbitmq://{rabbitmqHost}/test-1/"))
             {
                 Console.WriteLine("Initializing the bus");
 
-                var bus = CreateBus(container, "rabbitmq://localhost/test-1/");
+                var service = HostFactory.New(c =>
+                {
+                    c.Service<ServiceHost>(svc =>
+                    {
+                        svc.ConstructUsing(() => container.Resolve<ServiceHost>());
+                        svc.WhenStarted(host => Task.WaitAll(host.Start()));
+                        svc.WhenStopped(host => Task.WaitAll(host.Stop()));
+                    });
 
-                Console.WriteLine("Bus initialized. Starting.");
+                    c.RunAsLocalSystem();
 
-                var handle = bus.Start();
+                    c.SetDisplayName("Consumer test");
 
-                Console.WriteLine("Bus started.");
+                    c.SetServiceName("Consumer-test");
+                });
 
-                Console.WriteLine("Press ENTER to stop the execution.");
-
-                Console.ReadLine();
-
-                Console.WriteLine("Stopping");
-
-                Task.WaitAll(handle.Stop());
-
+                service.Run();
+                
                 Console.WriteLine("Bye");
 
             }
 
         }
 
-        private static IBus CreateBus(IWindsorContainer container, string hostName)
+        static IWindsorContainer CreateContainer(string hostName)
+        {
+            IWindsorContainer container = new WindsorContainer();
+            container.Install(new DefaultHandlerInstaller());
+            container.Register(Component.For<ServiceHost>());
+            container.Register(Component.For<IBus>().Instance(CreateBus(container, hostName)));
+
+            return container;
+        }
+
+        static IBus CreateBus(IWindsorContainer container, string hostName)
         {
             Uri host = new Uri(hostName);
 
@@ -55,19 +71,33 @@ namespace Consumer
                 c.SubscribeToCommand<ReverseStringCommand>();
             });
 
-            container.Register(Component.For<IBus>().Instance(bus));
-
             return bus;
         }
 
+    }
 
-        static IWindsorContainer CreateContainer()
+    public class ServiceHost
+    {
+        private readonly IBus _bus;
+
+        private IHandle _handle;
+
+        public ServiceHost(IBus bus)
         {
-            IWindsorContainer container = new WindsorContainer();
-            container.Install(new DefaultHandlerInstaller());
-
-            return container;
+            if (bus == null) throw new ArgumentNullException(nameof(bus));
+            _bus = bus;
         }
 
+        public Task Start()
+        {
+            _handle = _bus.Start();
+
+            return Task.FromResult(0);
+        }
+
+        public async Task Stop()
+        {
+            await _handle.Stop();
+        }
     }
 }
