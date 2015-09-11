@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Configuration\IBusBuilder.cs" />
     <Compile Include="Configuration\IBusConfiguration.cs" />
+    <Compile Include="Configuration\ILogger.cs" />
     <Compile Include="Container\IContainer.cs" />
     <Compile Include="IBus.cs" />
     <Compile Include="IBusEngine.cs" />

@@ -1,15 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Nybus.Container;
 using Nybus.Utils;
 
 namespace Nybus.Configuration
 {
-    public class NybusOptions
-    {
-        public IContainer Container { get; set; } = new ActivatorContainer();
-    }
-
     public class NybusBusBuilder : IBusBuilder
     {
         private readonly IBusEngine _busEngine;
@@ -62,12 +56,8 @@ namespace Nybus.Configuration
         private async Task HandleEventMessage<TEventHandler, TEvent>(TEventHandler handler, EventMessage<TEvent> message)
             where TEventHandler : IEventHandler<TEvent> where TEvent : class, IEvent
         {
-            await handler.Handle(CreateContext(message));
-        }
-
-        private EventContext<TEvent> CreateContext<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
-        {
-            return new EventContext<TEvent>(message.Event, Clock.Default.Now);
+            var context = _options.EventContextFactory.CreateContext(message);
+            await handler.Handle(context);
         }
 
         #endregion
@@ -111,20 +101,15 @@ namespace Nybus.Configuration
         private async Task HandleCommandMessage<TCommandHandler, TCommand>(TCommandHandler handler, CommandMessage<TCommand> message)
             where TCommandHandler : ICommandHandler<TCommand> where TCommand : class, ICommand
         {
-            await handler.Handle(CreateContext(message));
-        }
-
-        private CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message)
-            where TCommand : class, ICommand
-        {
-            return new CommandContext<TCommand>(message.Command, Clock.Default.Now);
+            var context = _options.CommandContextFactory.CreateContext(message);
+            await handler.Handle(context);
         }
 
         #endregion
 
         public IBus Build()
         {
-            return new Nybus(_busEngine);
+            return new Nybus(_busEngine, _options);
         }
 
     }
