@@ -42,13 +42,15 @@
   <ItemGroup>
     <Compile Include="Configuration\IBusBuilder.cs" />
     <Compile Include="Configuration\IBusConfiguration.cs" />
-    <Compile Include="Container\ActivatorContainer.cs" />
     <Compile Include="Container\IContainer.cs" />
     <Compile Include="IBus.cs" />
+    <Compile Include="IBusEngine.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="IEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\ExceptionManager.cs" />
     <Compile Include="Utils\IClock.cs" />
+    <Compile Include="Utils\TaskExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Interfaces.nuspec" />

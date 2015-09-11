@@ -6,8 +6,8 @@
         <title>Nybus MassTransit</title>
         <authors>Renato Golia</authors>
         <owners>Renato Golia</owners>
-        <licenseUrl>https://github.com/Kralizek/Nybus/blob/master/LICENSE</licenseUrl>
-        <projectUrl>https://github.com/Kralizek/Nybus</projectUrl>
+        <licenseUrl>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/Nybus-project/Nybus</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Nybus bus based on MassTransit</description>
         <language>en-US</language>

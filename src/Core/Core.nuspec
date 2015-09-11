@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
-        <id>Nybus.Interfaces</id>
+        <id>Nybus.Core</id>
         <version>$version$</version>
-        <title>Nybus Interfaces</title>
+        <title>Nybus Core</title>
         <authors>Renato Golia</authors>
         <owners>Renato Golia</owners>
         <licenseUrl>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</licenseUrl>

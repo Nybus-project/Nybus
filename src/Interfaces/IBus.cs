@@ -8,12 +8,8 @@ namespace Nybus
 
         Task RaiseEvent<TEvent>(TEvent @event) where TEvent : class, IEvent;
 
-        IHandle Start();
-    }
+        Task Start();
 
-    public interface IHandle
-    {
         Task Stop();
     }
-
 }
