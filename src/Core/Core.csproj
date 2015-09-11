@@ -45,7 +45,6 @@
     <Compile Include="Configuration\ICommandMessageFactory.cs" />
     <Compile Include="Configuration\IEventContextFactory.cs" />
     <Compile Include="Configuration\IEventMessageFactory.cs" />
-    <Compile Include="Configuration\NopLogger.cs" />
     <Compile Include="Configuration\NybusOptions.cs" />
     <Compile Include="Container\ActivatorContainer.cs" />
     <Compile Include="Nybus.cs" />

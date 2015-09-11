@@ -61,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\IErrorStrategy.cs" />
     <Compile Include="Configuration\IQueueStrategy.cs" />
     <Compile Include="Configuration\IServiceBusFactory.cs" />
     <Compile Include="MassTransit\MassTransitBusEngine.cs" />

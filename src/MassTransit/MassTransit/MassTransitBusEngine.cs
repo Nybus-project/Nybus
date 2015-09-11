@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MassTransit;
 using MassTransit.SubscriptionConfigurators;
-using Nybus.Configuration;
 using Nybus.Utils;
 
 namespace Nybus.MassTransit
@@ -59,14 +58,7 @@ namespace Nybus.MassTransit
             }
             catch (Exception ex)
             {
-                if (context.RetryCount < _options.RetriesOnFaultyCommand)
-                {
-                    context.RetryLater();
-                }
-                else
-                {
-                    throw ExceptionManager.PrepareForRethrow(ex);
-                }
+                _options.CommandErrorStrategy.HandleError(context, ex);
             }
 
             return Task.FromResult(0);
@@ -91,14 +83,7 @@ namespace Nybus.MassTransit
             }
             catch (Exception ex)
             {
-                if (context.RetryCount < _options.RetriesOnFaultyEvent)
-                {
-                    context.RetryLater();
-                }
-                else
-                {
-                    throw ExceptionManager.PrepareForRethrow(ex);
-                }
+                _options.EventErrorStrategy.HandleError(context, ex);
             }
 
             return Task.FromResult(0);
