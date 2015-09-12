@@ -53,14 +53,14 @@ namespace Nybus.MassTransit
 
         private Task HandleCommand<TCommand>(CommandReceived<TCommand> commandHandler, IConsumeContext<CommandMessage<TCommand>> context) where TCommand : class, ICommand
         {
-            _options.Logger.Log(LogLevel.Trace, "Received command", new { commandType = typeof(TCommand), correlationId = context.Message.CorrelationId, retryCount = context.RetryCount });
+            _options.Logger.Log(LogLevel.Trace, "Received command", new { commandType = typeof(TCommand).FullName, correlationId = context.Message.CorrelationId, retryCount = context.RetryCount });
             try
             {
                 return commandHandler?.Invoke(context.Message);
             }
             catch (Exception ex)
             {
-                _options.Logger.Log(LogLevel.Error, "Error while processing a command", new { commandType = typeof(TCommand), correlationId = context.Message.CorrelationId, retryCount = context.RetryCount, exception = ex, command = context.Message.Command });
+                _options.Logger.Log(LogLevel.Error, "Error while processing a command", new { commandType = typeof(TCommand).FullName, correlationId = context.Message.CorrelationId, retryCount = context.RetryCount, exception = ex, command = context.Message.Command });
                 _options.CommandErrorStrategy.HandleError(context, ex);
             }
 
@@ -80,14 +80,14 @@ namespace Nybus.MassTransit
 
         private Task HandleEvent<TEvent>(EventReceived<TEvent> eventHandler, IConsumeContext<EventMessage<TEvent>> context) where TEvent : class, IEvent
         {
-            _options.Logger.Log(LogLevel.Trace, "Received event", new { eventType = typeof(TEvent), correlationId = context.Message.CorrelationId, retryCount = context.RetryCount});
+            _options.Logger.Log(LogLevel.Trace, "Received event", new { eventType = typeof(TEvent).FullName, correlationId = context.Message.CorrelationId, retryCount = context.RetryCount});
             try
             {
                 return eventHandler?.Invoke(context.Message);
             }
             catch (Exception ex)
             {
-                _options.Logger.Log(LogLevel.Error, "Error while processing an event", new { eventType = typeof(TEvent), correlationId = context.Message.CorrelationId, retryCount = context.RetryCount , exception = ex, @event = context.Message.Event });
+                _options.Logger.Log(LogLevel.Error, "Error while processing an event", new { eventType = typeof(TEvent).FullName, correlationId = context.Message.CorrelationId, retryCount = context.RetryCount , exception = ex, @event = context.Message.Event });
                 _options.EventErrorStrategy.HandleError(context, ex);
             }
 
