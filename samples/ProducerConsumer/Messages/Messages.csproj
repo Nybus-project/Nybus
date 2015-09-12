@@ -30,8 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Nybus.Interfaces, Version=0.0.22.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.0.22.0\lib\net46\Nybus.Interfaces.dll</HintPath>
+    <Reference Include="Nybus.Interfaces, Version=0.0.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.0.30.0\lib\net46\Nybus.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
