@@ -20,24 +20,42 @@ namespace Nybus
 
         public Task InvokeCommand<TCommand>(TCommand command) where TCommand : class, ICommand
         {
-            var message = _options.CommandMessageFactory.CreateMessage(command);
-            return _engine.SendMessage(message);
+            var correlationId = _options.CorrelationIdGenerator.Generate();
+            return InvokeCommand(command, correlationId);
+        }
+
+        public async Task InvokeCommand<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
+        {
+            var message = _options.CommandMessageFactory.CreateMessage(command, correlationId);
+            await _options.Logger.LogAsync(LogLevel.Info, "Invoking command", new { type = typeof(TCommand), correlationId = message.CorrelationId });
+            await _engine.SendMessage(message);
         }
 
         public Task RaiseEvent<TEvent>(TEvent @event) where TEvent : class, IEvent
         {
-            var message = _options.EventMessageFactory.CreateMessage(@event);
-            return _engine.SendMessage(message);
+            var correlationId = _options.CorrelationIdGenerator.Generate();
+            return RaiseEvent(@event, correlationId);
         }
 
-        public Task Start()
+        public async Task RaiseEvent<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
         {
-            return _engine.Start();
+            var message = _options.EventMessageFactory.CreateMessage(@event, correlationId);
+            await _options.Logger.LogAsync(LogLevel.Info, "Raising event", new {type = typeof(TEvent), correlationId = message.CorrelationId});
+            await _engine.SendMessage(message);
         }
 
-        public Task Stop()
+        public async Task Start()
         {
-            return _engine.Stop();
+            await _options.Logger.LogAsync(LogLevel.Info, "Bus starting");
+            await _engine.Start();
+            await _options.Logger.LogAsync(LogLevel.Info, "Bus started");
+        }
+
+        public async Task Stop()
+        {
+            await _options.Logger.LogAsync(LogLevel.Info, "Bus stopping");
+            await _engine.Stop();
+            await _options.Logger.LogAsync(LogLevel.Info, "Bus stopped");
         }
     }
 }

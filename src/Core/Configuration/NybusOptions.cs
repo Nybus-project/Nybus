@@ -1,4 +1,5 @@
-﻿using Nybus.Container;
+﻿using System;
+using Nybus.Container;
 
 namespace Nybus.Configuration
 {
@@ -15,5 +16,7 @@ namespace Nybus.Configuration
         public IEventMessageFactory EventMessageFactory { get; set; } = new DefaultEventMessageFactory();
 
         public IEventContextFactory EventContextFactory { get; set; } = new DefaultEventContextFactory();
+
+        public ICorrelationIdGenerator CorrelationIdGenerator { get; set; } = new NewGuidCorrelationIdGenerator();
     }
 }

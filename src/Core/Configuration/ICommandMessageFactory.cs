@@ -1,15 +1,20 @@
-﻿namespace Nybus.Configuration
+﻿using System;
+
+namespace Nybus.Configuration
 {
     public interface ICommandMessageFactory
     {
-        CommandMessage<TCommand> CreateMessage<TCommand>(TCommand command) where TCommand : class, ICommand;
+        CommandMessage<TCommand> CreateMessage<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand;
     }
 
     public class DefaultCommandMessageFactory : ICommandMessageFactory
     {
-        public CommandMessage<TCommand> CreateMessage<TCommand>(TCommand command) where TCommand : class, ICommand
+        public CommandMessage<TCommand> CreateMessage<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
-            return new CommandMessage<TCommand>(command);
+            return new CommandMessage<TCommand>(command)
+            {
+                CorrelationId = correlationId
+            };
         }
     }
 }

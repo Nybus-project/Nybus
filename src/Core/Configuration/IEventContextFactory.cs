@@ -11,7 +11,7 @@ namespace Nybus.Configuration
     {
         public EventContext<TEvent> CreateContext<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
         {
-            return new EventContext<TEvent>(message.Event, Clock.Default.Now);
+            return new EventContext<TEvent>(message.Event, Clock.Default.Now, message.CorrelationId);
         }
     }
 }
