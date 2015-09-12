@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Nybus
 {
@@ -6,14 +7,14 @@ namespace Nybus
     {
         Task InvokeCommand<TCommand>(TCommand command) where TCommand : class, ICommand;
 
+        Task InvokeCommand<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand;
+
         Task RaiseEvent<TEvent>(TEvent @event) where TEvent : class, IEvent;
 
-        IHandle Start();
-    }
+        Task RaiseEvent<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent;
 
-    public interface IHandle
-    {
+        Task Start();
+
         Task Stop();
     }
-
 }

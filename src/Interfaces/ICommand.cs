@@ -17,14 +17,16 @@ namespace Nybus
     public class CommandContext<TCommand>
         where TCommand : class, ICommand
     {
-        public CommandContext(TCommand message, DateTimeOffset receivedOn)
+        public CommandContext(TCommand message, DateTimeOffset receivedOn, Guid correlationId)
         {
             Message = message;
             ReceivedOn = receivedOn;
+            CorrelationId = correlationId;
         }
 
         public TCommand Message { get; private set; }
         public DateTimeOffset ReceivedOn { get; private set; }
+        public Guid CorrelationId { get; set; }
     }
 
     public class DelegateCommandHandler<TCommand> : ICommandHandler<TCommand>

@@ -17,11 +17,14 @@ namespace Nybus
     public class EventContext<TEvent>
         where TEvent : class, IEvent
     {
-        public EventContext(TEvent eventMessage, DateTimeOffset receivedOn)
+        public EventContext(TEvent eventMessage, DateTimeOffset receivedOn, Guid correlationId)
         {
             Message = eventMessage;
             ReceivedOn = receivedOn;
+            CorrelationId = correlationId;
         }
+
+        public Guid CorrelationId { get; set; }
 
         public DateTimeOffset ReceivedOn { get; private set; }
 

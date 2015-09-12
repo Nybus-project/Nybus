@@ -51,6 +51,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -60,11 +61,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\MassTransitBusBuilder.cs" />
-    <Compile Include="Configuration\MassTransitBusConnectionDescriptor.cs" />
-    <Compile Include="Configuration\MassTransitRabbitMqBusConfiguration.cs" />
-    <Compile Include="MassTransit\MassTransitBus.cs" />
-    <Compile Include="MassTransit\MassTransitHandle.cs" />
+    <Compile Include="Configuration\IErrorStrategy.cs" />
+    <Compile Include="Configuration\IQueueStrategy.cs" />
+    <Compile Include="Configuration\IServiceBusFactory.cs" />
+    <Compile Include="MassTransit\MassTransitBusEngine.cs" />
+    <Compile Include="MassTransit\MassTransitOptions.cs" />
+    <Compile Include="MassTransit\MassTransitConnectionDescriptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\StringExtensions.cs" />
   </ItemGroup>
@@ -78,6 +80,7 @@
     <None Include="MassTransit.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
