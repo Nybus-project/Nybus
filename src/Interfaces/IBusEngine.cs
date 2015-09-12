@@ -5,7 +5,7 @@ namespace Nybus
 {
     public interface IBusEngine
     {
-        Task SendMessage(Message message);
+        Task SendMessage<TMessage>(TMessage message) where TMessage: Message;
 
         void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived)
             where TCommand : class, ICommand;
