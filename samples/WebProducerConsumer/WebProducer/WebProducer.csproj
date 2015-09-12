@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
+  <Import Project="..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="..\..\..\Packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\..\..\Packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -76,7 +76,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
+      <HintPath>..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\lib\net45\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
@@ -100,16 +100,20 @@
       <HintPath>..\..\..\Packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.CastleWindsor, Version=0.0.21.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Castle.Windsor.0.0.21.0\lib\net46\Nybus.CastleWindsor.dll</HintPath>
+    <Reference Include="Nybus.CastleWindsor, Version=0.0.31.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Castle.Windsor.0.0.31.0\lib\net46\Nybus.CastleWindsor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.Interfaces, Version=0.0.21.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.0.21.0\lib\net46\Nybus.Interfaces.dll</HintPath>
+    <Reference Include="Nybus.Core, Version=0.0.31.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Core.0.0.31.0\lib\net46\Nybus.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.MassTransit, Version=0.0.21.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.MassTransit.0.0.21.0\lib\net46\Nybus.MassTransit.dll</HintPath>
+    <Reference Include="Nybus.Interfaces, Version=0.0.31.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.0.31.0\lib\net46\Nybus.Interfaces.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Nybus.MassTransit, Version=0.0.31.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.MassTransit.0.0.31.0\lib\net46\Nybus.MassTransit.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
@@ -181,7 +185,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\HomeController.cs" />
@@ -190,6 +196,7 @@
     </Compile>
     <Compile Include="Handlers\StringReversedEventHandler.cs" />
     <Compile Include="Hubs\NotificationHub.cs" />
+    <Compile Include="Installers\BusHandlerInstaller.cs" />
     <Compile Include="Installers\ControllerInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -230,7 +237,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\..\Packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\Packages\Microsoft.Net.Compilers.1.0.0\build\Microsoft.Net.Compilers.props'))" />
-    <Error Condition="!Exists('..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
+    <Error Condition="!Exists('..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\Packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.1.0.1\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

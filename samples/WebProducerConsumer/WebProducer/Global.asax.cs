@@ -17,6 +17,7 @@ using Messages;
 using Nybus;
 using Nybus.Configuration;
 using Nybus.Container;
+using Nybus.Utils;
 
 namespace WebProducer
 {
@@ -39,32 +40,11 @@ namespace WebProducer
         {
             var container = (IWindsorContainer)Application[ContainerKey];
 
-            var connectionDescriptor = CreateConnectionDescriptor();
+            var bus = container.Resolve<IBus>();
 
-            var builder = new MassTransitBusBuilder(connectionDescriptor);
+            bus.Start().WaitAndUnwrapException();
 
-            var bus = builder.Build(c =>
-            {
-                c.SetContainer(container);
-                c.SubscribeToEvent<StringReversedEvent>();
-            });
-
-            container.Register(Component.For<IBus>().Instance(bus).LifestyleSingleton());
-
-            var handle = bus.Start();
-
-            Application[ServiceBusHandleKey] = handle;
-        }
-
-        private MassTransitBusConnectionDescriptor CreateConnectionDescriptor()
-        {
-            Uri host = new Uri(ConfigurationManager.AppSettings["ServiceBusHost"]);
-            string userName = ConfigurationManager.AppSettings["ServiceBusUserName"];
-            string password = ConfigurationManager.AppSettings["ServiceBusPassword"];
-
-            var connectionDescriptor = new MassTransitBusConnectionDescriptor(host, userName, password);
-
-            return connectionDescriptor;
+            Application[ServiceBusHandleKey] = bus;
         }
 
         private void ConfigureControllerFactory()
@@ -95,12 +75,13 @@ namespace WebProducer
 
         protected void Application_End()
         {
-            var handle = (IHandle)Application[ServiceBusHandleKey];
-            Task.WaitAll(handle.Stop());
+            var bus = (IBus)Application[ServiceBusHandleKey];
+            bus.Stop().WaitAndUnwrapException();
 
             var container = (IWindsorContainer)Application[ContainerKey];
             Application[ContainerKey] = null;
 
+            container.Release(bus);
             container.Dispose();
         }
     }
