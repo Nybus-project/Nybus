@@ -48,7 +48,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Configuration\WindsorBusConfigurationExtensions.cs" />
     <Compile Include="Container\DefaultHandlerInstaller.cs" />
     <Compile Include="Container\WindsorBusContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
