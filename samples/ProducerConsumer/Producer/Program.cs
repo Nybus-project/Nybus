@@ -5,11 +5,11 @@ using System.Net.Configuration;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.Windsor;
+using Castle.Windsor.Installer;
 using MassTransit.BusConfigurators;
-using Messages;
 using Nybus;
-using Nybus.Configuration;
 using Nybus.Container;
+using Nybus.Utils;
 
 namespace Producer
 {
@@ -19,51 +19,26 @@ namespace Producer
         {
             using (var container = CreateContainer())
             {
-                var bus = CreateBus(container, "rabbitmq://localhost/test-1/");
+                var bus = container.Resolve<IBus>();
+                var app = container.Resolve<ProductionManager>();
 
-                var handle = bus.Start();
-
-                for (int i = 0; i < 1000; i++)
-                {
-                    InvokeCommand(bus, i);
-                }
-
-                Task.WaitAll(handle.Stop());
+                Run(bus, app).WaitAndUnwrapException();
             }
+
+            Console.ReadLine();
         }
 
-        private static void InvokeCommand(IBus bus, int i)
+        static async Task Run(IBus bus, ProductionManager app)
         {
-            var command = new ProduceItem
-            {
-                ItemId = Guid.NewGuid(),
-                Quantity = i
-            };
-
-            bus.InvokeCommand(command);
-
-            Console.WriteLine($"Invoked production of item with ID {command.ItemId}");
-        }
-
-        private static IBus CreateBus(IWindsorContainer container, string hostName)
-        {
-            Uri host = new Uri(hostName);
-
-            var connectionDescriptor = new MassTransitBusConnectionDescriptor(host, "test-1", "test");
-            var builder = new MassTransitBusBuilder(connectionDescriptor);
-
-            IBus bus = builder.Build(c =>
-            {
-                c.SetContainer(container);
-                c.SubscribeToEvent<ItemProduced>(async ctx => Console.WriteLine($"{ctx.Message.Quantity} of {ctx.Message.ItemId} produced."));
-            });
-
-            return bus;
+            await bus.Start();
+            await app.Execute(100);
+            await bus.Stop();
         }
 
         static IWindsorContainer CreateContainer()
         {
             IWindsorContainer container = new WindsorContainer();
+            container.Install(FromAssembly.InThisApplication());
             container.Install(new DefaultHandlerInstaller());
 
             return container;
