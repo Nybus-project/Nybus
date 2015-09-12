@@ -35,7 +35,7 @@ namespace Nybus.MassTransit
         }
 
 
-        public Task SendMessage(Message message)
+        public Task SendMessage<TMessage>(TMessage message) where TMessage : Message
         {
             EnsureBusIsRunning();
             _serviceBusses[0].Publish(message);
