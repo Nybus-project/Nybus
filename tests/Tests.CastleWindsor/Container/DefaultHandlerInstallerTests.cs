@@ -17,7 +17,7 @@ namespace Tests.Container
     {
         private DefaultHandlerInstaller CreateSystemUnderTest()
         {
-            return new DefaultHandlerInstaller();
+            return new DefaultHandlerInstaller(Classes.FromAssemblyInThisApplication());
         }
 
         [Test]

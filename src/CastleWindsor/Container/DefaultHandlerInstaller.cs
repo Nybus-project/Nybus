@@ -2,34 +2,41 @@ using System;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
+using Castle.Windsor.Installer;
 
 namespace Nybus.Container
 {
     public class DefaultHandlerInstaller : IWindsorInstaller
     {
-        private readonly string _directory;
+        private readonly FromAssemblyDescriptor _descriptor;
 
-        /// <summary>
-        /// A Windsor Installer that will automatically register all the handlers in the AppDomain's base directory
-        /// </summary>
-        public DefaultHandlerInstaller() : this(AppDomain.CurrentDomain.BaseDirectory) { }
-
-        /// <summary>
-        /// A Windsor Installer that will automatically register all the handlers in the <param name="directory"></param> directory
-        /// </summary>
-        /// <param name="directory">The directory to scan for handlers to be registered</param>
-        public DefaultHandlerInstaller(string directory)
+        public DefaultHandlerInstaller() : this(AppDomain.CurrentDomain.BaseDirectory)
         {
-            if (directory == null) throw new ArgumentNullException(nameof(directory));
-            _directory = directory;
+        }
+
+        public DefaultHandlerInstaller(string directoryToSearch) : this(Classes.FromAssemblyInDirectory(new AssemblyFilter(directoryToSearch)))
+        {
+            
+        }
+
+        public DefaultHandlerInstaller(FromAssemblyDescriptor descriptor)
+        {
+            if (descriptor == null) throw new ArgumentNullException(nameof(descriptor));
+            _descriptor = descriptor;
         }
 
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            var filter = new AssemblyFilter(_directory);
+            RegisterCommandHandlers(container, _descriptor);
 
-            container.Register(Classes.FromAssemblyInDirectory(filter)
-                .BasedOn(typeof(ICommandHandler<>))
+            RegisterEventHandlers(container, _descriptor);
+
+        }
+
+        private static void RegisterEventHandlers(IWindsorContainer container, FromAssemblyDescriptor descriptor)
+        {
+            container.Register(descriptor
+                .BasedOn(typeof (IEventHandler<>))
                 .WithServiceAllInterfaces()
                 .WithServiceSelf()
                 .Configure(c =>
@@ -37,9 +44,12 @@ namespace Nybus.Container
                     c.Named($"{c.Implementation.FullName} (fallback)");
                     c.IsFallback();
                 }).LifestyleTransient());
+        }
 
-            container.Register(Classes.FromAssemblyInDirectory(filter)
-                .BasedOn(typeof(IEventHandler<>))
+        private void RegisterCommandHandlers(IWindsorContainer container, FromAssemblyDescriptor descriptor)
+        {
+            container.Register(descriptor
+                .BasedOn(typeof (ICommandHandler<>))
                 .WithServiceAllInterfaces()
                 .WithServiceSelf()
                 .Configure(c =>
@@ -47,7 +57,6 @@ namespace Nybus.Container
                     c.Named($"{c.Implementation.FullName} (fallback)");
                     c.IsFallback();
                 }).LifestyleTransient());
-
         }
     }
 }
