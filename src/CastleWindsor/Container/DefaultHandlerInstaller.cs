@@ -16,7 +16,7 @@ namespace Nybus.Container
 
         public DefaultHandlerInstaller(string directoryToSearch) : this(Classes.FromAssemblyInDirectory(new AssemblyFilter(directoryToSearch)))
         {
-            
+
         }
 
         public DefaultHandlerInstaller(FromAssemblyDescriptor descriptor)
@@ -58,5 +58,7 @@ namespace Nybus.Container
                     c.IsFallback();
                 }).LifestyleTransient());
         }
+
+        public FromAssemblyDescriptor Descriptor => _descriptor;
     }
 }

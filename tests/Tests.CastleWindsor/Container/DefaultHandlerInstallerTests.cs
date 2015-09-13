@@ -21,6 +21,34 @@ namespace Tests.Container
         }
 
         [Test]
+        public void DefaultHandlerInstaller_uses_AppDomain_Current_BaseDirectory_as_default_filter()
+        {
+            new DefaultHandlerInstaller();
+        }
+
+        [Test]
+        public void DefaultHandlerInstaller_can_accept_a_path()
+        {
+            string path = AppDomain.CurrentDomain.BaseDirectory;
+            new DefaultHandlerInstaller(path);
+        }
+
+        [Test]
+        public void DefaultHandlerInstaller_can_accept_a_descriptor()
+        {
+            var descriptor = Classes.FromThisAssembly();
+            var installer = new DefaultHandlerInstaller(descriptor);
+
+            Assert.That(installer.Descriptor, Is.SameAs(descriptor));
+        }
+
+        [Test][ExpectedException]
+        public void Descriptor_is_required()
+        {
+            new DefaultHandlerInstaller((FromAssemblyDescriptor)null);
+        }
+
+        [Test]
         public void Event_handlers_are_automatically_registered()
         {
             IWindsorContainer container = new WindsorContainer();
