@@ -11,7 +11,7 @@ namespace Nybus.Configuration
         IServiceBus CreateServiceBus(MassTransitConnectionDescriptor connectionDescriptor, IQueueStrategy queueStrategy, IReadOnlyList<Action<SubscriptionBusServiceConfigurator>> subscriptions);
     }
 
-    public class DefaultServiceBusFactory : IServiceBusFactory
+    public class RabbitMqServiceBusFactory : IServiceBusFactory
     {
         public IServiceBus CreateServiceBus(MassTransitConnectionDescriptor connectionDescriptor, IQueueStrategy queueStrategy, IReadOnlyList<Action<SubscriptionBusServiceConfigurator>> subscriptions)
         {
@@ -35,6 +35,29 @@ namespace Nybus.Configuration
                     bus.Subscribe(subscription);
 
                 bus.Validate();
+            });
+        }
+    }
+
+    public class LoopbackServiceBusFactory : IServiceBusFactory
+    {
+        public IServiceBus CreateServiceBus(MassTransitConnectionDescriptor connectionDescriptor, IQueueStrategy queueStrategy, IReadOnlyList<Action<SubscriptionBusServiceConfigurator>> subscriptions)
+        {
+            UriBuilder builder = new UriBuilder(connectionDescriptor.Host) {Scheme = "loopback"};
+
+            return ServiceBusFactory.New(bus =>
+            {
+                var receiveUri = new Uri(builder.Uri, queueStrategy.GetQueueName());
+
+                bus.ReceiveFrom(receiveUri);
+
+                bus.UseJsonSerializer();
+
+                foreach (var subscription in subscriptions)
+                    bus.Subscribe(subscription);
+
+                bus.Validate();
+
             });
         }
     }

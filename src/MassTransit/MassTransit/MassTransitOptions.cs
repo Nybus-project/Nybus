@@ -13,7 +13,7 @@ namespace Nybus.MassTransit
 
         public IErrorStrategy EventErrorStrategy { get; set; } = new RetryErrorStrategy(5);
 
-        public IServiceBusFactory ServiceBusFactory { get; set; } = new DefaultServiceBusFactory();
+        public IServiceBusFactory ServiceBusFactory { get; set; } = new RabbitMqServiceBusFactory();
 
         public ILogger Logger { get; set; } = new NopLogger();
     }
