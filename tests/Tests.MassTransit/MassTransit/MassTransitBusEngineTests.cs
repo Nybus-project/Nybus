@@ -278,10 +278,13 @@ namespace Tests.MassTransit
 
             sut.SubscribeToEvent<TestEvent>(msg =>
             {
-                lock (lockObject)
+                try
+                {
+                    throw exception;
+                }
+                finally
                 {
                     are.Set();
-                    throw exception;
                 }
             });
 
@@ -292,6 +295,8 @@ namespace Tests.MassTransit
             sut.EventServiceBus.Publish(message);
 
             are.WaitOne();
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
 
             mockEventErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<EventMessage<TestEvent>>>(), exception), Times.AtLeastOnce);
         }
@@ -345,10 +350,13 @@ namespace Tests.MassTransit
 
             sut.SubscribeToCommand<TestCommand>(msg =>
             {
-                lock (lockObject)
+                try
+                {
+                    throw exception;
+                }
+                finally
                 {
                     are.Set();
-                    throw exception;
                 }
             });
 
@@ -359,6 +367,8 @@ namespace Tests.MassTransit
             sut.CommandServiceBus.Publish(message);
 
             are.WaitOne();
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
 
             mockCommandErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<CommandMessage<TestCommand>>>(), exception), Times.AtLeastOnce);
         }
