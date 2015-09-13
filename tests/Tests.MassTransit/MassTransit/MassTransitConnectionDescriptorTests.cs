@@ -86,5 +86,15 @@ namespace Tests.MassTransit
 
             Assert.That(descriptor, Is.Not.Null);
         }
+
+        [Test]
+        public void FromConfiguration_returns_null_if_item_cant_be_found()
+        {
+            var nameOfConnectionString = fixture.Create<string>();
+
+            var descriptor = MassTransitConnectionDescriptor.FromConfiguration(nameOfConnectionString);
+
+            Assert.That(descriptor, Is.Null);
+        }
     }
 }
