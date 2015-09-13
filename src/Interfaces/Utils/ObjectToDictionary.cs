@@ -31,7 +31,7 @@ namespace Nybus.Utils
             return (IReadOnlyDictionary<string, object>)GetObjectToDictionaryConverter(dataObject)(dataObject);
         }
 
-        private static readonly Dictionary<Type, Func<object, IReadOnlyDictionary<string, object>>> cache = new Dictionary<Type, Func<object, IReadOnlyDictionary<string, object>>>();
+        internal static readonly Dictionary<Type, Func<object, IReadOnlyDictionary<string, object>>> Cache = new Dictionary<Type, Func<object, IReadOnlyDictionary<string, object>>>();
         private static readonly ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
 
         private static Func<object, IReadOnlyDictionary<string, object>> CreateObjectToDictionaryConverter(Type itemType)
@@ -91,16 +91,16 @@ namespace Nybus.Utils
             {
                 Func<object, IReadOnlyDictionary<string, object>> ft;
 
-                if (!cache.TryGetValue(item.GetType(), out ft))
+                if (!Cache.TryGetValue(item.GetType(), out ft))
                 {
                     rwLock.EnterWriteLock();
 
                     try
                     {
-                        if (!cache.TryGetValue(item.GetType(), out ft))
+                        if (!Cache.TryGetValue(item.GetType(), out ft))
                         {
                             ft = CreateObjectToDictionaryConverter(item.GetType());
-                            cache[item.GetType()] = ft;
+                            Cache[item.GetType()] = ft;
                         }
                     }
                     finally
