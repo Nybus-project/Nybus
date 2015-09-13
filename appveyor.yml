@@ -12,6 +12,7 @@ assembly_info:
   assembly_informational_version: '{version}'
 before_build:
 - nuget restore NyBus.sln
+- nuget restore packages.config
 build:
   project: NyBus.sln
   publish_nuget: true
