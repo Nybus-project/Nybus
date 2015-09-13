@@ -1,4 +1,5 @@
-﻿using Nybus.Utils;
+﻿using System;
+using Nybus.Utils;
 
 namespace Nybus.Configuration
 {
@@ -9,9 +10,17 @@ namespace Nybus.Configuration
 
     public class DefaultEventContextFactory : IEventContextFactory
     {
+        private readonly IClock _clock;
+
+        public DefaultEventContextFactory(IClock clock)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            _clock = clock;
+        }
+
         public EventContext<TEvent> CreateContext<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
         {
-            return new EventContext<TEvent>(message.Event, Clock.Default.Now, message.CorrelationId);
+            return new EventContext<TEvent>(message.Event, _clock.Now, message.CorrelationId);
         }
     }
 }

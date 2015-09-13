@@ -40,12 +40,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\DelegateCommandHandler.cs" />
+    <Compile Include="Configuration\DelegateEventHandler.cs" />
     <Compile Include="Configuration\IBusBuilder.cs" />
     <Compile Include="Configuration\ICommandContextFactory.cs" />
     <Compile Include="Configuration\ICommandMessageFactory.cs" />
     <Compile Include="Configuration\ICorrelationIdGenerator.cs" />
     <Compile Include="Configuration\IEventContextFactory.cs" />
     <Compile Include="Configuration\IEventMessageFactory.cs" />
+    <Compile Include="Configuration\InMemoryBusEngine.cs" />
     <Compile Include="Configuration\NybusOptions.cs" />
     <Compile Include="Container\ActivatorContainer.cs" />
     <Compile Include="Nybus.cs" />

@@ -1,4 +1,5 @@
-﻿using Nybus.Utils;
+﻿using System;
+using Nybus.Utils;
 
 namespace Nybus.Configuration
 {
@@ -9,9 +10,17 @@ namespace Nybus.Configuration
 
     public class DefaultCommandContextFactory : ICommandContextFactory
     {
+        private readonly IClock _clock;
+
+        public DefaultCommandContextFactory(IClock clock)
+        {
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            _clock = clock;
+        }
+
         public CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
         {
-            return new CommandContext<TCommand>(message.Command, Clock.Default.Now, message.CorrelationId);
+            return new CommandContext<TCommand>(message.Command, _clock.Now, message.CorrelationId);
         }
     }
 }
