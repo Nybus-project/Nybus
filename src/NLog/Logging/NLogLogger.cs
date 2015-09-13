@@ -31,7 +31,7 @@ namespace Nybus.Logging
 
             _logger.Log(logEventInfo);
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
 
         }
 

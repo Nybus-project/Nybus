@@ -6,7 +6,7 @@ namespace Nybus.Logging
     {
         protected override Task LogEvent(LogLevel level, string message, object data, string callerMemberName)
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

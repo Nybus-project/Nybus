@@ -40,7 +40,7 @@ namespace Nybus.MassTransit
         {
             EnsureBusIsRunning();
             _serviceBusses[0].Publish(message);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         #region SubscribeToCommand
@@ -65,7 +65,7 @@ namespace Nybus.MassTransit
                 _options.CommandErrorStrategy.HandleError(context, ex);
             }
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         #endregion
@@ -92,7 +92,7 @@ namespace Nybus.MassTransit
                 _options.EventErrorStrategy.HandleError(context, ex);
             }
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         #endregion
@@ -118,7 +118,7 @@ namespace Nybus.MassTransit
             }
 
             _options.Logger.Log(LogLevel.Trace, "Bus engine started");
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task Stop()
@@ -132,13 +132,35 @@ namespace Nybus.MassTransit
 
             _options.Logger.Log(LogLevel.Trace, "Bus engine stopped");
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         private enum Status
         {
             New,
             Running
+        }
+
+        public IServiceBus EventServiceBus
+        {
+            get
+            {
+                EnsureBusIsRunning();
+                return _serviceBusses[0];
+            }
+        }
+
+        public IServiceBus CommandServiceBus
+        {
+            get
+            {
+                EnsureBusIsRunning();
+
+                if (_serviceBusses.Count < 2)
+                    return null;
+
+                return _serviceBusses[1];
+            }
         }
     }
 }

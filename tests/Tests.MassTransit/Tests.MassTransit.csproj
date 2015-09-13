@@ -71,6 +71,8 @@
     <Compile Include="Configuration\RetryErrorStrategyTests.cs" />
     <Compile Include="Configuration\StaticQueueStrategyTests.cs" />
     <Compile Include="Configuration\TemporaryQueueStrategyTests.cs" />
+    <Compile Include="MassTransit\MassTransitBusEngineTests.cs" />
+    <Compile Include="MassTransit\MassTransitConnectionDescriptorTests.cs" />
     <Compile Include="TestMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -85,6 +87,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -39,7 +39,7 @@ namespace Tests.Configuration
         }
 
         [Test]
-        public async Task A_message_can_be_sent_through_the_loopback_bus()
+        public void A_message_can_be_sent_through_the_loopback_bus()
         {
             var are = new AutoResetEvent(false);
 
