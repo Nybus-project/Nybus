@@ -22,7 +22,12 @@ namespace Nybus.MassTransit
 
         public static MassTransitConnectionDescriptor FromConfiguration(string nameOfConnectionString)
         {
-            string connectionString = ConfigurationManager.ConnectionStrings[nameOfConnectionString].ConnectionString;
+            var connectionStringSettings = ConfigurationManager.ConnectionStrings[nameOfConnectionString];
+
+            if (connectionStringSettings == null)
+                return null;
+
+            string connectionString = connectionStringSettings.ConnectionString;
             return Parse(connectionString);
         }
 

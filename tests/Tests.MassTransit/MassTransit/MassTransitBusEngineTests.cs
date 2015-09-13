@@ -34,6 +34,8 @@ namespace Tests.MassTransit
         private string commandQueueName;
         private string eventQueueName;
 
+        private object lockObject = new object();
+
         [SetUp]
         public void Initialize()
         {
@@ -252,7 +254,7 @@ namespace Tests.MassTransit
 
             sut.EventServiceBus.Publish(message);
 
-            are.WaitOne(TimeSpan.FromSeconds(2));
+            are.WaitOne();
 
             Assert.That(receivedMessage, Is.Not.Null);
             Assert.That(message.CorrelationId, Is.EqualTo(receivedMessage.CorrelationId));
@@ -276,8 +278,11 @@ namespace Tests.MassTransit
 
             sut.SubscribeToEvent<TestEvent>(msg =>
             {
-                are.Set();
-                throw exception;
+                lock (lockObject)
+                {
+                    are.Set();
+                    throw exception;
+                }
             });
 
             var message = fixture.Create<EventMessage<TestEvent>>();
@@ -286,7 +291,7 @@ namespace Tests.MassTransit
 
             sut.EventServiceBus.Publish(message);
 
-            are.WaitOne(TimeSpan.FromSeconds(2));
+            are.WaitOne();
 
             mockEventErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<EventMessage<TestEvent>>>(), exception), Times.AtLeastOnce);
         }
@@ -316,7 +321,7 @@ namespace Tests.MassTransit
 
             sut.CommandServiceBus.Publish(message);
 
-            are.WaitOne(TimeSpan.FromSeconds(2));
+            are.WaitOne();
 
             Assert.That(receivedMessage, Is.Not.Null);
             Assert.That(message.CorrelationId, Is.EqualTo(receivedMessage.CorrelationId));
@@ -340,8 +345,11 @@ namespace Tests.MassTransit
 
             sut.SubscribeToCommand<TestCommand>(msg =>
             {
-                are.Set();
-                throw exception;
+                lock (lockObject)
+                {
+                    are.Set();
+                    throw exception;
+                }
             });
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
@@ -350,7 +358,7 @@ namespace Tests.MassTransit
 
             sut.CommandServiceBus.Publish(message);
 
-            are.WaitOne(TimeSpan.FromSeconds(2));
+            are.WaitOne();
 
             mockCommandErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<CommandMessage<TestCommand>>>(), exception), Times.AtLeastOnce);
         }
