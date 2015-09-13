@@ -18,6 +18,7 @@ Nybus is available through NuGet.
 
 At the moment there are three packages available:
 * [Nybus.Interfaces](https://www.nuget.org/packages/Nybus.Interfaces/) contains the base types. It's very small by design so that you can include it into your business logic projects without carrying too many unwanted dependencies.
+* [Nybus.Core](https://www.nuget.org/packages/Nybus.Core/) contains the core classes of Nybus.
 * [Nybus.Castle.Windsor](https://www.nuget.org/packages/Nybus.Castle.Windsor/) allows the usage of Castle Windsor as IoC container.
 * [Nybus.MassTransit](https://www.nuget.org/packages/Nybus.MassTransit/) is the first real implementation. It's based on [MassTransit 2.10](https://github.com/phatboyg/MassTransit) and [RabbitMQ](http://www.rabbitmq.com/).
 
@@ -30,12 +31,15 @@ Beside stabilizing the API, the future plans involves:
 * A binding based on Azure managed services.
 * A binding based on MassTransit 3.0
 
-## Continuous integration [![Build status](https://ci.appveyor.com/api/projects/status/x8o0xh40cdf6a67l?svg=true)](https://ci.appveyor.com/project/Kralizek/nybus)
+## Continuous integration [![Build status](https://ci.appveyor.com/api/projects/status/x8o0xh40cdf6a67l?svg=true)](https://ci.appveyor.com/project/Kralizek/nybus) [![Coverage Status](https://coveralls.io/repos/Nybus-project/Nybus/badge.svg?branch=master&service=github)](https://coveralls.io/github/Nybus-project/Nybus?branch=master)
 
 The project is automatically built whenever a new commit is pushed into this repository.
+The code coverage is calculated with [OpenCover](https://github.com/OpenCover/opencover).
 
-Many thanks to [AppVeyor](http://www.appveyor.com/) for their support to the .NET Open Source community.
+Many thanks to [AppVeyor](http://www.appveyor.com/) and [Coveralls](https://coveralls.io/) for their support to the .NET Open Source community.
 
 [Here you can see the build history](https://ci.appveyor.com/project/Kralizek/nybus/history)
+
+[Here you can see the code coverage history](https://coveralls.io/github/Nybus-project/Nybus)
 
 

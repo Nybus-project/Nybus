@@ -309,7 +309,11 @@ namespace Tests.Configuration
 
             var sut = CreateSystemUnderTest();
 
-            sut.SubscribeToCommand<TestCommand>(async ctx => invocations++);
+            sut.SubscribeToCommand<TestCommand>(ctx =>
+            {
+                invocations++;
+                return Task.CompletedTask;
+            });
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
             var context = fixture.Create<CommandContext<TestCommand>>();

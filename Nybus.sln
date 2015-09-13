@@ -25,9 +25,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Core", "tests\Tests.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.NLog", "tests\Tests.NLog\Tests.NLog.csproj", "{CF58265C-4A09-49CE-B250-5273171839A9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{3DBCF708-2E73-46AC-9446-7D807C1330BE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Interfaces", "tests\Tests.Interfaces\Tests.Interfaces.csproj", "{72E3B663-AA36-4251-B9B6-E1172FC79FF7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solution", ".solution", "{1E4AC9AE-115D-4E93-A138-E53200B43465}"
 	ProjectSection(SolutionItems) = preProject
-		tools\NuGet\packages.config = tools\NuGet\packages.config
+		appveyor.yml = appveyor.yml
+		AUTHORS.txt = AUTHORS.txt
+		LICENSE = LICENSE
+		nuget.config = nuget.config
+		packages.config = packages.config
+		README.md = README.md
 	EndProjectSection
 EndProject
 Global
@@ -72,6 +79,10 @@ Global
 		{CF58265C-4A09-49CE-B250-5273171839A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF58265C-4A09-49CE-B250-5273171839A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF58265C-4A09-49CE-B250-5273171839A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72E3B663-AA36-4251-B9B6-E1172FC79FF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72E3B663-AA36-4251-B9B6-E1172FC79FF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72E3B663-AA36-4251-B9B6-E1172FC79FF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72E3B663-AA36-4251-B9B6-E1172FC79FF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,5 +97,6 @@ Global
 		{DF309523-8983-40EE-9FA9-E9EABAD83FB3} = {31BCDC74-9C21-495F-837D-FC1977CD9F8B}
 		{0FE5606F-F8FE-42C6-B0C1-B91AECB53035} = {31BCDC74-9C21-495F-837D-FC1977CD9F8B}
 		{CF58265C-4A09-49CE-B250-5273171839A9} = {31BCDC74-9C21-495F-837D-FC1977CD9F8B}
+		{72E3B663-AA36-4251-B9B6-E1172FC79FF7} = {31BCDC74-9C21-495F-837D-FC1977CD9F8B}
 	EndGlobalSection
 EndGlobal
