@@ -24,5 +24,5 @@ environment:
 test:
   assemblies: '**\Tests.*.dll'
 after_test: 
-    - packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register:user -filter:"+[Nybus.*]*" -target:".\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe" -targetargs:"/noshadow /domain:single .\tests\Tests.Interfaces\bin\Debug\Tests.Interfaces.dll .\tests\Tests.Core\bin\Debug\Tests.Core.dll .\tests\Tests.CastleWindsor\bin\Debug\Tests.CastleWindsor.dll .\tests\Tests.MassTransit\bin\Debug\Tests.MassTransit.dll .\tests\Tests.NLog\bin\Debug\Tests.NLog.dll" -output:coverage.xml
+    - packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register:user -filter:"+[Nybus.*]*" -target:".\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe" -targetargs:"/noshadow /domain:single .\tests\Tests.Interfaces\bin\Release\Tests.Interfaces.dll .\tests\Tests.Core\bin\Release\Tests.Core.dll .\tests\Tests.CastleWindsor\bin\Release\Tests.CastleWindsor.dll .\tests\Tests.MassTransit\bin\Release\Tests.MassTransit.dll .\tests\Tests.NLog\bin\Release\Tests.NLog.dll" -output:coverage.xml
     - packages\coveralls.io.1.3.4\tools\coveralls.net.exe --opencover coverage.xml
