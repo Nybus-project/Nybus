@@ -4,7 +4,7 @@ namespace Nybus.Logging
 {
     public class NopLogger : LoggerBase
     {
-        public override Task LogAsync(LogLevel level, string message, object data = null)
+        protected override Task LogEvent(LogLevel level, string message, object data, string callerMemberName)
         {
             return Task.FromResult(0);
         }
