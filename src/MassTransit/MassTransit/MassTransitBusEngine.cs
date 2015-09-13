@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MassTransit;
 using MassTransit.SubscriptionConfigurators;
 using Nybus.Configuration;
+using Nybus.Logging;
 using Nybus.Utils;
 
 namespace Nybus.MassTransit

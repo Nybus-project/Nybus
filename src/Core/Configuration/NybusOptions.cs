@@ -1,5 +1,6 @@
 ﻿using System;
 using Nybus.Container;
+using Nybus.Logging;
 
 namespace Nybus.Configuration
 {

@@ -1,4 +1,5 @@
 ﻿using Nybus.Configuration;
+using Nybus.Logging;
 
 namespace Nybus.MassTransit
 {

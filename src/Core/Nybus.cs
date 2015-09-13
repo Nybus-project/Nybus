@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Nybus.Configuration;
+using Nybus.Logging;
 
 namespace Nybus
 {
