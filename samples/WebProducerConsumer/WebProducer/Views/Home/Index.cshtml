@@ -4,11 +4,14 @@
 
 <h2>@ViewBag.Title</h2>
 
-@using (Html.BeginForm("PostValue", "Home"))
+@using (Ajax.BeginForm("AjaxPostValue", "Home", new AjaxOptions { HttpMethod = "POST" }))
 {
-    <div>@Html.TextBox("Value", "A random string", new {autocomplete="off"})</div>
+    <div>@Html.TextBox("Value", "A random string", new { autocomplete = "off" })</div>
     <div><button type="submit">Reverse the string</button></div>
+
 }
+
+<div id="target"></div>
 
 <ul id="messages">
     
