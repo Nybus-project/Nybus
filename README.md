@@ -21,6 +21,7 @@ At the moment there are three packages available:
 * [Nybus.Core](https://www.nuget.org/packages/Nybus.Core/) contains the core classes of Nybus.
 * [Nybus.Castle.Windsor](https://www.nuget.org/packages/Nybus.Castle.Windsor/) allows the usage of Castle Windsor as IoC container.
 * [Nybus.MassTransit](https://www.nuget.org/packages/Nybus.MassTransit/) is the first real implementation. It's based on [MassTransit 2.10](https://github.com/phatboyg/MassTransit) and [RabbitMQ](http://www.rabbitmq.com/).
+* [Nybus.NLog](https://www.nuget.org/packages/Nybus.NLog) allows the usage of NLog as logging framework.
 
 ## Future development
 
