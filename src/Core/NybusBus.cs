@@ -5,12 +5,12 @@ using Nybus.Logging;
 
 namespace Nybus
 {
-    public class Nybus : IBus
+    public class NybusBus : IBus
     {
         private readonly IBusEngine _engine;
-        private readonly NybusOptions _options;
+        private readonly INybusOptions _options;
 
-        public Nybus(IBusEngine engine, NybusOptions options)
+        public NybusBus(IBusEngine engine, INybusOptions options)
         {
             if (engine == null) throw new ArgumentNullException(nameof(engine));
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -29,7 +29,7 @@ namespace Nybus
         {
             var message = _options.CommandMessageFactory.CreateMessage(command, correlationId);
             await _options.Logger.LogAsync(LogLevel.Info, "Invoking command", new { type = typeof(TCommand).FullName, correlationId = message.CorrelationId });
-            await _engine.SendMessage(message);
+            await _engine.SendCommand(message);
         }
 
         public Task RaiseEvent<TEvent>(TEvent @event) where TEvent : class, IEvent
@@ -42,7 +42,7 @@ namespace Nybus
         {
             var message = _options.EventMessageFactory.CreateMessage(@event, correlationId);
             await _options.Logger.LogAsync(LogLevel.Info, "Raising event", new {type = typeof(TEvent).FullName, correlationId = message.CorrelationId});
-            await _engine.SendMessage(message);
+            await _engine.SendEvent(message);
         }
 
         public async Task Start()

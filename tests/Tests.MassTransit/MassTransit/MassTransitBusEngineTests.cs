@@ -34,8 +34,6 @@ namespace Tests.MassTransit
         private string commandQueueName;
         private string eventQueueName;
 
-        private object lockObject = new object();
-
         [SetUp]
         public void Initialize()
         {
@@ -180,17 +178,17 @@ namespace Tests.MassTransit
 
         [Test]
         [ExpectedException]
-        public async Task SendMessage_TCommand_throws_if_engine_isnt_started()
+        public async Task SendCommand_throws_if_engine_isnt_started()
         {
             var sut = CreateSystemUnderTest();
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
-            await sut.SendMessage(message);
+            await sut.SendCommand(message);
         }
 
         [Test]
-        public async Task TCommand_Message_is_sent_by_Event_bus()
+        public async Task Command_Message_is_sent_by_Event_bus_when_no_command_is_registered()
         {
             var sut = CreateSystemUnderTest();
 
@@ -198,25 +196,42 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
-            await sut.SendMessage(message);
+            await sut.SendCommand(message);
 
             mockEventServiceBus.Verify(p => p.Publish(message), Times.Once);
             mockCommandServiceBus.Verify(p => p.Publish(message), Times.Never);
         }
 
         [Test]
+        public async Task Command_Message_is_sent_by_Command_bus_when_a_command_is_registered()
+        {
+            var sut = CreateSystemUnderTest();
+
+            sut.SubscribeToCommand<TestCommand>(msg => Task.CompletedTask);
+
+            await sut.Start();
+
+            var message = fixture.Create<CommandMessage<TestCommand>>();
+
+            await sut.SendCommand(message);
+
+            mockEventServiceBus.Verify(p => p.Publish(message), Times.Never);
+            mockCommandServiceBus.Verify(p => p.Publish(message), Times.Once);
+        }
+        
+        [Test]
         [ExpectedException]
-        public async Task SendMessage_TEvent_throws_if_engine_isnt_started()
+        public async Task SendEvent_throws_if_engine_isnt_started()
         {
             var sut = CreateSystemUnderTest();
 
             var message = fixture.Create<EventMessage<TestEvent>>();
 
-            await sut.SendMessage(message);
+            await sut.SendEvent(message);
         }
 
         [Test]
-        public async Task TEvent_Message_is_sent_by_Event_bus()
+        public async Task Event_Message_is_sent_by_Event_bus()
         {
             var sut = CreateSystemUnderTest();
 
@@ -224,7 +239,24 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<EventMessage<TestEvent>>();
 
-            await sut.SendMessage(message);
+            await sut.SendEvent(message);
+
+            mockEventServiceBus.Verify(p => p.Publish(message), Times.Once);
+            mockCommandServiceBus.Verify(p => p.Publish(message), Times.Never);
+        }
+
+        [Test]
+        public async Task Event_Message_is_sent_by_Event_bus_when_a_command_is_registered()
+        {
+            var sut = CreateSystemUnderTest();
+
+            sut.SubscribeToCommand<TestCommand>(msg => Task.CompletedTask);
+
+            await sut.Start();
+
+            var message = fixture.Create<EventMessage<TestEvent>>();
+
+            await sut.SendEvent(message);
 
             mockEventServiceBus.Verify(p => p.Publish(message), Times.Once);
             mockCommandServiceBus.Verify(p => p.Publish(message), Times.Never);
@@ -252,7 +284,7 @@ namespace Tests.MassTransit
 
             await sut.Start();
 
-            sut.EventServiceBus.Publish(message);
+            await sut.SendEvent(message);
 
             are.WaitOne();
 
@@ -292,7 +324,9 @@ namespace Tests.MassTransit
 
             await sut.Start();
 
-            sut.EventServiceBus.Publish(message);
+            //sut.EventServiceBus.Publish(message);
+
+            await sut.SendEvent(message);
 
             are.WaitOne();
 
@@ -324,7 +358,9 @@ namespace Tests.MassTransit
 
             await sut.Start();
 
-            sut.CommandServiceBus.Publish(message);
+            //sut.CommandServiceBus.Publish(message);
+
+            await sut.SendCommand(message);
 
             are.WaitOne();
 
@@ -364,7 +400,9 @@ namespace Tests.MassTransit
 
             await sut.Start();
 
-            sut.CommandServiceBus.Publish(message);
+            //sut.CommandServiceBus.Publish(message);
+
+            await sut.SendCommand(message);
 
             are.WaitOne();
 
@@ -403,17 +441,17 @@ namespace Tests.MassTransit
         }
 
         [Test]
-        public async Task CommandServiceBus_is_null_if_no_command_is_subscribed()
+        public async Task CommandServiceBus_is_EventServiceBus_if_no_command_is_subscribed()
         {
             var sut = CreateSystemUnderTest();
 
             await sut.Start();
 
-            Assert.That(sut.CommandServiceBus, Is.Null);
+            Assert.That(sut.CommandServiceBus, Is.SameAs(sut.EventServiceBus));
         }
 
         [Test]
-        public async Task CommandServiceBus_is_not_null_if_least_one_command_is_subscribed()
+        public async Task CommandServiceBus_is_not_EventServiceBus_if_least_one_command_is_subscribed()
         {
             var sut = CreateSystemUnderTest();
 
@@ -421,7 +459,7 @@ namespace Tests.MassTransit
 
             await sut.Start();
 
-            Assert.That(sut.CommandServiceBus, Is.Not.Null);
+            Assert.That(sut.CommandServiceBus, Is.Not.SameAs(sut.EventServiceBus));
         }
 
     }

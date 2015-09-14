@@ -5,7 +5,7 @@ namespace Nybus.Configuration
 {
     public interface ICommandContextFactory
     {
-        CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand;
+        CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message, INybusOptions options) where TCommand : class, ICommand;
     }
 
     public class DefaultCommandContextFactory : ICommandContextFactory
@@ -18,7 +18,7 @@ namespace Nybus.Configuration
             _clock = clock;
         }
 
-        public CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
+        public CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message, INybusOptions options) where TCommand : class, ICommand
         {
             return new CommandContext<TCommand>(message.Command, _clock.Now, message.CorrelationId);
         }

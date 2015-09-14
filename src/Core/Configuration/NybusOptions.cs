@@ -5,7 +5,24 @@ using Nybus.Utils;
 
 namespace Nybus.Configuration
 {
-    public class NybusOptions
+    public interface INybusOptions
+    {
+        IContainer Container { get; }
+
+        ILogger Logger { get; }
+
+        ICommandMessageFactory CommandMessageFactory { get; }
+
+        ICommandContextFactory CommandContextFactory { get; }
+
+        IEventMessageFactory EventMessageFactory { get; }
+
+        IEventContextFactory EventContextFactory { get; }
+
+        ICorrelationIdGenerator CorrelationIdGenerator { get; }
+    }
+
+    public class NybusOptions : INybusOptions
     {
         public IContainer Container { get; set; } = new ActivatorContainer();
 

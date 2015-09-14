@@ -55,13 +55,25 @@ namespace Tests.Configuration
         }
 
         [Test]
-        public async Task Sending_a_message_adds_it_to_SentMessages_list()
+        public async Task Sending_a_command_adds_it_to_SentMessages_list()
         {
             var sut = CreateSystemUnderTest();
 
-            var message = Mock.Of<Message>();
+            var message = fixture.Create<CommandMessage<TestCommand>>();
 
-            await sut.SendMessage(message);
+            await sut.SendCommand(message);
+
+            Assert.That(sut.SentMessages, Contains.Item(message));
+        }
+
+        [Test]
+        public async Task Sending_a_event_adds_it_to_SentMessages_list()
+        {
+            var sut = CreateSystemUnderTest();
+
+            var message = fixture.Create<EventMessage<TestEvent>>();
+
+            await sut.SendEvent(message);
 
             Assert.That(sut.SentMessages, Contains.Item(message));
         }

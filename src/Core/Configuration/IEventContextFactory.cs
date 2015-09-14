@@ -5,7 +5,7 @@ namespace Nybus.Configuration
 {
     public interface IEventContextFactory
     {
-        EventContext<TEvent> CreateContext<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent;
+        EventContext<TEvent> CreateContext<TEvent>(EventMessage<TEvent> message, INybusOptions options) where TEvent : class, IEvent;
     }
 
     public class DefaultEventContextFactory : IEventContextFactory
@@ -18,7 +18,7 @@ namespace Nybus.Configuration
             _clock = clock;
         }
 
-        public EventContext<TEvent> CreateContext<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
+        public EventContext<TEvent> CreateContext<TEvent>(EventMessage<TEvent> message, INybusOptions options) where TEvent : class, IEvent
         {
             return new EventContext<TEvent>(message.Event, _clock.Now, message.CorrelationId);
         }

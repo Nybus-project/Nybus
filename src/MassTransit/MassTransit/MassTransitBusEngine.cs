@@ -36,11 +36,30 @@ namespace Nybus.MassTransit
         }
 
 
-        public Task SendMessage<TMessage>(TMessage message) where TMessage : Message
+        private Task SendMessage<TMessage>(IServiceBus bus, TMessage message) where TMessage : Message
         {
             EnsureBusIsRunning();
-            _serviceBusses[0].Publish(message);
+            bus.Publish(message);
             return Task.CompletedTask;
+        }
+
+        public Task SendCommand<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
+        {
+            //EnsureBusIsRunning();
+
+            //IServiceBus selectedServiceBus = _serviceBusses[0];
+
+            //if (_serviceBusses.Count > 1)
+            //{
+            //    selectedServiceBus = _serviceBusses[1];
+            //}
+
+            return SendMessage(CommandServiceBus, message);
+        }
+
+        public Task SendEvent<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
+        {
+            return SendMessage(EventServiceBus, message);
         }
 
         #region SubscribeToCommand
@@ -156,10 +175,7 @@ namespace Nybus.MassTransit
             {
                 EnsureBusIsRunning();
 
-                if (_serviceBusses.Count < 2)
-                    return null;
-
-                return _serviceBusses[1];
+                return _serviceBusses.Last();
             }
         }
     }

@@ -162,13 +162,13 @@ namespace Tests.Configuration
             var context = fixture.Create<EventContext<TestEvent>>();
 
             mockContainer.Setup(p => p.Resolve<IEventHandler<TestEvent>>()).Returns(mockEventHandler.Object);
-            mockEventContextFactory.Setup(p => p.CreateContext(It.IsAny<EventMessage<TestEvent>>())).Returns(context);
+            mockEventContextFactory.Setup(p => p.CreateContext(It.IsAny<EventMessage<TestEvent>>(), It.IsAny<INybusOptions>())).Returns(context);
             mockEventHandler.Setup(p => p.Handle(It.IsAny<EventContext<TestEvent>>())).Returns(Task.CompletedTask);
 
             await testBusEngine.HandleEvent(message);
 
             mockContainer.Verify(p => p.Resolve<IEventHandler<TestEvent>>(), Times.Once);
-            mockEventContextFactory.Verify(p => p.CreateContext(message), Times.Once);
+            mockEventContextFactory.Verify(p => p.CreateContext(message, It.IsAny<INybusOptions>()), Times.Once);
             mockEventHandler.Verify(p => p.Handle(context), Times.Once);
         }
 
@@ -183,12 +183,12 @@ namespace Tests.Configuration
 
             var context = fixture.Create<EventContext<TestEvent>>();
 
-            mockEventContextFactory.Setup(p => p.CreateContext(It.IsAny<EventMessage<TestEvent>>())).Returns(context);
+            mockEventContextFactory.Setup(p => p.CreateContext(It.IsAny<EventMessage<TestEvent>>(), It.IsAny<INybusOptions>())).Returns(context);
             mockEventHandler.Setup(p => p.Handle(It.IsAny<EventContext<TestEvent>>())).Returns(Task.CompletedTask);
 
             await testBusEngine.HandleEvent(message);
 
-            mockEventContextFactory.Verify(p => p.CreateContext(message), Times.Once);
+            mockEventContextFactory.Verify(p => p.CreateContext(message, It.IsAny<INybusOptions>()), Times.Once);
             mockEventHandler.Verify(p => p.Handle(context), Times.Once);
         }
 
@@ -251,13 +251,13 @@ namespace Tests.Configuration
             var context = fixture.Create<CommandContext<TestCommand>>();
 
             mockContainer.Setup(p => p.Resolve<ICommandHandler<TestCommand>>()).Returns(mockCommandHandler.Object);
-            mockCommandContextFactory.Setup(p => p.CreateContext(It.IsAny<CommandMessage<TestCommand>>())).Returns(context);
+            mockCommandContextFactory.Setup(p => p.CreateContext(It.IsAny<CommandMessage<TestCommand>>(), It.IsAny<INybusOptions>())).Returns(context);
             mockCommandHandler.Setup(p => p.Handle(It.IsAny<CommandContext<TestCommand>>())).Returns(Task.CompletedTask);
 
             await testBusEngine.HandleCommand(message);
 
             mockContainer.Verify(p => p.Resolve<ICommandHandler<TestCommand>>(), Times.Once);
-            mockCommandContextFactory.Verify(p => p.CreateContext(message), Times.Once);
+            mockCommandContextFactory.Verify(p => p.CreateContext(message, It.IsAny<INybusOptions>()), Times.Once);
             mockCommandHandler.Verify(p => p.Handle(context), Times.Once);
         }
 
@@ -273,13 +273,13 @@ namespace Tests.Configuration
             var context = fixture.Create<CommandContext<TestCommand>>();
 
             mockContainer.Setup(p => p.Resolve<ICommandHandler<TestCommand>>()).Returns(mockCommandHandler.Object);
-            mockCommandContextFactory.Setup(p => p.CreateContext(It.IsAny<CommandMessage<TestCommand>>())).Returns(context);
+            mockCommandContextFactory.Setup(p => p.CreateContext(It.IsAny<CommandMessage<TestCommand>>(), It.IsAny<INybusOptions>())).Returns(context);
             mockCommandHandler.Setup(p => p.Handle(It.IsAny<CommandContext<TestCommand>>())).Returns(Task.CompletedTask);
 
             await testBusEngine.HandleCommand(message);
 
             mockContainer.Verify(p => p.Resolve<ICommandHandler<TestCommand>>(), Times.Once);
-            mockCommandContextFactory.Verify(p => p.CreateContext(message), Times.Once);
+            mockCommandContextFactory.Verify(p => p.CreateContext(message, It.IsAny<INybusOptions>()), Times.Once);
             mockCommandHandler.Verify(p => p.Handle(context), Times.Once);
         }
 
@@ -293,12 +293,12 @@ namespace Tests.Configuration
             var message = fixture.Create<CommandMessage<TestCommand>>();
             var context = fixture.Create<CommandContext<TestCommand>>();
 
-            mockCommandContextFactory.Setup(p => p.CreateContext(It.IsAny<CommandMessage<TestCommand>>())).Returns(context);
+            mockCommandContextFactory.Setup(p => p.CreateContext(It.IsAny<CommandMessage<TestCommand>>(), It.IsAny<INybusOptions>())).Returns(context);
             mockCommandHandler.Setup(p => p.Handle(It.IsAny<CommandContext<TestCommand>>())).Returns(Task.CompletedTask);
 
             await testBusEngine.HandleCommand(message);
 
-            mockCommandContextFactory.Verify(p => p.CreateContext(message), Times.Once);
+            mockCommandContextFactory.Verify(p => p.CreateContext(message, It.IsAny<INybusOptions>()), Times.Once);
             mockCommandHandler.Verify(p => p.Handle(context), Times.Once);
         }
 
@@ -318,12 +318,12 @@ namespace Tests.Configuration
             var message = fixture.Create<CommandMessage<TestCommand>>();
             var context = fixture.Create<CommandContext<TestCommand>>();
 
-            mockCommandContextFactory.Setup(p => p.CreateContext(It.IsAny<CommandMessage<TestCommand>>())).Returns(context);
+            mockCommandContextFactory.Setup(p => p.CreateContext(It.IsAny<CommandMessage<TestCommand>>(), It.IsAny<INybusOptions>())).Returns(context);
             mockCommandHandler.Setup(p => p.Handle(It.IsAny<CommandContext<TestCommand>>())).Returns(Task.CompletedTask);
 
             await testBusEngine.HandleCommand(message);
 
-            mockCommandContextFactory.Verify(p => p.CreateContext(message), Times.Once);
+            mockCommandContextFactory.Verify(p => p.CreateContext(message, It.IsAny<INybusOptions>()), Times.Once);
 
             Assert.That(invocations, Is.GreaterThan(0));
         }

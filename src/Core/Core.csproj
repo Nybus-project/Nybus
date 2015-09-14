@@ -51,7 +51,7 @@
     <Compile Include="Configuration\InMemoryBusEngine.cs" />
     <Compile Include="Configuration\NybusOptions.cs" />
     <Compile Include="Container\ActivatorContainer.cs" />
-    <Compile Include="Nybus.cs" />
+    <Compile Include="NybusBus.cs" />
     <Compile Include="Configuration\NybusBusBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

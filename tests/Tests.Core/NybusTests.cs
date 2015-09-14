@@ -83,23 +83,23 @@ namespace Tests
             };
         }
 
-        private Nybus.Nybus CreateSystemUnderTest()
+        private Nybus.NybusBus CreateSystemUnderTest()
         {
-            return new Nybus.Nybus(mockBusEngine.Object, options);
+            return new Nybus.NybusBus(mockBusEngine.Object, options);
         }
 
         [Test]
         [ExpectedException]
         public void BusEngine_is_required()
         {
-            new Nybus.Nybus(null, options);
+            new Nybus.NybusBus(null, options);
         }
 
         [Test]
         [ExpectedException]
         public void Options_is_required()
         {
-            new Nybus.Nybus(mockBusEngine.Object, null);
+            new Nybus.NybusBus(mockBusEngine.Object, null);
         }
 
         private bool LogDataContains(object data, string key, object expectedValue)
@@ -204,7 +204,7 @@ namespace Tests
 
             await sut.InvokeCommand(command, correlationId);
 
-            mockBusEngine.Verify(p => p.SendMessage(commandMessage),Times.Once);
+            mockBusEngine.Verify(p => p.SendCommand(commandMessage),Times.Once);
         }
 
         #endregion
@@ -296,7 +296,7 @@ namespace Tests
 
             await sut.RaiseEvent(ev, correlationId);
 
-            mockBusEngine.Verify(p => p.SendMessage(eventMessage), Times.Once);
+            mockBusEngine.Verify(p => p.SendEvent(eventMessage), Times.Once);
         }
 
         #endregion

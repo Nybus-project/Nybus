@@ -47,7 +47,7 @@ namespace Tests.Configuration
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
-            var context = sut.CreateContext(message);
+            var context = sut.CreateContext(message, Mock.Of<INybusOptions>());
 
             Assert.That(context.Message, Is.EqualTo(message.Command));
         }
@@ -59,7 +59,7 @@ namespace Tests.Configuration
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
-            var context = sut.CreateContext(message);
+            var context = sut.CreateContext(message, Mock.Of<INybusOptions>());
 
             Assert.That(context.CorrelationId, Is.EqualTo(message.CorrelationId));
         }
@@ -71,7 +71,7 @@ namespace Tests.Configuration
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
-            var context = sut.CreateContext(message);
+            var context = sut.CreateContext(message, Mock.Of<INybusOptions>());
 
             Assert.That(context.ReceivedOn, Is.EqualTo(now));
         }
