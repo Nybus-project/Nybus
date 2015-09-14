@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Castle.MicroKernel;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
@@ -7,6 +8,7 @@ using Messages;
 using Nybus;
 using Nybus.Configuration;
 using Nybus.Container;
+using Nybus.Logging;
 using Nybus.MassTransit;
 
 namespace Producer
@@ -45,7 +47,11 @@ namespace Producer
 
         private void ConfigureSubscriptions(IBusBuilder builder)
         {
-            builder.SubscribeToEvent<ItemProduced>(async ctx => Console.WriteLine($"{ctx.Message.Quantity} of {ctx.Message.ItemId} produced."));
+            builder.SubscribeToEvent<ItemProduced>(ctx =>
+            {
+                Console.WriteLine($"{ctx.Message.Quantity} of {ctx.Message.ItemId} produced.");
+                return Task.CompletedTask;
+            });
         }
     }
 }
