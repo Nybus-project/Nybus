@@ -6,6 +6,7 @@ using Messages;
 using Nybus;
 using Nybus.Configuration;
 using Nybus.Container;
+using Nybus.Logging;
 using Nybus.MassTransit;
 
 namespace Consumer
