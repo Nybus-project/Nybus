@@ -19,7 +19,7 @@ namespace WebProducer.Installers
 
             container.Register(Component.For<IBusBuilder>().ImplementedBy<NybusBusBuilder>().OnCreate(ConfigureSubscriptions).LifeStyle.Singleton);
 
-            container.Register(Component.For<NybusOptions>());
+            container.Register(Component.For<INybusOptions>().ImplementedBy<NybusOptions>());
 
             container.Register(
                 Component.For<IContainer>()
