@@ -35,31 +35,22 @@ namespace Nybus.MassTransit
             }
         }
 
-
-        private Task SendMessage<TMessage>(IServiceBus bus, TMessage message) where TMessage : Message
-        {
-            EnsureBusIsRunning();
-            bus.Publish(message);
-            return Task.CompletedTask;
-        }
-
         public Task SendCommand<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
         {
-            //EnsureBusIsRunning();
+            EnsureBusIsRunning();
 
-            //IServiceBus selectedServiceBus = _serviceBusses[0];
+            CommandServiceBus.Publish(message.Command, pc => _options.ContextManager.SetCommandMessageHeaders(message, pc));
 
-            //if (_serviceBusses.Count > 1)
-            //{
-            //    selectedServiceBus = _serviceBusses[1];
-            //}
-
-            return SendMessage(CommandServiceBus, message);
+            return Task.CompletedTask;
         }
 
         public Task SendEvent<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
         {
-            return SendMessage(EventServiceBus, message);
+            EnsureBusIsRunning();
+
+            EventServiceBus.Publish(message.Event, pc => _options.ContextManager.SetEventMessageHeaders(message, pc));
+
+            return Task.CompletedTask;
         }
 
         #region SubscribeToCommand
@@ -68,19 +59,23 @@ namespace Nybus.MassTransit
 
         public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
         {
-            _commandSubscriptions.Add(configurator => configurator.Handler<CommandMessage<TCommand>>((ctx, message) => HandleCommand(commandReceived, ctx).WaitAndUnwrapException()));
+            _commandSubscriptions.Add(configurator => configurator.Handler<TCommand>((ctx, body) => HandleCommand(commandReceived, ctx).WaitAndUnwrapException()));
         }
 
-        private Task HandleCommand<TCommand>(CommandReceived<TCommand> commandHandler, IConsumeContext<CommandMessage<TCommand>> context) where TCommand : class, ICommand
+        private Task HandleCommand<TCommand>(CommandReceived<TCommand> commandHandler, IConsumeContext<TCommand> context)
+            where TCommand : class, ICommand
         {
-            _options.Logger.Log(LogLevel.Trace, "Received command", new { commandType = typeof(TCommand).FullName, correlationId = context.Message.CorrelationId, retryCount = context.RetryCount });
+            CommandMessage<TCommand> message = _options.ContextManager.CreateCommandMessage(context);
+
+            _options.Logger.Log(LogLevel.Trace, "Received command", new { commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount });
+
             try
             {
-                return commandHandler?.Invoke(context.Message);
+                return commandHandler?.Invoke(message);
             }
             catch (Exception ex)
             {
-                _options.Logger.Log(LogLevel.Error, "Error while processing a command", new { commandType = typeof(TCommand).FullName, correlationId = context.Message.CorrelationId, retryCount = context.RetryCount, exception = ex, command = context.Message.Command });
+                _options.Logger.Log(LogLevel.Error, "Error while processing a command", new { commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, exception = ex, command = context.Message });
                 _options.CommandErrorStrategy.HandleError(context, ex);
             }
 
@@ -95,19 +90,22 @@ namespace Nybus.MassTransit
 
         public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
         {
-            _eventSubscriptions.Add(configurator => configurator.Handler<EventMessage<TEvent>>((ctx, message) => HandleEvent(eventReceived, ctx).WaitAndUnwrapException()));
+            _eventSubscriptions.Add(configurator => configurator.Handler<TEvent>((ctx, body) => HandleEvent(eventReceived, ctx).WaitAndUnwrapException()));
         }
 
-        private Task HandleEvent<TEvent>(EventReceived<TEvent> eventHandler, IConsumeContext<EventMessage<TEvent>> context) where TEvent : class, IEvent
+        private Task HandleEvent<TEvent>(EventReceived<TEvent> eventHandler, IConsumeContext<TEvent> context) where TEvent : class, IEvent
         {
-            _options.Logger.Log(LogLevel.Trace, "Received event", new { eventType = typeof(TEvent).FullName, correlationId = context.Message.CorrelationId, retryCount = context.RetryCount});
+            EventMessage<TEvent> message = _options.ContextManager.CreateEventMessage(context);
+
+            _options.Logger.Log(LogLevel.Trace, "Received event", new { eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount });
+
             try
             {
-                return eventHandler?.Invoke(context.Message);
+                return eventHandler?.Invoke(message);
             }
             catch (Exception ex)
             {
-                _options.Logger.Log(LogLevel.Error, "Error while processing an event", new { eventType = typeof(TEvent).FullName, correlationId = context.Message.CorrelationId, retryCount = context.RetryCount , exception = ex, @event = context.Message.Event });
+                _options.Logger.Log(LogLevel.Error, "Error while processing an event", new { eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, exception = ex, @event = context.Message });
                 _options.EventErrorStrategy.HandleError(context, ex);
             }
 

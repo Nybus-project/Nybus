@@ -30,6 +30,7 @@ namespace Tests.MassTransit
         private Mock<IQueueStrategy> mockEventQueueStrategy;
         private Mock<IServiceBus> mockEventServiceBus;
         private Mock<IServiceBusFactory> mockServiceBusFactory;
+        private Mock<IContextManager> mockContextManager;
 
         private string commandQueueName;
         private string eventQueueName;
@@ -43,6 +44,8 @@ namespace Tests.MassTransit
             eventQueueName = fixture.Create<string>();
 
             mockLogger = new Mock<ILogger>();
+
+            mockContextManager = new Mock<IContextManager>();
 
             mockCommandErrorStrategy = new Mock<IErrorStrategy>();
             mockCommandQueueStrategy = new Mock<IQueueStrategy>();
@@ -66,7 +69,8 @@ namespace Tests.MassTransit
                 CommandQueueStrategy = mockCommandQueueStrategy.Object,
                 EventErrorStrategy = mockEventErrorStrategy.Object,
                 EventQueueStrategy = mockEventQueueStrategy.Object,
-                ServiceBusFactory = mockServiceBusFactory.Object
+                ServiceBusFactory = mockServiceBusFactory.Object,
+                ContextManager = mockContextManager.Object
             };
 
             var host = fixture.Create<Uri>();
@@ -196,10 +200,15 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
+            mockEventServiceBus
+                .Setup(p => p.Publish(It.IsAny<TestCommand>(), It.IsAny<Action<IPublishContext<TestCommand>>>()))
+                .Callback((TestCommand cmd, Action<IPublishContext<TestCommand>> pc) => mockContextManager.Object.SetCommandMessageHeaders(message, It.IsAny<IPublishContext<TestCommand>>()));
+
             await sut.SendCommand(message);
 
-            mockEventServiceBus.Verify(p => p.Publish(message), Times.Once);
-            mockCommandServiceBus.Verify(p => p.Publish(message), Times.Never);
+            mockEventServiceBus.Verify(p => p.Publish(message.Command, It.IsAny<Action<IPublishContext<TestCommand>>>()), Times.Once);
+            mockCommandServiceBus.Verify(p => p.Publish(message.Command, It.IsAny<Action<IPublishContext<TestCommand>>>()), Times.Never);
+            mockContextManager.Verify(p => p.SetCommandMessageHeaders(message, It.IsAny<IPublishContext<TestCommand>>()), Times.Once);
         }
 
         [Test]
@@ -213,10 +222,15 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
+            mockCommandServiceBus
+                .Setup(p => p.Publish(It.IsAny<TestCommand>(), It.IsAny<Action<IPublishContext<TestCommand>>>()))
+                .Callback((TestCommand cmd, Action<IPublishContext<TestCommand>> pc) => mockContextManager.Object.SetCommandMessageHeaders(message, It.IsAny<IPublishContext<TestCommand>>()));
+
             await sut.SendCommand(message);
 
-            mockEventServiceBus.Verify(p => p.Publish(message), Times.Never);
-            mockCommandServiceBus.Verify(p => p.Publish(message), Times.Once);
+            mockEventServiceBus.Verify(p => p.Publish(message.Command, It.IsAny<Action<IPublishContext<TestCommand>>>()), Times.Never);
+            mockCommandServiceBus.Verify(p => p.Publish(message.Command, It.IsAny<Action<IPublishContext<TestCommand>>>()), Times.Once);
+            mockContextManager.Verify(p => p.SetCommandMessageHeaders(message, It.IsAny<IPublishContext<TestCommand>>()), Times.Once);
         }
         
         [Test]
@@ -239,10 +253,15 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<EventMessage<TestEvent>>();
 
+            mockEventServiceBus
+                .Setup(p => p.Publish(It.IsAny<TestEvent>(), It.IsAny<Action<IPublishContext<TestEvent>>>()))
+                .Callback((TestEvent body, Action<IPublishContext<TestEvent>> pc) => mockContextManager.Object.SetEventMessageHeaders(message, It.IsAny<IPublishContext<TestEvent>>()));
+
             await sut.SendEvent(message);
 
-            mockEventServiceBus.Verify(p => p.Publish(message), Times.Once);
-            mockCommandServiceBus.Verify(p => p.Publish(message), Times.Never);
+            mockEventServiceBus.Verify(p => p.Publish(message.Event, It.IsAny<Action<IPublishContext<TestEvent>>>()), Times.Once);
+            mockCommandServiceBus.Verify(p => p.Publish(message.Event, It.IsAny<Action<IPublishContext<TestEvent>>>()), Times.Never);
+            mockContextManager.Verify(p => p.SetEventMessageHeaders(message, It.IsAny<IPublishContext<TestEvent>>()), Times.Once);
         }
 
         [Test]
@@ -256,10 +275,15 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<EventMessage<TestEvent>>();
 
+            mockEventServiceBus
+                .Setup(p => p.Publish(It.IsAny<TestEvent>(), It.IsAny<Action<IPublishContext<TestEvent>>>()))
+                .Callback((TestEvent body, Action<IPublishContext<TestEvent>> pc) => mockContextManager.Object.SetEventMessageHeaders(message, It.IsAny<IPublishContext<TestEvent>>()));
+
             await sut.SendEvent(message);
 
-            mockEventServiceBus.Verify(p => p.Publish(message), Times.Once);
-            mockCommandServiceBus.Verify(p => p.Publish(message), Times.Never);
+            mockEventServiceBus.Verify(p => p.Publish(message.Event, It.IsAny<Action<IPublishContext<TestEvent>>>()), Times.Once);
+            mockCommandServiceBus.Verify(p => p.Publish(message.Event, It.IsAny<Action<IPublishContext<TestEvent>>>()), Times.Never);
+            mockContextManager.Verify(p => p.SetEventMessageHeaders(message, It.IsAny<IPublishContext<TestEvent>>()), Times.Once);
         }
 
         [Test]
@@ -282,11 +306,13 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<EventMessage<TestEvent>>();
 
+            mockContextManager.Setup(p => p.CreateEventMessage(It.IsAny<IConsumeContext<TestEvent>>())).Returns(message);
+
             await sut.Start();
 
             await sut.SendEvent(message);
 
-            are.WaitOne();
+            are.WaitOne(TimeSpan.FromSeconds(3));
 
             Assert.That(receivedMessage, Is.Not.Null);
             Assert.That(message.CorrelationId, Is.EqualTo(receivedMessage.CorrelationId));
@@ -322,17 +348,17 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<EventMessage<TestEvent>>();
 
-            await sut.Start();
+            mockContextManager.Setup(p => p.CreateEventMessage(It.IsAny<IConsumeContext<TestEvent>>())).Returns(message);
 
-            //sut.EventServiceBus.Publish(message);
+            await sut.Start();
 
             await sut.SendEvent(message);
 
-            are.WaitOne();
+            are.WaitOne(TimeSpan.FromSeconds(3));
 
             await Task.Delay(TimeSpan.FromSeconds(2));
 
-            mockEventErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<EventMessage<TestEvent>>>(), exception), Times.AtLeastOnce);
+            mockEventErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<TestEvent>>(), exception), Times.AtLeastOnce);
         }
 
 
@@ -356,13 +382,13 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
-            await sut.Start();
+            mockContextManager.Setup(p => p.CreateCommandMessage(It.IsAny<IConsumeContext<TestCommand>>())).Returns(message);
 
-            //sut.CommandServiceBus.Publish(message);
+            await sut.Start();
 
             await sut.SendCommand(message);
 
-            are.WaitOne();
+            are.WaitOne(TimeSpan.FromSeconds(3));
 
             Assert.That(receivedMessage, Is.Not.Null);
             Assert.That(message.CorrelationId, Is.EqualTo(receivedMessage.CorrelationId));
@@ -398,17 +424,17 @@ namespace Tests.MassTransit
 
             var message = fixture.Create<CommandMessage<TestCommand>>();
 
+            mockContextManager.Setup(p => p.CreateCommandMessage(It.IsAny<IConsumeContext<TestCommand>>())).Returns(message);
+
             await sut.Start();
 
-            //sut.CommandServiceBus.Publish(message);
-
             await sut.SendCommand(message);
-
-            are.WaitOne();
+            
+            are.WaitOne(TimeSpan.FromSeconds(3));
 
             await Task.Delay(TimeSpan.FromSeconds(2));
 
-            mockCommandErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<CommandMessage<TestCommand>>>(), exception), Times.AtLeastOnce);
+            mockCommandErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<TestCommand>>(), exception), Times.AtLeastOnce);
         }
 
 

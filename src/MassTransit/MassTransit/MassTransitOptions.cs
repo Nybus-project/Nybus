@@ -15,6 +15,8 @@ namespace Nybus.MassTransit
 
         public IServiceBusFactory ServiceBusFactory { get; set; } = new RabbitMqServiceBusFactory();
 
+        public IContextManager ContextManager { get; set; } = new RabbitMqContextManager();
+
         public ILogger Logger { get; set; } = new NopLogger();
     }
 }
