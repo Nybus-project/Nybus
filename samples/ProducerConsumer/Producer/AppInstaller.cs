@@ -42,7 +42,14 @@ namespace Producer
                 Component.For<MassTransitConnectionDescriptor>()
                     .UsingFactoryMethod(() => MassTransitConnectionDescriptor.FromConfiguration("ServiceBus")));
 
-            container.Register(Component.For<MassTransitOptions>());
+            container.Register(Component.For<MassTransitOptions>().OnCreate(ConfigureMassTransitOptions));
+        }
+
+        private void ConfigureMassTransitOptions(MassTransitOptions options)
+        {
+            options.CommandQueueStrategy = new TemporaryQueueStrategy();
+
+            options.EventQueueStrategy = new TemporaryQueueStrategy();
         }
 
         private void ConfigureSubscriptions(IBusBuilder builder)
