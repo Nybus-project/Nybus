@@ -6,5 +6,6 @@
     <assembly path="tests\Tests.Interfaces\bin\Release\Tests.Interfaces.dll" />
     <assembly path="tests\Tests.MassTransit\bin\Release\Tests.MassTransit.dll" />
     <assembly path="tests\Tests.NLog\bin\Release\Tests.NLog.dll" />
+    <assembly path="tests\Tests.Rx\bin\Release\Tests.Rx.dll" />
   </Config>
 </NUnitProject>
