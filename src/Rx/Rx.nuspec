@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Nybus.Rx</id>
+        <version>$version$</version>
+        <title>Nybus Rx</title>
+        <authors>Renato Golia</authors>
+        <owners>Renato Golia</owners>
+        <licenseUrl>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/Nybus-project/Nybus</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Rx support for Nybus.</description>
+        <language>en-US</language>
+        <dependencies>
+            <dependency id="Rx-Linq" version="2.2.5" />
+        </dependencies>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="System.Runtime" />
+            <frameworkAssembly assemblyName="System.Threading.Tasks" />
+        </frameworkAssemblies>
+    </metadata>
+</package>
