@@ -59,10 +59,15 @@ namespace Nybus.MassTransit
 
         public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
         {
+            if (commandReceived == null)
+            {
+                throw new ArgumentNullException(nameof(commandReceived));
+            }
+
             _commandSubscriptions.Add(configurator => configurator.Handler<TCommand>((ctx, body) => HandleCommand(commandReceived, ctx).WaitAndUnwrapException()));
         }
 
-        private Task HandleCommand<TCommand>(CommandReceived<TCommand> commandHandler, IConsumeContext<TCommand> context)
+        private async Task HandleCommand<TCommand>(CommandReceived<TCommand> commandHandler, IConsumeContext<TCommand> context)
             where TCommand : class, ICommand
         {
             CommandMessage<TCommand> message = _options.ContextManager.CreateCommandMessage(context);
@@ -71,15 +76,19 @@ namespace Nybus.MassTransit
 
             try
             {
-                return commandHandler?.Invoke(message);
+                await commandHandler.Invoke(message).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _options.Logger.Log(LogLevel.Error, "Error while processing a command", new { commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, exception = ex, command = context.Message });
-                _options.CommandErrorStrategy.HandleError(context, ex);
-            }
 
-            return Task.CompletedTask;
+                var handled = await _options.CommandErrorStrategy.HandleError(context, ex).ConfigureAwait(false);
+
+                if (!handled)
+                {
+                    throw ExceptionManager.PrepareForRethrow(ex);
+                }
+            }
         }
 
         #endregion
@@ -90,10 +99,15 @@ namespace Nybus.MassTransit
 
         public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
         {
+            if (eventReceived == null)
+            {
+                throw new ArgumentNullException(nameof(eventReceived));
+            }
+
             _eventSubscriptions.Add(configurator => configurator.Handler<TEvent>((ctx, body) => HandleEvent(eventReceived, ctx).WaitAndUnwrapException()));
         }
 
-        private Task HandleEvent<TEvent>(EventReceived<TEvent> eventHandler, IConsumeContext<TEvent> context) where TEvent : class, IEvent
+        private async Task HandleEvent<TEvent>(EventReceived<TEvent> eventHandler, IConsumeContext<TEvent> context) where TEvent : class, IEvent
         {
             EventMessage<TEvent> message = _options.ContextManager.CreateEventMessage(context);
 
@@ -101,15 +115,19 @@ namespace Nybus.MassTransit
 
             try
             {
-                return eventHandler?.Invoke(message);
+                await eventHandler.Invoke(message).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _options.Logger.Log(LogLevel.Error, "Error while processing an event", new { eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, exception = ex, @event = context.Message });
-                _options.EventErrorStrategy.HandleError(context, ex);
-            }
 
-            return Task.CompletedTask;
+                var handled = await _options.EventErrorStrategy.HandleError(context, ex).ConfigureAwait(false);
+
+                if (!handled)
+                {
+                    throw ExceptionManager.PrepareForRethrow(ex);
+                }
+            }
         }
 
         #endregion

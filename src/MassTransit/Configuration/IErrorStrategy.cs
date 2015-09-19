@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using MassTransit;
 using Nybus.Utils;
 
@@ -6,7 +7,7 @@ namespace Nybus.Configuration
 {
     public interface IErrorStrategy
     {
-        void HandleError<T>(IConsumeContext<T> context, Exception exception) where T : class;
+        Task<bool> HandleError<T>(IConsumeContext<T> context, Exception exception) where T : class;
     }
 
     public class RetryErrorStrategy : IErrorStrategy
@@ -18,16 +19,16 @@ namespace Nybus.Configuration
             _retries = retries;
         }
 
-        public void HandleError<T>(IConsumeContext<T> context, Exception exception) where T : class
+        public Task<bool> HandleError<T>(IConsumeContext<T> context, Exception exception) where T : class
         {
             if (context.RetryCount < _retries)
             {
                 context.RetryLater();
+
+                return Task.FromResult(true);
             }
-            else
-            {
-                throw ExceptionManager.PrepareForRethrow(exception);
-            }
+
+            return Task.FromResult(false);
         }
     }
 }
