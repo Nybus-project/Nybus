@@ -23,7 +23,7 @@ namespace Tests.Configuration
         }
 
         [Test]
-        public void HandleError_schedules_retry_if_possible()
+        public async Task HandleError_schedules_retry_if_possible()
         {
             var sut = new RetryErrorStrategy(3);
 
@@ -32,14 +32,15 @@ namespace Tests.Configuration
 
             Exception error = fixture.Create<Exception>();
             
-            sut.HandleError(mockContext.Object, error);
+            bool handled = await sut.HandleError(mockContext.Object, error);
 
             mockContext.Verify(p => p.RetryLater(), Times.Once);
+
+            Assert.That(handled, Is.True);
         }
 
         [Test]
-        [ExpectedException]
-        public void HandleError_throws_if_retry_no_possible()
+        public async Task HandleError_returns_false_if_retry_no_possible()
         {
             var sut = new RetryErrorStrategy(3);
 
@@ -48,8 +49,9 @@ namespace Tests.Configuration
 
             Exception error = fixture.Create<Exception>();
 
-            sut.HandleError(mockContext.Object, error);
+            bool handled = await sut.HandleError(mockContext.Object, error);
 
+            Assert.That(handled, Is.False);
         }
     }
 }

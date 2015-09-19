@@ -287,6 +287,15 @@ namespace Tests.MassTransit
         }
 
         [Test]
+        [ExpectedException]
+        public void SubscribeToEvent_cant_receive_a_null_handler()
+        {
+            var sut = CreateSystemUnderTest();
+
+            sut.SubscribeToEvent<TestEvent>(null);
+        }
+
+        [Test]
         public async Task TEvent_subscribed_delegate_is_invoked_when_message_is_received()
         {
             AutoResetEvent are = new AutoResetEvent(false);
@@ -334,6 +343,8 @@ namespace Tests.MassTransit
             
             var exception = Mock.Of<Exception>();
 
+            mockEventErrorStrategy.Setup(p => p.HandleError(It.IsAny<IConsumeContext<TestEvent>>(), It.IsAny<Exception>())).ReturnsAsync(true);
+
             sut.SubscribeToEvent<TestEvent>(msg =>
             {
                 try
@@ -358,7 +369,48 @@ namespace Tests.MassTransit
 
             await Task.Delay(TimeSpan.FromSeconds(2));
 
-            mockEventErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<TestEvent>>(), exception), Times.AtLeastOnce);
+            mockEventErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<TestEvent>>(), exception), Times.Once);
+        }
+
+        [Test]
+        [ExpectedException]
+        public async Task TEvent_throws_when_ErrorStrategy_returns_false()
+        {
+            AutoResetEvent are = new AutoResetEvent(false);
+
+            options.ServiceBusFactory = new LoopbackServiceBusFactory();
+
+            var sut = CreateSystemUnderTest();
+
+            var exception = Mock.Of<Exception>();
+
+            mockEventErrorStrategy.Setup(p => p.HandleError(It.IsAny<IConsumeContext<TestEvent>>(), It.IsAny<Exception>())).ReturnsAsync(false);
+
+            sut.SubscribeToEvent<TestEvent>(msg =>
+            {
+                try
+                {
+                    throw exception;
+                }
+                finally
+                {
+                    are.Set();
+                }
+            });
+
+            var message = fixture.Create<EventMessage<TestEvent>>();
+
+            mockContextManager.Setup(p => p.CreateEventMessage(It.IsAny<IConsumeContext<TestEvent>>())).Returns(message);
+
+            await sut.Start();
+
+            await sut.SendEvent(message);
+
+            are.WaitOne(TimeSpan.FromSeconds(3));
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
+
+            mockEventErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<TestEvent>>(), exception), Times.Once);
         }
 
 
@@ -400,6 +452,15 @@ namespace Tests.MassTransit
         }
 
         [Test]
+        [ExpectedException]
+        public void SubscribeToCommand_cant_receive_a_null_handler()
+        {
+            var sut = CreateSystemUnderTest();
+
+            sut.SubscribeToCommand<TestCommand>(null);
+        }
+
+        [Test]
         public async Task TCommand_ErroryStrategy_is_invoked_when_handler_throws()
         {
             AutoResetEvent are = new AutoResetEvent(false);
@@ -409,6 +470,8 @@ namespace Tests.MassTransit
             var sut = CreateSystemUnderTest();
 
             var exception = Mock.Of<Exception>();
+
+            mockCommandErrorStrategy.Setup(p => p.HandleError(It.IsAny<IConsumeContext<TestCommand>>(), It.IsAny<Exception>())).ReturnsAsync(true);
 
             sut.SubscribeToCommand<TestCommand>(msg =>
             {
@@ -434,7 +497,48 @@ namespace Tests.MassTransit
 
             await Task.Delay(TimeSpan.FromSeconds(2));
 
-            mockCommandErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<TestCommand>>(), exception), Times.AtLeastOnce);
+            mockCommandErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<TestCommand>>(), exception), Times.Once);
+        }
+
+        [Test]
+        [ExpectedException]
+        public async Task TCommand_throws_when_ErrorStrategy_returns_false()
+        {
+            AutoResetEvent are = new AutoResetEvent(false);
+
+            options.ServiceBusFactory = new LoopbackServiceBusFactory();
+
+            var sut = CreateSystemUnderTest();
+
+            var exception = Mock.Of<Exception>();
+
+            mockCommandErrorStrategy.Setup(p => p.HandleError(It.IsAny<IConsumeContext<TestCommand>>(), It.IsAny<Exception>())).ReturnsAsync(false);
+
+            sut.SubscribeToCommand<TestCommand>(msg =>
+            {
+                try
+                {
+                    throw exception;
+                }
+                finally
+                {
+                    are.Set();
+                }
+            });
+
+            var message = fixture.Create<CommandMessage<TestCommand>>();
+
+            mockContextManager.Setup(p => p.CreateCommandMessage(It.IsAny<IConsumeContext<TestCommand>>())).Returns(message);
+
+            await sut.Start();
+
+            await sut.SendCommand(message);
+
+            are.WaitOne(TimeSpan.FromSeconds(3));
+
+            await Task.Delay(TimeSpan.FromSeconds(2));
+
+            mockCommandErrorStrategy.Verify(p => p.HandleError(It.IsAny<IConsumeContext<TestCommand>>(), exception), Times.Once);
         }
 
 

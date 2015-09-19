@@ -55,6 +55,7 @@
     <Compile Include="Logging\NopLoggerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\ObjectToDictionaryTests.cs" />
+    <Compile Include="Utils\TaskExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Interfaces\Interfaces.csproj">
