@@ -58,7 +58,7 @@ namespace Nybus.Configuration
 
             EventReceived<TEvent> eventReceivedDelegate = (EventReceived<TEvent>) @delegate;
 
-            await eventReceivedDelegate(message);
+            await eventReceivedDelegate(message).ConfigureAwait(false);
         }
 
         public bool IsEventHandeld<TEvent>() where TEvent : class, IEvent
@@ -75,7 +75,7 @@ namespace Nybus.Configuration
 
             CommandReceived<TCommand> commandReceivedDelegate = (CommandReceived<TCommand>)@delegate;
 
-            await commandReceivedDelegate(message);
+            await commandReceivedDelegate(message).ConfigureAwait(false);
         }
         public bool IsCommandHandled<TCommand>() where TCommand : class, ICommand
         {

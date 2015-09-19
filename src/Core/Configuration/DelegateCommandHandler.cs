@@ -19,7 +19,7 @@ namespace Nybus.Configuration
 
         public async Task Handle(CommandContext<TCommand> commandMessage)
         {
-            await _handler(commandMessage);
+            await _handler(commandMessage).ConfigureAwait(false);
         }
     }
 }

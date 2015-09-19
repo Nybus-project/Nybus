@@ -19,7 +19,7 @@ namespace Nybus.Configuration
 
         public async Task Handle(EventContext<TEvent> eventMessage)
         {
-            await _handler(eventMessage);
+            await _handler(eventMessage).ConfigureAwait(false);
         }
     }
 }
