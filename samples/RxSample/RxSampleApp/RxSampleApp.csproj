@@ -37,20 +37,20 @@
       <HintPath>..\..\..\Packages\NLog.4.1.1\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.Core, Version=0.3.0.60, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Core.0.3.0.60\lib\net46\Nybus.Core.dll</HintPath>
+    <Reference Include="Nybus.Core, Version=0.3.0.61, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Core.0.3.0.61\lib\net46\Nybus.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.Interfaces, Version=0.3.0.60, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.3.0.60\lib\net46\Nybus.Interfaces.dll</HintPath>
+    <Reference Include="Nybus.Interfaces, Version=0.3.0.61, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.3.0.61\lib\net46\Nybus.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.NLog, Version=0.3.0.60, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.NLog.0.3.0.60\lib\net46\Nybus.NLog.dll</HintPath>
+    <Reference Include="Nybus.NLog, Version=0.3.0.61, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.NLog.0.3.0.61\lib\net46\Nybus.NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.Rx, Version=0.3.0.60, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Rx.0.3.0.60\lib\net46\Nybus.Rx.dll</HintPath>
+    <Reference Include="Nybus.Rx, Version=0.3.0.61, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Rx.0.3.0.61\lib\net46\Nybus.Rx.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

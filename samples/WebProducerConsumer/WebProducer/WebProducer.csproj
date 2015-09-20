@@ -100,20 +100,20 @@
       <HintPath>..\..\..\Packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.CastleWindsor, Version=0.3.0.56, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Castle.Windsor.0.3.0.56\lib\net46\Nybus.CastleWindsor.dll</HintPath>
+    <Reference Include="Nybus.CastleWindsor, Version=0.3.0.61, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Castle.Windsor.0.3.0.61\lib\net46\Nybus.CastleWindsor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.Core, Version=0.3.0.56, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Core.0.3.0.56\lib\net46\Nybus.Core.dll</HintPath>
+    <Reference Include="Nybus.Core, Version=0.3.0.61, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Core.0.3.0.61\lib\net46\Nybus.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.Interfaces, Version=0.3.0.56, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.3.0.56\lib\net46\Nybus.Interfaces.dll</HintPath>
+    <Reference Include="Nybus.Interfaces, Version=0.3.0.61, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.3.0.61\lib\net46\Nybus.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.MassTransit, Version=0.3.0.56, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.MassTransit.0.3.0.56\lib\net46\Nybus.MassTransit.dll</HintPath>
+    <Reference Include="Nybus.MassTransit, Version=0.3.0.61, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.MassTransit.0.3.0.61\lib\net46\Nybus.MassTransit.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
