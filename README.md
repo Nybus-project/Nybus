@@ -1,4 +1,4 @@
-# Nybus #
+# Nybus
 
 Nybus is a service bus that allows you to quickly build loosely coupled applications that react to commands and events.
 
@@ -7,7 +7,7 @@ Commands and events help building a platform where different workers collaborate
 A Command is a message that must be handled only by the first worker that is available.
 An Event is a message that must be delivered to all the running workers that have subscribed it.
 
-## Example ##
+## Example
 
 A typical example is a web application that offloads a long-running job to an array of worker processes by invoking a command. The first available worker process will execute the job and, when completed, will raise an event to notify that the job is complete. The web application might have subscribed such event and notify the clients with a push notification. 
 [See the WebProducerConsumer sample](https://github.com/Nybus-project/Nybus/tree/master/samples/WebProducerConsumer)
