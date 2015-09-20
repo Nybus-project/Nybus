@@ -14,9 +14,5 @@
         <dependencies>
             <dependency id="Rx-Linq" version="2.2.5" />
         </dependencies>
-        <frameworkAssemblies>
-            <frameworkAssembly assemblyName="System.Runtime" />
-            <frameworkAssembly assemblyName="System.Threading.Tasks" />
-        </frameworkAssemblies>
     </metadata>
 </package>
