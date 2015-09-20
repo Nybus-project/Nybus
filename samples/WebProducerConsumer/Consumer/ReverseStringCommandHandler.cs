@@ -5,19 +5,19 @@ using Nybus;
 
 namespace Consumer
 {
-    public class ReverseStringHandler : ICommandHandler<ReverseStringCommand>
+    public class ReverseStringCommandHandler : ICommandHandler<ReverseString>
     {
         private static readonly Random Random = new Random(DateTimeOffset.Now.Millisecond);
 
         private readonly IBus _bus;
 
-        public ReverseStringHandler(IBus bus)
+        public ReverseStringCommandHandler(IBus bus)
         {
             if (bus == null) throw new ArgumentNullException(nameof(bus));
             _bus = bus;
         }
 
-        public async Task Handle(CommandContext<ReverseStringCommand> message)
+        public async Task Handle(CommandContext<ReverseString> message)
         {
             if (string.IsNullOrEmpty(message.Message.Value))
                 return;
@@ -30,7 +30,7 @@ namespace Consumer
 
             var reversed = ReverseString(message.Message.Value);
 
-            var resultEvent = new StringReversedEvent
+            var resultEvent = new StringReversed
             {
                 Result = reversed,
                 TimeSlept = toWait.TotalSeconds

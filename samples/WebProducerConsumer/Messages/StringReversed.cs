@@ -2,7 +2,7 @@
 
 namespace Messages
 {
-    public class StringReversedEvent : IEvent
+    public class StringReversed : IEvent
     {
         public string Result { get; set; }
 

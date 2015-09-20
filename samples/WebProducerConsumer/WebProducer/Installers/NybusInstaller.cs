@@ -48,7 +48,7 @@ namespace WebProducer.Installers
 
         private void ConfigureSubscriptions(IBusBuilder builder)
         {
-            builder.SubscribeToEvent<StringReversedEvent>();
+            builder.SubscribeToEvent<StringReversed>();
         }
 
     }

@@ -6,9 +6,9 @@ using WebProducer.Hubs;
 
 namespace WebProducer.Handlers
 {
-    public class StringReversedEventHandler : IEventHandler<StringReversedEvent>
+    public class StringReversedEventHandler : IEventHandler<StringReversed>
     {
-        public Task Handle(EventContext<StringReversedEvent> @event)
+        public Task Handle(EventContext<StringReversed> @event)
         {
             var context = GlobalHost.ConnectionManager.GetHubContext<NotificationHub>();
 

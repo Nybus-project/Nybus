@@ -45,8 +45,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReverseStringCommand.cs" />
-    <Compile Include="StringReversedEvent.cs" />
+    <Compile Include="ReverseString.cs" />
+    <Compile Include="StringReversed.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

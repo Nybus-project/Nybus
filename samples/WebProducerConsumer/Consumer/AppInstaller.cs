@@ -53,7 +53,7 @@ namespace Consumer
 
         private void ConfigureSubscriptions(IBusBuilder builder)
         {
-            builder.SubscribeToCommand<ReverseStringCommand>();
+            builder.SubscribeToCommand<ReverseString>();
         }
     }
 }

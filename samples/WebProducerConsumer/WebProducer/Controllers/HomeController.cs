@@ -30,7 +30,7 @@ namespace WebProducer.Controllers
         [Route("post-value")]
         public async Task<ActionResult> PostValue(string value)
         {
-            await _bus.InvokeCommand(new ReverseStringCommand
+            await _bus.InvokeCommand(new ReverseString
             {
                 Value = value
             });
@@ -42,7 +42,7 @@ namespace WebProducer.Controllers
         [Route("ajax-post-value")]
         public async Task<ActionResult> AjaxPostValue(string value)
         {
-            await _bus.InvokeCommand(new ReverseStringCommand
+            await _bus.InvokeCommand(new ReverseString
             {
                 Value = value
             });

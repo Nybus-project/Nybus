@@ -7,7 +7,7 @@ using Nybus;
 
 namespace Messages
 {
-    public class ReverseStringCommand : ICommand
+    public class ReverseString : ICommand
     {
         public string Value { get; set; }
     }

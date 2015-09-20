@@ -11,7 +11,7 @@ namespace WebProducer.Installers
     {
         public void Install(IWindsorContainer container, IConfigurationStore store)
         {
-            container.Register(Component.For<IEventHandler<StringReversedEvent>>()
+            container.Register(Component.For<IEventHandler<StringReversed>>()
                 .ImplementedBy<StringReversedEventHandler>()
                 .LifestyleTransient());
         }
