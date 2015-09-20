@@ -148,6 +148,32 @@ namespace Tests.Configuration
             Assert.That(commandInvocations, Is.EqualTo(0));
         }
 
+        [Test]
+        public async Task Loopback_of_events_should_be_supported()
+        {
+            var sut = CreateSystemUnderTest();
+            sut.SubscribeToEvent<TestEvent>(HandleEventMessageDelegate);
+
+            var message = fixture.Create<EventMessage<TestEvent>>();
+
+            await sut.SendEvent(message);
+
+            Assert.That(eventInvocations, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Loopback_of_commands_should_be_supported()
+        {
+            var sut = CreateSystemUnderTest();
+            sut.SubscribeToCommand<TestCommand>(HandleCommandMessageDelegate);
+
+            var message = fixture.Create<CommandMessage<TestCommand>>();
+
+            await sut.SendCommand(message);
+
+            Assert.That(commandInvocations, Is.EqualTo(1));
+        }
+
         private Task HandleEventMessageDelegate(EventMessage<TestEvent> message)
         {
             eventInvocations++;

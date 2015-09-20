@@ -10,15 +10,21 @@ namespace Nybus.Configuration
         private readonly Dictionary<Type, Delegate> _subscribedCommands = new Dictionary<Type, Delegate>();
         private readonly Dictionary<Type, Delegate> _subscribedEvents = new Dictionary<Type, Delegate>();
 
-        private Task SendMessage<TMessage>(TMessage message) where TMessage : Message
+        public async Task SendCommand<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
         {
+            if (IsCommandHandled<TCommand>())
+                await HandleCommand(message);
+
             _sentMessages.Add(message);
-            return Task.CompletedTask;
         }
 
-        public Task SendCommand<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand => SendMessage(message);
+        public async Task SendEvent<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
+        {
+            if (IsEventHandeld<TEvent>())
+                await HandleEvent(message);
 
-        public Task SendEvent<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent => SendMessage(message);
+            _sentMessages.Add(message);
+        }
 
         public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
         {
