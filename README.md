@@ -17,6 +17,7 @@ A typical example is a web application that offloads a long-running job to an ar
 Nybus is available through NuGet. 
 
 At the moment, these are the available packages:
+
 * [Nybus.Interfaces](https://www.nuget.org/packages/Nybus.Interfaces/) contains the base types. It's very small by design so that you can include it into your business logic projects without carrying too many unwanted dependencies.
 * [Nybus.Core](https://www.nuget.org/packages/Nybus.Core/) contains the core classes of Nybus.
 * [Nybus.Castle.Windsor](https://www.nuget.org/packages/Nybus.Castle.Windsor/) allows the usage of Castle Windsor as IoC container.
@@ -27,6 +28,7 @@ At the moment, these are the available packages:
 ## Future development
 
 Beside stabilizing the API, the future plans involves:
+
 * A reusable host process that scans for handlers in the assemblies contained in the same folder.
 * A binding based on AWS managed services, namely SQS and SNS.
 * A binding based on Azure managed services.
