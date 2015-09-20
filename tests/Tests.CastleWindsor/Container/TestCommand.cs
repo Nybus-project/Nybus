@@ -12,7 +12,7 @@ namespace Tests.Container
     {
         public Task Handle(CommandContext<TestCommand> commandMessage)
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }

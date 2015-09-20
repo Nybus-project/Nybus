@@ -1,5 +1,3 @@
-using System;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -23,18 +21,5 @@ namespace Nybus.Utils
             return sb.ToString();
         }
 
-    }
-
-    internal static class Utilities
-    {
-        public static string GetUniqueNameForApplication()
-        {
-            if (Assembly.GetEntryAssembly() != null)
-            {
-                return Assembly.GetEntryAssembly().FullName.Hash();
-            }
-
-            return AppDomain.CurrentDomain.BaseDirectory.Hash();
-        }
     }
 }

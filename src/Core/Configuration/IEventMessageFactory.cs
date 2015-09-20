@@ -11,8 +11,9 @@ namespace Nybus.Configuration
     {
         public EventMessage<TEvent> CreateMessage<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
         {
-            return new EventMessage<TEvent>(@event)
+            return new EventMessage<TEvent>
             {
+                Event = @event,
                 CorrelationId = correlationId
             };
         }

@@ -30,15 +30,24 @@ namespace WebProducer.Controllers
         [Route("post-value")]
         public async Task<ActionResult> PostValue(string value)
         {
-            for (int i = 0; i < 100; i++)
+            await _bus.InvokeCommand(new ReverseStringCommand
             {
-                await _bus.InvokeCommand(new ReverseStringCommand
-                {
-                    Value = value
-                });
-            }
+                Value = value
+            });
 
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [Route("ajax-post-value")]
+        public async Task<ActionResult> AjaxPostValue(string value)
+        {
+            await _bus.InvokeCommand(new ReverseStringCommand
+            {
+                Value = value
+            });
+
+            return Content("OK");
         }
     }
 }

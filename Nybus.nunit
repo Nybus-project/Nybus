@@ -1,0 +1,11 @@
+﻿<NUnitProject>
+  <Settings activeconfig="Debug" />
+  <Config name="Release" binpathtype="Auto">
+    <assembly path="tests\Tests.CastleWindsor\bin\Release\Tests.CastleWindsor.dll" />
+    <assembly path="tests\Tests.Core\bin\Release\Tests.Core.dll" />
+    <assembly path="tests\Tests.Interfaces\bin\Release\Tests.Interfaces.dll" />
+    <assembly path="tests\Tests.MassTransit\bin\Release\Tests.MassTransit.dll" />
+    <assembly path="tests\Tests.NLog\bin\Release\Tests.NLog.dll" />
+    <assembly path="tests\Tests.Rx\bin\Release\Tests.Rx.dll" />
+  </Config>
+</NUnitProject>

@@ -7,6 +7,7 @@ using Messages;
 using Nybus;
 using Nybus.Configuration;
 using Nybus.Container;
+using Nybus.Logging;
 using Nybus.MassTransit;
 
 namespace Consumer
@@ -21,7 +22,7 @@ namespace Consumer
 
             container.Register(Component.For<IBusBuilder>().ImplementedBy<NybusBusBuilder>().OnCreate(ConfigureSubscriptions).LifeStyle.Singleton);
 
-            container.Register(Component.For<NybusOptions>());
+            container.Register(Component.For<INybusOptions>().ImplementedBy<NybusOptions>());
 
             container.Register(
                 Component.For<IContainer>()
@@ -38,7 +39,15 @@ namespace Consumer
                 Component.For<MassTransitConnectionDescriptor>()
                     .UsingFactoryMethod(() => MassTransitConnectionDescriptor.FromConfiguration("ServiceBus")));
 
-            container.Register(Component.For<MassTransitOptions>());
+
+            container.Register(Component.For<MassTransitOptions>().OnCreate(ConfigureMassTransitOptions));
+        }
+
+        private void ConfigureMassTransitOptions(MassTransitOptions options)
+        {
+            options.CommandQueueStrategy = new TemporaryQueueStrategy();
+
+            options.EventQueueStrategy = new TemporaryQueueStrategy();
         }
 
         private void ConfigureSubscriptions(IBusBuilder builder)

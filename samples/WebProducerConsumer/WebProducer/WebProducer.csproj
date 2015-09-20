@@ -100,20 +100,20 @@
       <HintPath>..\..\..\Packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.CastleWindsor, Version=0.0.31.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Castle.Windsor.0.0.31.0\lib\net46\Nybus.CastleWindsor.dll</HintPath>
+    <Reference Include="Nybus.CastleWindsor, Version=0.3.0.56, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Castle.Windsor.0.3.0.56\lib\net46\Nybus.CastleWindsor.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.Core, Version=0.0.31.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Core.0.0.31.0\lib\net46\Nybus.Core.dll</HintPath>
+    <Reference Include="Nybus.Core, Version=0.3.0.56, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Core.0.3.0.56\lib\net46\Nybus.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.Interfaces, Version=0.0.31.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.0.31.0\lib\net46\Nybus.Interfaces.dll</HintPath>
+    <Reference Include="Nybus.Interfaces, Version=0.3.0.56, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.Interfaces.0.3.0.56\lib\net46\Nybus.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Nybus.MassTransit, Version=0.0.31.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Packages\Nybus.MassTransit.0.0.31.0\lib\net46\Nybus.MassTransit.dll</HintPath>
+    <Reference Include="Nybus.MassTransit, Version=0.3.0.56, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\Packages\Nybus.MassTransit.0.3.0.56\lib\net46\Nybus.MassTransit.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
@@ -167,15 +167,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
-    <None Include="Scripts\jquery-1.6.4-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.6.4.js" />
-    <Content Include="Scripts\jquery-1.6.4.min.js" />
+    <None Include="Scripts\jquery-2.1.4.intellisense.js" />
+    <Content Include="Scripts\jquery-2.1.4.js" />
+    <Content Include="Scripts\jquery-2.1.4.min.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.js" />
     <Content Include="Scripts\jquery.signalR-2.2.0.min.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
+    <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Web.config" />
+    <Content Include="Scripts\jquery-2.1.4.min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -198,6 +201,7 @@
     <Compile Include="Hubs\NotificationHub.cs" />
     <Compile Include="Installers\BusHandlerInstaller.cs" />
     <Compile Include="Installers\ControllerInstaller.cs" />
+    <Compile Include="Installers\NybusInstaller.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

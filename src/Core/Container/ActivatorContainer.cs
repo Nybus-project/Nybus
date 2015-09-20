@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Nybus.Container
 {
@@ -17,10 +18,7 @@ namespace Nybus.Container
             if (type.IsAbstract)
                 return false;
 
-            if (type.IsInterface)
-                return false;
-
-            if (type.IsGenericTypeDefinition)
+            if (type.GetConstructors().All(c => c.GetParameters().Any()))
                 return false;
 
             return true;

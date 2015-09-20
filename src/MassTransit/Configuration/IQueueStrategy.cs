@@ -14,7 +14,8 @@ namespace Nybus.Configuration
 
     public class TemporaryQueueStrategy : IQueueStrategy
     {
-        public string GetQueueName() => "*?temporary=true";
+        internal static readonly string RabbitMqTemporaryQueueName = "*?temporary=true";
+        public string GetQueueName() => RabbitMqTemporaryQueueName;
     }
 
     public class StaticQueueStrategy : IQueueStrategy

@@ -11,8 +11,9 @@ namespace Nybus.Configuration
     {
         public CommandMessage<TCommand> CreateMessage<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
-            return new CommandMessage<TCommand>(command)
+            return new CommandMessage<TCommand>
             {
+                Command = command,
                 CorrelationId = correlationId
             };
         }

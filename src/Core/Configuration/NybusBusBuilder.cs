@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Nybus.Logging;
 using Nybus.Utils;
 
 namespace Nybus.Configuration
@@ -7,9 +8,9 @@ namespace Nybus.Configuration
     public class NybusBusBuilder : IBusBuilder
     {
         private readonly IBusEngine _busEngine;
-        private readonly NybusOptions _options;
+        private readonly INybusOptions _options;
 
-        public NybusBusBuilder(IBusEngine busEngine, NybusOptions options)
+        public NybusBusBuilder(IBusEngine busEngine, INybusOptions options)
         {
             if (busEngine == null) throw new ArgumentNullException(nameof(busEngine));
             if (options == null) throw new ArgumentNullException(nameof(options));
@@ -55,7 +56,7 @@ namespace Nybus.Configuration
             where TEvent : class, IEvent
         {
             var handler = _options.Container.Resolve<TEventHandler>();
-            await HandleEventMessage(handler, message);
+            await HandleEventMessage(handler, message).ConfigureAwait(false);
             _options.Container.Release(handler);
         }
 
@@ -63,9 +64,9 @@ namespace Nybus.Configuration
             where TEventHandler : IEventHandler<TEvent> 
             where TEvent : class, IEvent
         {
-            await _options.Logger.LogAsync(LogLevel.Trace, "Handling event", new {eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName, correlationId = message.CorrelationId});
-            var context = _options.EventContextFactory.CreateContext(message);
-            await handler.Handle(context);
+            await _options.Logger.LogAsync(LogLevel.Trace, "Handling event", new {eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName, correlationId = message.CorrelationId}).ConfigureAwait(false);
+            var context = _options.EventContextFactory.CreateContext(message, _options);
+            await handler.Handle(context).ConfigureAwait(false);
         }
 
         #endregion
@@ -106,16 +107,16 @@ namespace Nybus.Configuration
             where TCommand : class, ICommand
         {
             var handler = _options.Container.Resolve<TCommandHandler>();
-            await HandleCommandMessage(handler, message);
+            await HandleCommandMessage(handler, message).ConfigureAwait(false);
             _options.Container.Release(handler);
         }
 
         private async Task HandleCommandMessage<TCommandHandler, TCommand>(TCommandHandler handler, CommandMessage<TCommand> message)
             where TCommandHandler : ICommandHandler<TCommand> where TCommand : class, ICommand
         {
-            await _options.Logger.LogAsync(LogLevel.Trace, "Handling command", new { commandType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName, correlationId = message.CorrelationId });
-            var context = _options.CommandContextFactory.CreateContext(message);
-            await handler.Handle(context);
+            await _options.Logger.LogAsync(LogLevel.Trace, "Handling command", new { commandType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName, correlationId = message.CorrelationId }).ConfigureAwait(false);
+            var context = _options.CommandContextFactory.CreateContext(message, _options);
+            await handler.Handle(context).ConfigureAwait(false);
         }
 
         #endregion
@@ -123,7 +124,7 @@ namespace Nybus.Configuration
         public IBus Build()
         {
             _options.Logger.Log(LogLevel.Trace, "Building Bus");
-            return new Nybus(_busEngine, _options);
+            return new NybusBus(_busEngine, _options);
         }
 
     }

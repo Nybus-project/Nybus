@@ -1,17 +1,26 @@
-﻿using Nybus.Utils;
+﻿using System;
+using Nybus.Utils;
 
 namespace Nybus.Configuration
 {
     public interface ICommandContextFactory
     {
-        CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand;
+        CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message, INybusOptions options) where TCommand : class, ICommand;
     }
 
     public class DefaultCommandContextFactory : ICommandContextFactory
     {
-        public CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
+        private readonly IClock _clock;
+
+        public DefaultCommandContextFactory(IClock clock)
         {
-            return new CommandContext<TCommand>(message.Command, Clock.Default.Now, message.CorrelationId);
+            if (clock == null) throw new ArgumentNullException(nameof(clock));
+            _clock = clock;
+        }
+
+        public CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message, INybusOptions options) where TCommand : class, ICommand
+        {
+            return new CommandContext<TCommand>(message.Command, _clock.Now, message.CorrelationId);
         }
     }
 }

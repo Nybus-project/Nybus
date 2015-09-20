@@ -5,8 +5,10 @@ namespace Nybus
 {
     public interface IBusEngine
     {
-        Task SendMessage<TMessage>(TMessage message) where TMessage: Message;
+        Task SendCommand<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand;
 
+        Task SendEvent<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent;
+        
         void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived)
             where TCommand : class, ICommand;
 
@@ -35,25 +37,13 @@ namespace Nybus
     public class CommandMessage<TCommand> : Message
         where TCommand : class, ICommand
     {
-        public CommandMessage(TCommand command)
-        {
-            if (command == null) throw new ArgumentNullException(nameof(command));
-            Command = command;
-        }
-
-        public TCommand Command { get; }
+        public TCommand Command { get; set; }
     }
 
     public class EventMessage<TEvent> : Message
         where TEvent : class, IEvent
     {
-        public EventMessage(TEvent eventMessage)
-        {
-            if (eventMessage == null) throw new ArgumentNullException(nameof(eventMessage));
-            Event = eventMessage;
-        }
-
-        public TEvent Event { get; }
+        public TEvent Event { get; set; }
     }
 
 }

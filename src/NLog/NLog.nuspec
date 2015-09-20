@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Nybus.NLog</id>
+    <version>$version$</version>
+    <title>Nybus NLog</title>
+    <authors>Renato Golia</authors>
+    <owners>Renato Golia</owners>
+    <licenseUrl>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/Nybus-project/Nybus</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NLog support for Nybus</description>
+    <language>en-US</language>
+    <dependencies>
+      <dependency id="NLog.Config" version="4.1.1" />
+    </dependencies>
+  </metadata>
+</package>

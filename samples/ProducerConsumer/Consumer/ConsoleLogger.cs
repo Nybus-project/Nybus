@@ -1,20 +1,17 @@
 using System;
 using System.Threading.Tasks;
 using Nybus.Configuration;
+using Nybus.Logging;
 
 namespace Consumer
 {
-    public class ConsoleLogger : ILogger
+    public class ConsoleLogger : LoggerBase
     {
-        public Task LogAsync(LogLevel level, string message, object data = null)
-        {
-            Log(level, message, data);
-            return Task.FromResult(0);
-        }
-
-        public void Log(LogLevel level, string message, object data = null)
+        protected override Task LogEvent(LogLevel level, string message, object data, string callerMemberName)
         {
             Console.WriteLine($"\t{level:G} {message}");
+
+            return Task.CompletedTask;
         }
     }
 }

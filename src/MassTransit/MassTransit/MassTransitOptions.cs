@@ -1,4 +1,5 @@
 ﻿using Nybus.Configuration;
+using Nybus.Logging;
 
 namespace Nybus.MassTransit
 {
@@ -12,7 +13,9 @@ namespace Nybus.MassTransit
 
         public IErrorStrategy EventErrorStrategy { get; set; } = new RetryErrorStrategy(5);
 
-        public IServiceBusFactory ServiceBusFactory { get; set; } = new DefaultServiceBusFactory();
+        public IServiceBusFactory ServiceBusFactory { get; set; } = new RabbitMqServiceBusFactory();
+
+        public IContextManager ContextManager { get; set; } = new RabbitMqContextManager();
 
         public ILogger Logger { get; set; } = new NopLogger();
     }
