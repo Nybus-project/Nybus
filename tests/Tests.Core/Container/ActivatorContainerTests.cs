@@ -190,5 +190,23 @@ namespace Tests.Container
         }
 
         #endregion
+
+        [Test]
+        public void BeginScope_returns_self()
+        {
+            var sut = CreateSystemUnderTest();
+
+            var scope = sut.BeginScope();
+
+            Assert.That(scope, Is.SameAs(sut));
+        }
+
+        [Test]
+        public void Dispose_has_no_effect()
+        {
+            var sut = CreateSystemUnderTest() as IDisposable;
+
+            sut.Dispose();
+        }
     }
 }
