@@ -55,9 +55,12 @@ namespace Nybus.Configuration
             where TEventHandler : IEventHandler<TEvent>
             where TEvent : class, IEvent
         {
-            var handler = _options.Container.Resolve<TEventHandler>();
-            await HandleEventMessage(handler, message).ConfigureAwait(false);
-            _options.Container.Release(handler);
+            using (var scope = _options.Container.BeginScope())
+            {
+                var handler = scope.Resolve<TEventHandler>();
+                await HandleEventMessage(handler, message).ConfigureAwait(false);
+                scope.Release(handler);
+            }
         }
 
         private async Task HandleEventMessage<TEventHandler, TEvent>(TEventHandler handler, EventMessage<TEvent> message)
@@ -106,9 +109,12 @@ namespace Nybus.Configuration
             where TCommandHandler : ICommandHandler<TCommand>
             where TCommand : class, ICommand
         {
-            var handler = _options.Container.Resolve<TCommandHandler>();
-            await HandleCommandMessage(handler, message).ConfigureAwait(false);
-            _options.Container.Release(handler);
+            using (var scope = _options.Container.BeginScope())
+            {
+                var handler = scope.Resolve<TCommandHandler>();
+                await HandleCommandMessage(handler, message).ConfigureAwait(false);
+                scope.Release(handler);
+            }
         }
 
         private async Task HandleCommandMessage<TCommandHandler, TCommand>(TCommandHandler handler, CommandMessage<TCommand> message)

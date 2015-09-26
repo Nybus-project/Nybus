@@ -2,7 +2,6 @@
 using Castle.MicroKernel;
 using Moq;
 using NUnit.Framework;
-using Nybus;
 using Nybus.Container;
 
 namespace Tests.Container
@@ -31,25 +30,13 @@ namespace Tests.Container
         }
 
         [Test]
-        public void Resolve_invokes_kernel()
-        {
-            var sut= CreateSystemUnderTest();
-
-            var item = sut.Resolve<IEventHandler<TestEvent>>();
-
-            mockKernel.Verify(p => p.Resolve<IEventHandler<TestEvent>>(), Times.Once);
-        }
-
-        [Test]
-        public void Release_invokes_kernel()
+        public void BeginScope_returns_a_new_scope()
         {
             var sut = CreateSystemUnderTest();
 
-            var item = Mock.Of<IEventHandler<TestEvent>>();
+            var item = sut.BeginScope();
 
-            sut.Release(item);
-
-            mockKernel.Verify(p => p.ReleaseComponent(item), Times.Once);
+            Assert.That(item, Is.InstanceOf<WindsorScope>());
         }
     }
 }

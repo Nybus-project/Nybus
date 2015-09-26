@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Castle.MicroKernel;
+using Castle.MicroKernel.Lifestyle;
 
 namespace Nybus.Container
 {
@@ -18,6 +19,27 @@ namespace Nybus.Container
             _kernel = kernel;
         }
 
+        public IScope BeginScope()
+        {
+            var scope = _kernel.BeginScope();
+            return new WindsorScope(_kernel, scope);
+        }
+    }
+
+    public class WindsorScope : IScope
+    {
+        private readonly IKernel _kernel;
+        private readonly IDisposable _scope;
+
+        public WindsorScope(IKernel kernel, IDisposable scope)
+        {
+            if (kernel == null) throw new ArgumentNullException(nameof(kernel));
+            if (scope == null) throw new ArgumentNullException(nameof(scope));
+
+            _kernel = kernel;
+            _scope = scope;
+        }
+
         public T Resolve<T>()
         {
             return _kernel.Resolve<T>();
@@ -26,6 +48,11 @@ namespace Nybus.Container
         public void Release<T>(T component)
         {
             _kernel.ReleaseComponent(component);
+        }
+
+        public void Dispose()
+        {
+            _scope.Dispose();
         }
     }
 }

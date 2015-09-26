@@ -61,9 +61,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Container\DefaultHandlerInstallerTests.cs" />
+    <Compile Include="Container\ScopeTests.cs" />
     <Compile Include="Container\TestCommand.cs" />
     <Compile Include="Container\TestEvent.cs" />
     <Compile Include="Container\WindsorBusContainerTests.cs" />
+    <Compile Include="Container\WindsorScopeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
