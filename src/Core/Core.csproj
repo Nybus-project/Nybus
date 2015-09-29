@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusExtensions.cs" />
     <Compile Include="Configuration\DelegateCommandHandler.cs" />
     <Compile Include="Configuration\DelegateEventHandler.cs" />
     <Compile Include="Configuration\IBusBuilder.cs" />
