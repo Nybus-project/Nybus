@@ -12,7 +12,7 @@
         <description>Rx support for Nybus.</description>
         <language>en-US</language>
         <dependencies>
-            <dependency id="Rx-Linq" version="2.2.5" />
+            <dependency id="Rx-Linq" version="[2.2,3)" />
         </dependencies>
     </metadata>
 </package>

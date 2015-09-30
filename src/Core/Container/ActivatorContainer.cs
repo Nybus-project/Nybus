@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Nybus.Container
 {
-    public class ActivatorContainer : IContainer
+    public class ActivatorContainer : IContainer, IScope
     {
         public T Resolve<T>()
         {
@@ -30,5 +30,12 @@ namespace Nybus.Container
 
             disposable?.Dispose();
         }
+
+        public IScope BeginScope()
+        {
+            return this;
+        }
+
+        void IDisposable.Dispose() { }
     }
 }

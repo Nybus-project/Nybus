@@ -12,8 +12,8 @@
         <description>Nybus bus based on MassTransit</description>
         <language>en-US</language>
         <dependencies>
-            <dependency id="MassTransit" version="2.10.1" />
-            <dependency id="MassTransit.RabbitMQ" version="2.10.1" />
+            <dependency id="MassTransit" version="[2,3)" />
+            <dependency id="MassTransit.RabbitMQ" version="[2,3)" />
         </dependencies>
     </metadata>
 </package>
