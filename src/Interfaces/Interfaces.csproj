@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusExtensions.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Container\IContainer.cs" />
     <Compile Include="IBus.cs" />

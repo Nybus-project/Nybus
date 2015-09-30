@@ -52,7 +52,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BusExtensionsTests.cs" />
     <Compile Include="Configuration\DefaultCommandContextFactoryTests.cs" />
     <Compile Include="Configuration\DefaultCommandMessageFactoryTests.cs" />
     <Compile Include="Configuration\DefaultEventContextFactoryTests.cs" />
