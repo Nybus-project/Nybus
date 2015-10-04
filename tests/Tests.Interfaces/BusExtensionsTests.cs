@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -80,6 +81,25 @@ namespace Tests
             mockBus.Verify(p => p.RaiseEvent(It.IsAny<TestEvent>()), Times.Never);
 
         }
+
+        public class TestCommand : ICommand
+        {
+            public string StringValue { get; set; }
+            public int IntValue { get; set; }
+            public bool BoolValue { get; set; }
+
+            public DateTimeOffset DateTimeOffsetValue { get; set; }
+        }
+
+        public class TestEvent : IEvent
+        {
+            public string StringValue { get; set; }
+            public int IntValue { get; set; }
+            public bool BoolValue { get; set; }
+
+            public DateTimeOffset DateTimeOffsetValue { get; set; }
+        }
+
 
     }
 }
