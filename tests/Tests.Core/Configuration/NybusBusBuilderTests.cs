@@ -15,6 +15,7 @@ namespace Tests.Configuration
         private IFixture fixture;
 
         private InMemoryBusEngine testBusEngine;
+        private Mock<ILoggerFactory> mockLoggerFactory;
         private Mock<ILogger> mockLogger;
         private Mock<ICommandContextFactory> mockCommandContextFactory;
         private Mock<IEventContextFactory> mockEventContextFactory;
@@ -35,6 +36,7 @@ namespace Tests.Configuration
 
             testBusEngine = new InMemoryBusEngine();
 
+            mockLoggerFactory = new Mock<ILoggerFactory>();
             mockLogger = new Mock<ILogger>();
             mockCommandContextFactory = new Mock<ICommandContextFactory>();
             mockCommandMessageFactory = new Mock<ICommandMessageFactory>();
@@ -46,7 +48,7 @@ namespace Tests.Configuration
 
             options = new NybusOptions
             {
-                Logger = mockLogger.Object,
+                LoggerFactory = mockLoggerFactory.Object,
                 CommandContextFactory = mockCommandContextFactory.Object,
                 EventContextFactory = mockEventContextFactory.Object,
                 CommandMessageFactory = mockCommandMessageFactory.Object,
@@ -59,6 +61,8 @@ namespace Tests.Configuration
             mockEventHandler = new Mock<IEventHandler<TestEvent>>();
 
             mockContainer.Setup(p => p.BeginScope()).Returns(mockScope.Object);
+
+            mockLoggerFactory.Setup(p => p.CraeteLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
         }
 
         private NybusBusBuilder CreateSystemUnderTest()
@@ -96,16 +100,6 @@ namespace Tests.Configuration
             var bus = sut.Build();
 
             Assert.That(bus, Is.Not.Null);
-        }
-
-        [Test]
-        public void Build_emits_log()
-        {
-            var sut = CreateSystemUnderTest();
-
-            var bus = sut.Build();
-
-            mockLogger.Verify(p => p.Log(It.IsAny<LogLevel>(), It.Is<string>(s => s.Contains("Building")), It.IsAny<object>(), It.IsAny<string>()), Times.Once);
         }
 
         #endregion

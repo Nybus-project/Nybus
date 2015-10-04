@@ -9,7 +9,7 @@ namespace Nybus.Configuration
     {
         IContainer Container { get; }
 
-        ILogger Logger { get; }
+        ILoggerFactory LoggerFactory { get; }
 
         ICommandMessageFactory CommandMessageFactory { get; }
 
@@ -26,7 +26,7 @@ namespace Nybus.Configuration
     {
         public IContainer Container { get; set; } = new ActivatorContainer();
 
-        public ILogger Logger { get; set; } = new NopLogger();
+        public ILoggerFactory LoggerFactory { get; set; } = Logging.LoggerFactory.Default;
 
         public ICommandMessageFactory CommandMessageFactory { get; set; } = new DefaultCommandMessageFactory();
 

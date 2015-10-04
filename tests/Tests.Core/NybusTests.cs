@@ -48,6 +48,7 @@ namespace Tests
 
         private Mock<IBusEngine> mockBusEngine;
         private Mock<ILogger> mockLogger;
+        private Mock<ILoggerFactory> mockLoggerFactory;
         private Mock<ICommandContextFactory> mockCommandContextFactory;
         private Mock<IEventContextFactory> mockEventContextFactory;
         private Mock<ICommandMessageFactory> mockCommandMessageFactory;
@@ -64,6 +65,10 @@ namespace Tests
             mockBusEngine = new Mock<IBusEngine>();
 
             mockLogger = new Mock<ILogger>();
+            mockLoggerFactory = new Mock<ILoggerFactory>();
+
+            mockLoggerFactory.Setup(p => p.CraeteLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
+
             mockCommandContextFactory = new Mock<ICommandContextFactory>();
             mockCommandMessageFactory = new Mock<ICommandMessageFactory>();
             mockEventContextFactory = new Mock<IEventContextFactory>();
@@ -73,7 +78,7 @@ namespace Tests
 
             options = new NybusOptions
             {
-                Logger = mockLogger.Object,
+                LoggerFactory = mockLoggerFactory.Object,
                 CommandContextFactory = mockCommandContextFactory.Object,
                 EventContextFactory = mockEventContextFactory.Object,
                 CommandMessageFactory = mockCommandMessageFactory.Object,
@@ -157,40 +162,6 @@ namespace Tests
         }
 
         [Test]
-        public async Task InvokeCommand_outputs_log_with_correlationId()
-        {
-            var sut = CreateSystemUnderTest();
-
-            var command = fixture.Create<TestCommand>();
-            var correlationId = fixture.Create<Guid>();
-            var commandMessage = fixture.Create<CommandMessage<TestCommand>>();
-
-            mockCommandMessageFactory.Setup(p => p.CreateMessage(It.IsAny<TestCommand>(), It.IsAny<Guid>()))
-                .Returns(commandMessage);
-
-            await sut.InvokeCommand(command, correlationId);
-
-            mockLogger.Verify(p => p.LogAsync(LogLevel.Info, It.IsAny<string>(), It.Is<object>(o => LogDataContains(o, "correlationId", commandMessage.CorrelationId)), It.IsAny<string>()), Times.Once);
-        }
-
-        [Test]
-        public async Task InvokeCommand_outputs_log_with_command_type()
-        {
-            var sut = CreateSystemUnderTest();
-
-            var command = fixture.Create<TestCommand>();
-            var correlationId = fixture.Create<Guid>();
-            var commandMessage = fixture.Create<CommandMessage<TestCommand>>();
-
-            mockCommandMessageFactory.Setup(p => p.CreateMessage(It.IsAny<TestCommand>(), It.IsAny<Guid>()))
-                .Returns(commandMessage);
-
-            await sut.InvokeCommand(command, correlationId);
-
-            mockLogger.Verify(p => p.LogAsync(LogLevel.Info, It.IsAny<string>(), It.Is<object>(o => LogDataContains(o, "type", command.GetType().FullName)), It.IsAny<string>()), Times.Once);
-        }
-
-        [Test]
         public async Task InvokeCommand_sends_a_message()
         {
             var sut = CreateSystemUnderTest();
@@ -249,40 +220,6 @@ namespace Tests
         }
 
         [Test]
-        public async Task RaiseEvent_outputs_log_with_correlationId()
-        {
-            var sut = CreateSystemUnderTest();
-
-            var ev = fixture.Create<TestEvent>();
-            var correlationId = fixture.Create<Guid>();
-            var eventMessage = fixture.Create<EventMessage<TestEvent>>();
-
-            mockEventMessageFactory.Setup(p => p.CreateMessage(It.IsAny<TestEvent>(), It.IsAny<Guid>()))
-                .Returns(eventMessage);
-
-            await sut.RaiseEvent(ev, correlationId);
-
-            mockLogger.Verify(p => p.LogAsync(LogLevel.Info, It.IsAny<string>(), It.Is<object>(o => LogDataContains(o, "correlationId", eventMessage.CorrelationId)), It.IsAny<string>()), Times.Once);
-        }
-
-        [Test]
-        public async Task RaiseEvent_outputs_log_with_command_type()
-        {
-            var sut = CreateSystemUnderTest();
-
-            var ev = fixture.Create<TestEvent>();
-            var correlationId = fixture.Create<Guid>();
-            var eventMessage = fixture.Create<EventMessage<TestEvent>>();
-
-            mockEventMessageFactory.Setup(p => p.CreateMessage(It.IsAny<TestEvent>(), It.IsAny<Guid>()))
-                .Returns(eventMessage);
-
-            await sut.RaiseEvent(ev, correlationId);
-
-            mockLogger.Verify(p => p.LogAsync(LogLevel.Info, It.IsAny<string>(), It.Is<object>(o => LogDataContains(o, "type", ev.GetType().FullName)), It.IsAny<string>()), Times.Once);
-        }
-
-        [Test]
         public async Task RaiseEvent_sends_a_message()
         {
             var sut = CreateSystemUnderTest();
@@ -313,26 +250,6 @@ namespace Tests
             mockBusEngine.Verify(p => p.Start(), Times.Once);
         }
 
-        [Test]
-        public async Task Start_logs_when_starting()
-        {
-            var sut = CreateSystemUnderTest();
-
-            await sut.Start();
-
-            mockLogger.Setup(p => p.LogAsync(LogLevel.Info, It.Is<string>(s => s.Contains("starting")), null, It.IsAny<string>()));
-        }
-
-        [Test]
-        public async Task Start_logs_when_started()
-        {
-            var sut = CreateSystemUnderTest();
-
-            await sut.Start();
-
-            mockLogger.Setup(p => p.LogAsync(LogLevel.Info, It.Is<string>(s => s.Contains("started")), null, It.IsAny<string>()));
-        }
-
         #endregion
 
         #region Stop
@@ -345,26 +262,6 @@ namespace Tests
             await sut.Stop();
 
             mockBusEngine.Verify(p => p.Stop(), Times.Once);
-        }
-
-        [Test]
-        public async Task Stop_logs_when_stopping()
-        {
-            var sut = CreateSystemUnderTest();
-
-            await sut.Start();
-
-            mockLogger.Setup(p => p.LogAsync(LogLevel.Info, It.Is<string>(s => s.Contains("stopping")), null, It.IsAny<string>()));
-        }
-
-        [Test]
-        public async Task Stop_logs_when_stopped()
-        {
-            var sut = CreateSystemUnderTest();
-
-            await sut.Start();
-
-            mockLogger.Setup(p => p.LogAsync(LogLevel.Info, It.Is<string>(s => s.Contains("stopped")), null, It.IsAny<string>()));
         }
 
         #endregion

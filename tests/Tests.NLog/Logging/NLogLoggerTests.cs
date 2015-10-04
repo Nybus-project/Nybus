@@ -24,7 +24,7 @@ namespace Tests.Logging
         {
             fixture = new Fixture();
 
-            mockLogger = new Mock<ILogger>();
+            mockLogger = new Mock<NLog.ILogger>();
         }
 
         [Test]
@@ -41,19 +41,19 @@ namespace Tests.Logging
 
         public IEnumerable<object> GetLogLevels()
         {
-            yield return new object[] {LogLevel.Trace, NLog.LogLevel.Trace};
+            yield return new object[] {LogLevel.Verbose, NLog.LogLevel.Trace};
 
             yield return new object[] {LogLevel.Debug, NLog.LogLevel.Debug};
 
-            yield return new object[] {LogLevel.Info, NLog.LogLevel.Info};
+            yield return new object[] {LogLevel.Information, NLog.LogLevel.Info};
 
             yield return new object[] {LogLevel.Error, NLog.LogLevel.Error};
 
-            yield return new object[] {LogLevel.Fatal, NLog.LogLevel.Fatal};
+            yield return new object[] {LogLevel.Critical, NLog.LogLevel.Fatal};
 
-            yield return new object[] {LogLevel.Warn, NLog.LogLevel.Warn};
+            yield return new object[] {LogLevel.Warning, NLog.LogLevel.Warn};
 
-            yield return new object[] {(LogLevel) 0, NLog.LogLevel.Info};
+            yield return new object[] {(LogLevel) 0, NLog.LogLevel.Debug};
         }
 
         [Test]
@@ -64,20 +64,12 @@ namespace Tests.Logging
 
             var message = fixture.Create<string>();
 
-            sut.Log(level, message);
+            IReadOnlyDictionary<string, object> dictionary = new Dictionary<string, object>
+            {
+                ["message"] = message
+            };
 
-            mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => lei.Level == expected)), Times.Once);
-        }
-
-        [Test]
-        [TestCaseSource(nameof(GetLogLevels))]
-        public async Task Async_Log_levels_are_correctly_converted(LogLevel level, NLog.LogLevel expected)
-        {
-            var sut = CreateSystemUnderTest();
-
-            var message = fixture.Create<string>();
-
-            await sut.LogAsync(level, message);
+            sut.Log(level, dictionary, exception: null, formatter: null);
 
             mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => lei.Level == expected)), Times.Once);
         }
@@ -85,34 +77,45 @@ namespace Tests.Logging
         [Test]
         public async Task Data_is_added_as_properties()
         {
-            var data = new {text = fixture.Create<string>()};
+            IReadOnlyDictionary<string, object> dictionary = new Dictionary<string, object>
+            {
+                ["message"] = fixture.Create<string>(),
+                ["text"] = fixture.Create<string>()
+            };
 
             var sut = CreateSystemUnderTest();
 
-            var message = fixture.Create<string>();
+            sut.Log(LogLevel.Information, dictionary, exception: null, formatter: null);
 
-            await sut.LogAsync(LogLevel.Info, message, data);
-
-            mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals((string)lei.Properties[nameof(data.text)], data.text))), Times.Once);
+            mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals((string)lei.Properties["text"], (string)dictionary["text"]))), Times.Once);
         }
 
         [Test]
         public async Task Message_is_added_as_message()
         {
+            IReadOnlyDictionary<string, object> dictionary = new Dictionary<string, object>
+            {
+                ["message"] = fixture.Create<string>(),
+                ["text"] = fixture.Create<string>()
+            };
+
             var sut = CreateSystemUnderTest();
 
-            var message = fixture.Create<string>();
+            sut.Log(LogLevel.Information, dictionary, exception: null, formatter: null);
 
-            await sut.LogAsync(LogLevel.Info, message);
-
-            mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals(message, lei.Message))), Times.Once);
+            mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals((string)dictionary["message"], lei.Message))), Times.Once);
         }
 
         [Test]
         public void Exception_information_are_added_to_log()
         {
+            IReadOnlyDictionary<string, object> dictionary = new Dictionary<string, object>
+            {
+                ["message"] = fixture.Create<string>(),
+                ["text"] = fixture.Create<string>()
+            };
+
             var sut = CreateSystemUnderTest();
-            var message = fixture.Create<string>();
 
             try
             {
@@ -121,10 +124,10 @@ namespace Tests.Logging
             }
             catch (Exception ex)
             {
-                sut.Log(LogLevel.Error, message, new {exception = ex});
+                sut.Log(LogLevel.Error, dictionary, ex, formatter: null);
             }
 
-            mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals(message, lei.Message))), Times.Once);
+            mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals((string)dictionary["message"], lei.Message))), Times.Once);
             mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals((string)lei.Properties["error-method"], nameof(Exception_information_are_added_to_log)))), Times.Once);
         }
     }

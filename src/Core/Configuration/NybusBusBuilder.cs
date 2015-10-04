@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Nybus.Logging;
 using Nybus.Utils;
@@ -9,6 +10,7 @@ namespace Nybus.Configuration
     {
         private readonly IBusEngine _busEngine;
         private readonly INybusOptions _options;
+        private readonly ILogger _logger;
 
         public NybusBusBuilder(IBusEngine busEngine, INybusOptions options)
         {
@@ -16,6 +18,8 @@ namespace Nybus.Configuration
             if (options == null) throw new ArgumentNullException(nameof(options));
             _busEngine = busEngine;
             _options = options;
+
+            _logger = _options.LoggerFactory.CraeteLogger(nameof(NybusBusBuilder));
         }
 
         public NybusBusBuilder(IBusEngine busEngine) : this(busEngine, new NybusOptions()) { }
@@ -25,7 +29,6 @@ namespace Nybus.Configuration
         public void SubscribeToEvent<TEvent>() 
             where TEvent : class, IEvent
         {
-            _options.Logger.Log(LogLevel.Trace, "Subscribing to event", new { eventType = typeof(TEvent).FullName });
             _busEngine.SubscribeToEvent((EventReceived<TEvent>)ResolveHandlerAndHandle<IEventHandler<TEvent>, TEvent>);
         }
 
@@ -33,14 +36,12 @@ namespace Nybus.Configuration
             where TEventHandler : IEventHandler<TEvent>
             where TEvent : class, IEvent
         {
-            _options.Logger.Log(LogLevel.Trace, "Subscribing to event", new {eventType =typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName });
             _busEngine.SubscribeToEvent((EventReceived<TEvent>)ResolveHandlerAndHandle<TEventHandler, TEvent>);
         }
 
         public void SubscribeToEvent<TEventHandler, TEvent>(TEventHandler handler)
             where TEventHandler : IEventHandler<TEvent> where TEvent : class, IEvent
         {
-            _options.Logger.Log(LogLevel.Trace, "Subscribing to event with instance", new { eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName });
             _busEngine.SubscribeToEvent((EventMessage<TEvent> message) => HandleEventMessage(handler, message));
         }
 
@@ -67,7 +68,8 @@ namespace Nybus.Configuration
             where TEventHandler : IEventHandler<TEvent> 
             where TEvent : class, IEvent
         {
-            await _options.Logger.LogAsync(LogLevel.Trace, "Handling event", new {eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName, correlationId = message.CorrelationId}).ConfigureAwait(false);
+            _logger.LogVerbose(new { eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName, correlationId = message.CorrelationId, message = "Handling event" });
+
             var context = _options.EventContextFactory.CreateContext(message, _options);
             await handler.Handle(context).ConfigureAwait(false);
         }
@@ -78,7 +80,6 @@ namespace Nybus.Configuration
 
         public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
         {
-            _options.Logger.Log(LogLevel.Trace, "Subscribing to command", new { commandType = typeof(TCommand).FullName });
             _busEngine.SubscribeToCommand((CommandReceived<TCommand>)ResolveHandlerAndHandle<ICommandHandler<TCommand>, TCommand>);
         }
 
@@ -86,7 +87,6 @@ namespace Nybus.Configuration
             where TCommandHandler : ICommandHandler<TCommand>
             where TCommand : class, ICommand
         {
-            _options.Logger.Log(LogLevel.Trace, "Subscribing to command", new { commandType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName });
             _busEngine.SubscribeToCommand((CommandReceived<TCommand>)ResolveHandlerAndHandle<TCommandHandler, TCommand>);
         }
 
@@ -94,7 +94,6 @@ namespace Nybus.Configuration
             where TCommandHandler : ICommandHandler<TCommand>
             where TCommand : class, ICommand
         {
-            _options.Logger.Log(LogLevel.Trace, "Subscribing to command with instance", new { commandType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName });
             _busEngine.SubscribeToCommand((CommandMessage<TCommand> message) => HandleCommandMessage(handler, message));
         }
 
@@ -120,7 +119,8 @@ namespace Nybus.Configuration
         private async Task HandleCommandMessage<TCommandHandler, TCommand>(TCommandHandler handler, CommandMessage<TCommand> message)
             where TCommandHandler : ICommandHandler<TCommand> where TCommand : class, ICommand
         {
-            await _options.Logger.LogAsync(LogLevel.Trace, "Handling command", new { commandType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName, correlationId = message.CorrelationId }).ConfigureAwait(false);
+            _logger.LogVerbose(new { eventType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName, correlationId = message.CorrelationId, message = "Handling command" });
+
             var context = _options.CommandContextFactory.CreateContext(message, _options);
             await handler.Handle(context).ConfigureAwait(false);
         }
@@ -129,7 +129,8 @@ namespace Nybus.Configuration
 
         public IBus Build()
         {
-            _options.Logger.Log(LogLevel.Trace, "Building Bus");
+            _logger.LogVerbose("Building bus");
+
             return new NybusBus(_busEngine, _options);
         }
 
