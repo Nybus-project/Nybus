@@ -130,5 +130,16 @@ namespace Tests.Logging
             mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals((string)dictionary["message"], lei.Message))), Times.Once);
             mockLogger.Verify(p => p.Log(It.Is<LogEventInfo>(lei => string.Equals((string)lei.Properties["error-method"], nameof(Exception_information_are_added_to_log)))), Times.Once);
         }
+
+        [Test]
+        [TestCaseSource(nameof(GetLogLevels))]
+        public void IsEnabled_forwards_to_NLog_logger(LogLevel level, NLog.LogLevel expected)
+        {
+            var sut = CreateSystemUnderTest();
+
+            sut.IsEnabled(level);
+
+            mockLogger.Verify(p => p.IsEnabled(expected), Times.Once);
+        }
     }
 }
