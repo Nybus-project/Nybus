@@ -80,7 +80,7 @@ namespace Tests.Logging
 
             var sut = CreateSystemUnderTest();
 
-            var logger = sut.CraeteLogger(logName);
+            var logger = sut.CreateLogger(logName);
 
             sut.AddProvider(mockProvider.Object);
 

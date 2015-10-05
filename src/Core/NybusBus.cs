@@ -18,7 +18,7 @@ namespace Nybus
 
             _engine = engine;
             _options = options;
-            _logger = _options.LoggerFactory.CraeteLogger(nameof(NybusBus));
+            _logger = _options.LoggerFactory.CreateLogger(nameof(NybusBus));
         }
 
         public Task InvokeCommand<TCommand>(TCommand command) where TCommand : class, ICommand

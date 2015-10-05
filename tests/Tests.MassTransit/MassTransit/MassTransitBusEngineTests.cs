@@ -47,7 +47,7 @@ namespace Tests.MassTransit
             mockLoggerFactory = new Mock<ILoggerFactory>();
             mockLogger = new Mock<ILogger>();
 
-            mockLoggerFactory.Setup(p => p.CraeteLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
+            mockLoggerFactory.Setup(p => p.CreateLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
 
             mockContextManager = new Mock<IContextManager>();
 

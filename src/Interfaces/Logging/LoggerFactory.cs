@@ -12,7 +12,7 @@ namespace Nybus.Logging
         private readonly object _sync = new object();
         private bool _disposed;
 
-        public ILogger CraeteLogger(string categoryName)
+        public ILogger CreateLogger(string categoryName)
         {
             Logger logger;
 
