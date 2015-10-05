@@ -155,5 +155,25 @@ namespace Tests.Logging
 
             sut.IsEnabled(level);
         }
+
+        [Test]
+        public void New_creates_logger_from_provider()
+        {
+            mockFactory.Setup(p => p.GetProviders()).Returns(new[] {mockProvider.Object});
+
+            var sut = new Logger(mockFactory.Object, logName);
+
+            mockProvider.Verify(p => p.CreateLogger(logName));
+        }
+
+        [Test]
+        public void IsEnabled_returns_false_if_lower_than_MinimumLevel()
+        {
+            mockFactory.SetupGet(p => p.MinimumLevel).Returns(LogLevel.Error);
+
+            var sut = CreateSystemUnderTest();
+
+            Assert.That(sut.IsEnabled(LogLevel.Information), Is.False);
+        }
     }
 }
