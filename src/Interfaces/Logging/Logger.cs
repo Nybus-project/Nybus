@@ -18,6 +18,14 @@ namespace Nybus.Logging
 
             _loggerFactory = loggerFactory;
             _name = name;
+
+            var providers = loggerFactory.GetProviders();
+            _loggers= new ILogger[providers.Count];
+
+            for (var index = 0; index != providers.Count; index++)
+            {
+                _loggers[index] = providers[index].CreateLogger(name);
+            }
         }
 
         public void Log(LogLevel level, IReadOnlyDictionary<string, object> state, Exception exception, MessageFormatter formatter)
