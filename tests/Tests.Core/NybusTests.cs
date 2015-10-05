@@ -67,7 +67,7 @@ namespace Tests
             mockLogger = new Mock<ILogger>();
             mockLoggerFactory = new Mock<ILoggerFactory>();
 
-            mockLoggerFactory.Setup(p => p.CraeteLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
+            mockLoggerFactory.Setup(p => p.CreateLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
 
             mockCommandContextFactory = new Mock<ICommandContextFactory>();
             mockCommandMessageFactory = new Mock<ICommandMessageFactory>();

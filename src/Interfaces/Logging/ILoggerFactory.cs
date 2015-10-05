@@ -5,7 +5,7 @@ namespace Nybus.Logging
 {
     public interface ILoggerFactory : IDisposable
     {
-        ILogger CraeteLogger(string categoryName);
+        ILogger CreateLogger(string categoryName);
 
         void AddProvider(ILoggerProvider provider);
 

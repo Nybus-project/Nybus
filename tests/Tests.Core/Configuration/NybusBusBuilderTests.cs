@@ -62,7 +62,7 @@ namespace Tests.Configuration
 
             mockContainer.Setup(p => p.BeginScope()).Returns(mockScope.Object);
 
-            mockLoggerFactory.Setup(p => p.CraeteLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
+            mockLoggerFactory.Setup(p => p.CreateLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
         }
 
         private NybusBusBuilder CreateSystemUnderTest()

@@ -24,7 +24,7 @@ namespace Nybus.MassTransit
             if (options == null) throw new ArgumentNullException(nameof(options));
             _connectionDescriptor = connectionDescriptor;
             _options = options;
-            _logger = _options.LoggerFactory.CraeteLogger(nameof(MassTransitBusEngine));
+            _logger = _options.LoggerFactory.CreateLogger(nameof(MassTransitBusEngine));
         }
 
         public MassTransitBusEngine(MassTransitConnectionDescriptor connectionDescriptor) : this (connectionDescriptor, new MassTransitOptions()) { }

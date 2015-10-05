@@ -19,7 +19,7 @@ namespace Nybus.Configuration
             _busEngine = busEngine;
             _options = options;
 
-            _logger = _options.LoggerFactory.CraeteLogger(nameof(NybusBusBuilder));
+            _logger = _options.LoggerFactory.CreateLogger(nameof(NybusBusBuilder));
         }
 
         public NybusBusBuilder(IBusEngine busEngine) : this(busEngine, new NybusOptions()) { }

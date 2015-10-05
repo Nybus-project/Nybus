@@ -23,6 +23,7 @@ namespace Tests.Logging
             fixture = new Fixture();
 
             mockFactory = new Mock<ILoggerFactory>();
+            mockFactory.Setup(p => p.GetProviders()).Returns(new ILoggerProvider[0]);
 
             logName = fixture.Create<string>();
 
