@@ -22,6 +22,7 @@ namespace Tests.MassTransit
         private MassTransitOptions options;
         private MassTransitConnectionDescriptor connectionDescriptor;
 
+        private Mock<ILoggerFactory> mockLoggerFactory;
         private Mock<ILogger> mockLogger;
         private Mock<IErrorStrategy> mockCommandErrorStrategy;
         private Mock<IQueueStrategy> mockCommandQueueStrategy;
@@ -43,7 +44,10 @@ namespace Tests.MassTransit
             commandQueueName = fixture.Create<string>();
             eventQueueName = fixture.Create<string>();
 
+            mockLoggerFactory = new Mock<ILoggerFactory>();
             mockLogger = new Mock<ILogger>();
+
+            mockLoggerFactory.Setup(p => p.CraeteLogger(It.IsAny<string>())).Returns(() => mockLogger.Object);
 
             mockContextManager = new Mock<IContextManager>();
 
@@ -64,7 +68,7 @@ namespace Tests.MassTransit
 
             options = new MassTransitOptions
             {
-                Logger = mockLogger.Object,
+                LoggerFactory = mockLoggerFactory.Object,
                 CommandErrorStrategy = mockCommandErrorStrategy.Object,
                 CommandQueueStrategy = mockCommandQueueStrategy.Object,
                 EventErrorStrategy = mockEventErrorStrategy.Object,

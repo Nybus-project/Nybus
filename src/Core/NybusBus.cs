@@ -9,6 +9,7 @@ namespace Nybus
     {
         private readonly IBusEngine _engine;
         private readonly INybusOptions _options;
+        private readonly ILogger _logger;
 
         public NybusBus(IBusEngine engine, INybusOptions options)
         {
@@ -17,6 +18,7 @@ namespace Nybus
 
             _engine = engine;
             _options = options;
+            _logger = _options.LoggerFactory.CraeteLogger(nameof(NybusBus));
         }
 
         public Task InvokeCommand<TCommand>(TCommand command) where TCommand : class, ICommand
@@ -28,7 +30,7 @@ namespace Nybus
         public async Task InvokeCommand<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
             var message = _options.CommandMessageFactory.CreateMessage(command, correlationId);
-            await _options.Logger.LogAsync(LogLevel.Info, "Invoking command", new { type = typeof(TCommand).FullName, correlationId = message.CorrelationId }).ConfigureAwait(false);
+            _logger.LogInformation(new { type = typeof(TCommand).FullName, correlationId = message.CorrelationId, message = "Invoking command" });
             await _engine.SendCommand(message).ConfigureAwait(false);
         }
 
@@ -41,22 +43,22 @@ namespace Nybus
         public async Task RaiseEvent<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
         {
             var message = _options.EventMessageFactory.CreateMessage(@event, correlationId);
-            await _options.Logger.LogAsync(LogLevel.Info, "Raising event", new {type = typeof(TEvent).FullName, correlationId = message.CorrelationId}).ConfigureAwait(false);
+            _logger.LogInformation(new { type = typeof(TEvent).FullName, correlationId = message.CorrelationId, message = "Raising event" });
             await _engine.SendEvent(message).ConfigureAwait(false);
         }
 
         public async Task Start()
         {
-            await _options.Logger.LogAsync(LogLevel.Info, "Bus starting").ConfigureAwait(false);
+            _logger.LogInformation("Bus starting");
             await _engine.Start().ConfigureAwait(false);
-            await _options.Logger.LogAsync(LogLevel.Info, "Bus started").ConfigureAwait(false);
+            _logger.LogInformation("Bus started");
         }
 
         public async Task Stop()
         {
-            await _options.Logger.LogAsync(LogLevel.Info, "Bus stopping").ConfigureAwait(false);
+            _logger.LogInformation("Bus stopping");
             await _engine.Stop().ConfigureAwait(false);
-            await _options.Logger.LogAsync(LogLevel.Info, "Bus stopped").ConfigureAwait(false);
+            _logger.LogInformation("Bus stopped");
         }
     }
 }

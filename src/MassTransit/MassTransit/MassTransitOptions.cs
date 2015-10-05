@@ -17,6 +17,6 @@ namespace Nybus.MassTransit
 
         public IContextManager ContextManager { get; set; } = new RabbitMqContextManager();
 
-        public ILogger Logger { get; set; } = new NopLogger();
+        public ILoggerFactory LoggerFactory { get; set; } = Nybus.Logging.LoggerFactory.Default;
     }
 }

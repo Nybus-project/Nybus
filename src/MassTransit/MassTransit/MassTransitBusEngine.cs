@@ -16,6 +16,7 @@ namespace Nybus.MassTransit
         private readonly MassTransitOptions _options;
         private Status _status = Status.New;
         private readonly List<IServiceBus> _serviceBusses = new List<IServiceBus>();
+        private readonly ILogger _logger;
 
         public MassTransitBusEngine(MassTransitConnectionDescriptor connectionDescriptor, MassTransitOptions options)
         {
@@ -23,6 +24,7 @@ namespace Nybus.MassTransit
             if (options == null) throw new ArgumentNullException(nameof(options));
             _connectionDescriptor = connectionDescriptor;
             _options = options;
+            _logger = _options.LoggerFactory.CraeteLogger(nameof(MassTransitBusEngine));
         }
 
         public MassTransitBusEngine(MassTransitConnectionDescriptor connectionDescriptor) : this (connectionDescriptor, new MassTransitOptions()) { }
@@ -72,7 +74,7 @@ namespace Nybus.MassTransit
         {
             CommandMessage<TCommand> message = _options.ContextManager.CreateCommandMessage(context);
 
-            _options.Logger.Log(LogLevel.Trace, "Received command", new { commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount });
+            _logger.LogVerbose(new { message = "Received command", commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount });
 
             try
             {
@@ -80,7 +82,7 @@ namespace Nybus.MassTransit
             }
             catch (Exception ex)
             {
-                _options.Logger.Log(LogLevel.Error, "Error while processing a command", new { commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, exception = ex, command = context.Message });
+                _logger.LogError(new { message = "Error while processing a command", commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, command = context.Message }, ex);
 
                 var handled = await _options.CommandErrorStrategy.HandleError(context, ex).ConfigureAwait(false);
 
@@ -111,7 +113,7 @@ namespace Nybus.MassTransit
         {
             EventMessage<TEvent> message = _options.ContextManager.CreateEventMessage(context);
 
-            _options.Logger.Log(LogLevel.Trace, "Received event", new { eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount });
+            _logger.LogVerbose(new { message= "Received event", eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount });
 
             try
             {
@@ -119,7 +121,7 @@ namespace Nybus.MassTransit
             }
             catch (Exception ex)
             {
-                _options.Logger.Log(LogLevel.Error, "Error while processing an event", new { eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, exception = ex, @event = context.Message });
+                _logger.LogError(new { message= "Error while processing an event", eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, @event = context.Message }, ex);
 
                 var handled = await _options.EventErrorStrategy.HandleError(context, ex).ConfigureAwait(false);
 
@@ -134,7 +136,7 @@ namespace Nybus.MassTransit
 
         public Task Start()
         {
-            _options.Logger.Log(LogLevel.Trace, "Bus engine starting");
+            _logger.LogVerbose("Bus engine starting");
             try
             {
                 _serviceBusses.Add(_options.ServiceBusFactory.CreateServiceBus(_connectionDescriptor, _options.EventQueueStrategy, _eventSubscriptions));
@@ -148,24 +150,25 @@ namespace Nybus.MassTransit
             }
             catch (Exception ex)
             {
-                _options.Logger.Log(LogLevel.Fatal, "Bus engine failed to start", new {exception = ex});
+                _logger.LogCritical("Bus engine failed to start", ex);
+
                 throw new Exception("Bus failed to start", ex);
             }
 
-            _options.Logger.Log(LogLevel.Trace, "Bus engine started");
+            _logger.LogVerbose("Bus engine started");
             return Task.CompletedTask;
         }
 
         public Task Stop()
         {
-            _options.Logger.Log(LogLevel.Trace, "Bus engine stopping");
+            _logger.LogVerbose("Bus engine stopping");
 
             foreach (var bus in _serviceBusses)
                 bus.Dispose();
 
             _status = Status.New;
 
-            _options.Logger.Log(LogLevel.Trace, "Bus engine stopped");
+            _logger.LogVerbose("Bus engine stopped");
 
             return Task.CompletedTask;
         }
