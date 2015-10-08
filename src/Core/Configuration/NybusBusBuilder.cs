@@ -59,8 +59,16 @@ namespace Nybus.Configuration
             using (var scope = _options.Container.BeginScope())
             {
                 var handler = scope.Resolve<TEventHandler>();
-                await HandleEventMessage(handler, message).ConfigureAwait(false);
-                scope.Release(handler);
+
+                if (handler != null)
+                {
+                    await HandleEventMessage(handler, message).ConfigureAwait(false);
+                    scope.Release(handler);
+                }
+                else
+                {
+                    _logger.LogError(new { message = "Handler not found", eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName, correlationId = message.CorrelationId, containerType = _options.Container.GetType().FullName });
+                }
             }
         }
 
@@ -111,8 +119,16 @@ namespace Nybus.Configuration
             using (var scope = _options.Container.BeginScope())
             {
                 var handler = scope.Resolve<TCommandHandler>();
-                await HandleCommandMessage(handler, message).ConfigureAwait(false);
-                scope.Release(handler);
+
+                if (handler != null)
+                {
+                    await HandleCommandMessage(handler, message).ConfigureAwait(false);
+                    scope.Release(handler);
+                }
+                else
+                {
+                    _logger.LogError(new {message = "Handler not found", commandType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName, correlationId = message.CorrelationId, containerType = _options.Container.GetType().FullName });
+                }
             }
         }
 

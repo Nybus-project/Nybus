@@ -21,6 +21,19 @@ namespace Nybus
             await Task.WhenAll(commands.Select(bus.InvokeCommand)).ConfigureAwait(false);
         }
 
+        public static async Task InvokeManyCommands<TCommand>(this IBus bus, IEnumerable<TCommand> commands, Guid correlationId)
+            where TCommand : class, ICommand
+        {
+            if (bus == null)
+            {
+                throw new ArgumentNullException(nameof(bus));
+            }
+
+            if (commands == null) return;
+
+            await Task.WhenAll(commands.Select(c => bus.InvokeCommand(c, correlationId))).ConfigureAwait(false);
+        }
+
         public static async Task RaiseManyEvents<TEvent>(this IBus bus, IEnumerable<TEvent> events)
             where TEvent : class, IEvent
         {
@@ -33,5 +46,19 @@ namespace Nybus
 
             await Task.WhenAll(events.Select(bus.RaiseEvent)).ConfigureAwait(false);
         }
+
+        public static async Task RaiseManyEvents<TEvent>(this IBus bus, IEnumerable<TEvent> events, Guid correlationId)
+            where TEvent : class, IEvent
+        {
+            if (bus == null)
+            {
+                throw new ArgumentNullException(nameof(bus));
+            }
+
+            if (events == null) return;
+
+            await Task.WhenAll(events.Select(e => bus.RaiseEvent(e, correlationId))).ConfigureAwait(false);
+        }
+
     }
 }
