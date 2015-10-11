@@ -85,14 +85,14 @@ namespace Tests.Logging
             sut.AddProvider(mockProvider.Object);
 
             var level = fixture.Create<LogLevel>();
-            IReadOnlyDictionary<string, object> dictionary = fixture.Create<Dictionary<string, object>>();
+            IDictionary<string, object> dictionary = fixture.Create<Dictionary<string, object>>();
             Exception exception = Mock.Of<Exception>();
 
-            logger.Log(level, dictionary, error: exception, formatter: null);
+            logger.Log(level, dictionary, exception);
 
             mockProvider.Verify(p => p.CreateLogger(logName));
 
-            mockLogger.Verify(p => p.Log(level, dictionary, exception, It.IsAny<MessageFormatter>()));
+            mockLogger.Verify(p => p.Log(level, dictionary, exception));
         }
     }
 }

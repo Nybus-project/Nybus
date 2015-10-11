@@ -12,12 +12,8 @@ namespace Nybus.Logging
 
     public interface ILogger
     {
-        //Task LogAsync(LogLevel level, object state, Exception exception, Func<object, Exception, string> formatter);
-
-        void Log(LogLevel level, IReadOnlyDictionary<string, object> state, Exception exception, MessageFormatter formatter);
+        void Log(LogLevel level, IDictionary<string, object> state, Exception exception);
 
         bool IsEnabled(LogLevel level);
     }
-
-    public delegate string MessageFormatter(IReadOnlyDictionary<string, object> state, Exception exception);
 }

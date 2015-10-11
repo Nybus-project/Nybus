@@ -86,13 +86,12 @@ namespace Tests.Logging
             var level = fixture.Create<LogLevel>();
             var state = fixture.Create<Dictionary<string, object>>();
             var error = Mock.Of<Exception>();
-            MessageFormatter formatter = null;
 
             mockLogger.Setup(p => p.IsEnabled(level)).Returns(true);
 
-            sut.Log(level, state, error, formatter);
+            sut.Log(level, state, error);
 
-            mockLogger.Verify(p => p.Log(level, state, error, formatter));
+            mockLogger.Verify(p => p.Log(level, state, error));
         }
 
         [Test]
@@ -106,12 +105,11 @@ namespace Tests.Logging
             var level = fixture.Create<LogLevel>();
             var state = fixture.Create<Dictionary<string, object>>();
             var error = Mock.Of<Exception>();
-            MessageFormatter formatter = null;
 
             mockLogger.Setup(p => p.IsEnabled(level)).Returns(true);
-            mockLogger.Setup(p => p.Log(level, state, error, formatter)).Throws(Mock.Of<Exception>());
+            mockLogger.Setup(p => p.Log(level, state, error)).Throws(Mock.Of<Exception>());
 
-            sut.Log(level, state, error, formatter);
+            sut.Log(level, state, error);
         }
 
         [Test]

@@ -9,7 +9,7 @@ namespace Nybus.Logging
     {
         private readonly ILoggerFactory _loggerFactory;
         private readonly string _name;
-        private ILogger[] _loggers = new ILogger[0];
+        private ILogger[] _loggers;
 
         public Logger(ILoggerFactory loggerFactory, string name)
         {
@@ -20,7 +20,7 @@ namespace Nybus.Logging
             _name = name;
 
             var providers = loggerFactory.GetProviders();
-            _loggers= new ILogger[providers.Count];
+            _loggers = new ILogger[providers.Count];
 
             for (var index = 0; index != providers.Count; index++)
             {
@@ -28,7 +28,7 @@ namespace Nybus.Logging
             }
         }
 
-        public void Log(LogLevel level, IReadOnlyDictionary<string, object> state, Exception exception, MessageFormatter formatter)
+        public void Log(LogLevel level, IDictionary<string, object> state, Exception exception)
         {
             if (level >= _loggerFactory.MinimumLevel)
             {
@@ -40,7 +40,7 @@ namespace Nybus.Logging
                     {
                         if (logger.IsEnabled(level))
                         {
-                            logger.Log(level, state, exception, formatter);
+                            logger.Log(level, state, exception);
                         }
                     }
                     catch (Exception ex)
