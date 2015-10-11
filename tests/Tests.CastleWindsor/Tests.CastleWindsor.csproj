@@ -67,6 +67,7 @@
     <Compile Include="Container\WindsorBusContainerTests.cs" />
     <Compile Include="Container\WindsorScopeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindsorExtensionsTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -75,6 +76,10 @@
     <ProjectReference Include="..\..\src\CastleWindsor\CastleWindsor.csproj">
       <Project>{6021B01C-F24B-48B4-B774-D150ACE2B6C3}</Project>
       <Name>CastleWindsor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Core\Core.csproj">
+      <Project>{FE8FB759-5499-4731-A279-623C8EF6EE1D}</Project>
+      <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Interfaces\Interfaces.csproj">
       <Project>{c858bab7-00f9-4629-9aa1-a2ddefad5543}</Project>
