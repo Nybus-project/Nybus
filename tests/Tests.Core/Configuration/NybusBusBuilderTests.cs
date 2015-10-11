@@ -171,6 +171,22 @@ namespace Tests.Configuration
         }
 
         [Test]
+        public async Task No_exception_is_thrown_when_no_handler_for_TEvent_is_found()
+        {
+            var sut = CreateSystemUnderTest();
+
+            sut.SubscribeToEvent<TestEvent>();
+
+            var message = fixture.Create<EventMessage<TestEvent>>();
+
+            mockScope.Setup(p => p.Resolve<IEventHandler<TestEvent>>()).Returns(() => null);
+
+            await testBusEngine.HandleEvent(message);
+
+            mockScope.Verify(p => p.Resolve<IEventHandler<TestEvent>>(), Times.Once);
+        }
+
+        [Test]
         public async Task SubscribeToEvent_TEvent_TEventHandler_instance_is_invoked_when_message_is_received()
         {
             var sut = CreateSystemUnderTest();
@@ -236,6 +252,23 @@ namespace Tests.Configuration
 
             Assert.That(testBusEngine.IsCommandHandled<TestCommand>());
         }
+
+        [Test]
+        public async Task No_exception_is_thrown_when_no_handler_for_TCommand_is_found()
+        {
+            var sut = CreateSystemUnderTest();
+
+            sut.SubscribeToCommand<TestCommand>();
+
+            var message = fixture.Create<CommandMessage<TestCommand>>();
+
+            mockScope.Setup(p => p.Resolve<ICommandHandler<TestCommand>>()).Returns(() => null);
+
+            await testBusEngine.HandleCommand(message);
+
+            mockScope.Verify(p => p.Resolve<ICommandHandler<TestCommand>>(), Times.Once);
+        }
+
 
         [Test]
         public async Task SubscribeToCommand_TCommand_is_invoked_when_message_is_received()
