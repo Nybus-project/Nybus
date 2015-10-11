@@ -24,6 +24,8 @@ namespace Nybus.Container
             var scope = _kernel.BeginScope();
             return new WindsorScope(_kernel, scope);
         }
+
+        public IKernel Kernel => _kernel;
     }
 
     public class WindsorScope : IScope
