@@ -20,7 +20,7 @@ namespace Nybus.Configuration
 
         public EventContext<TEvent> CreateContext<TEvent>(EventMessage<TEvent> message, INybusOptions options) where TEvent : class, IEvent
         {
-            return new EventContext<TEvent>(message.Event, _clock.Now, message.CorrelationId);
+            return new EventContext<TEvent>(message.Event, _clock.Now, message.CorrelationId) {RaisedOn = message.SentOn};
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Nybus.Utils;
 
 namespace Nybus
 {
@@ -29,9 +30,12 @@ namespace Nybus
         protected Message()
         {
             CorrelationId = Guid.NewGuid();
+            SentOn = Clock.Default.Now;
         }
 
         public Guid CorrelationId { get; set; }
+
+        public DateTimeOffset SentOn { get; set; }
     }
 
     public class CommandMessage<TCommand> : Message

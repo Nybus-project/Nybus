@@ -28,6 +28,8 @@ namespace Nybus
 
         public DateTimeOffset ReceivedOn { get; private set; }
 
+        public DateTimeOffset RaisedOn { get; set; }
+
         public TEvent Message { get; private set; }
     }
 }

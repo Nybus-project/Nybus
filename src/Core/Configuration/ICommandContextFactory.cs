@@ -20,7 +20,7 @@ namespace Nybus.Configuration
 
         public CommandContext<TCommand> CreateContext<TCommand>(CommandMessage<TCommand> message, INybusOptions options) where TCommand : class, ICommand
         {
-            return new CommandContext<TCommand>(message.Command, _clock.Now, message.CorrelationId);
+            return new CommandContext<TCommand>(message.Command, _clock.Now, message.CorrelationId) {InvokedOn = message.SentOn};
         }
     }
 }

@@ -20,6 +20,8 @@ namespace Tests.Configuration
 
         private Mock<IPublishContext<TestCommand>> mockCommandPublishContext;
 
+        private DateTimeOffset now;
+
         [SetUp]
         public void Initialize()
         {
@@ -32,6 +34,8 @@ namespace Tests.Configuration
             mockCommandConsumeContext = new Mock<IConsumeContext<TestCommand>>();
 
             mockCommandPublishContext = new Mock<IPublishContext<TestCommand>>();
+
+            now = fixture.Create<DateTimeOffset>();
         }
 
         private RabbitMqContextManager CreateSystemUnderTest()
@@ -50,6 +54,7 @@ namespace Tests.Configuration
 
             mockEventConsumeContext.SetupGet(p => p.Message).Returns(body);
             mockEventConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.CorrelationIdKey]).Returns(correlationId.ToString());
+            mockEventConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.MessageSentKey]).Returns(now.ToString("O"));
 
             var message = sut.CreateEventMessage(mockEventConsumeContext.Object);
 
@@ -67,6 +72,7 @@ namespace Tests.Configuration
 
             mockEventConsumeContext.SetupGet(p => p.Message).Returns(body);
             mockEventConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.CorrelationIdKey]).Returns(correlationId.ToString());
+            mockEventConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.MessageSentKey]).Returns(now.ToString("O"));
 
             var message = sut.CreateEventMessage(mockEventConsumeContext.Object);
 
@@ -83,6 +89,7 @@ namespace Tests.Configuration
             sut.SetEventMessageHeaders(message, mockEventPublishContext.Object);
 
             mockEventPublishContext.Verify(p => p.SetHeader(RabbitMqContextManager.CorrelationIdKey, message.CorrelationId.ToString("D")));
+            mockEventPublishContext.Verify(p => p.SetHeader(RabbitMqContextManager.MessageSentKey, message.SentOn.ToString("O")));
         }
 
         [Test]
@@ -96,10 +103,12 @@ namespace Tests.Configuration
 
             mockCommandConsumeContext.SetupGet(p => p.Message).Returns(body);
             mockCommandConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.CorrelationIdKey]).Returns(correlationId.ToString());
+            mockCommandConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.MessageSentKey]).Returns(now.ToString("O"));
 
             var message = sut.CreateCommandMessage(mockCommandConsumeContext.Object);
 
             Assert.That(message.CorrelationId, Is.EqualTo(correlationId));
+            Assert.That(message.SentOn, Is.EqualTo(now));
         }
 
         [Test]
@@ -113,10 +122,12 @@ namespace Tests.Configuration
 
             mockCommandConsumeContext.SetupGet(p => p.Message).Returns(body);
             mockCommandConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.CorrelationIdKey]).Returns(correlationId.ToString());
+            mockCommandConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.MessageSentKey]).Returns(now.ToString("O"));
 
             var message = sut.CreateCommandMessage(mockCommandConsumeContext.Object);
 
             Assert.That(message.Command, Is.SameAs(body));
+            Assert.That(message.SentOn, Is.EqualTo(now));
         }
 
         [Test]
@@ -129,6 +140,7 @@ namespace Tests.Configuration
             sut.SetCommandMessageHeaders(message, mockCommandPublishContext.Object);
 
             mockCommandPublishContext.Verify(p => p.SetHeader(RabbitMqContextManager.CorrelationIdKey, message.CorrelationId.ToString("D")));
+            mockCommandPublishContext.Verify(p => p.SetHeader(RabbitMqContextManager.MessageSentKey, message.SentOn.ToString("O")));
         }
 
 
