@@ -4,6 +4,7 @@ using Moq;
 using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
+using Nybus.Utils;
 using Ploeh.AutoFixture;
 
 namespace Tests.Configuration
@@ -22,6 +23,8 @@ namespace Tests.Configuration
 
         private DateTimeOffset now;
 
+        private Mock<IClock> mockClock;
+
         [SetUp]
         public void Initialize()
         {
@@ -36,6 +39,11 @@ namespace Tests.Configuration
             mockCommandPublishContext = new Mock<IPublishContext<TestCommand>>();
 
             now = fixture.Create<DateTimeOffset>();
+
+            mockClock = new Mock<IClock>();
+            mockClock.SetupGet(p => p.Now).Returns(now);
+
+            Clock.Default = mockClock.Object;
         }
 
         private RabbitMqContextManager CreateSystemUnderTest()
@@ -77,6 +85,38 @@ namespace Tests.Configuration
             var message = sut.CreateEventMessage(mockEventConsumeContext.Object);
 
             Assert.That(message.Event, Is.SameAs(body));
+        }
+
+        [Test]
+        public void CreateEventMessage_returns_Now_if_SentOn_is_missing()
+        {
+            var sut = CreateSystemUnderTest();
+
+            TestEvent body = fixture.Create<TestEvent>();
+
+            Guid correlationId = fixture.Create<Guid>();
+
+            mockEventConsumeContext.SetupGet(p => p.Message).Returns(body);
+            mockEventConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.CorrelationIdKey]).Returns(correlationId.ToString());
+
+            var message = sut.CreateEventMessage(mockEventConsumeContext.Object);
+
+            Assert.That(message.SentOn, Is.EqualTo(now));
+        }
+
+        [Test]
+        public void CreateEventMessage_returns_NewGuid_if_CorrelationId_is_missing()
+        {
+            var sut = CreateSystemUnderTest();
+
+            TestEvent body = fixture.Create<TestEvent>();
+
+            mockEventConsumeContext.SetupGet(p => p.Message).Returns(body);
+            mockEventConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.MessageSentKey]).Returns(now.ToString("O"));
+
+            var message = sut.CreateEventMessage(mockEventConsumeContext.Object);
+
+            Assert.That(message.CorrelationId, Is.Not.EqualTo(Guid.Empty));
         }
 
         [Test]
@@ -129,6 +169,39 @@ namespace Tests.Configuration
             Assert.That(message.Command, Is.SameAs(body));
             Assert.That(message.SentOn, Is.EqualTo(now));
         }
+
+        [Test]
+        public void CreateCommandMessage_returns_Now_if_SentOn_is_missing()
+        {
+            var sut = CreateSystemUnderTest();
+
+            var body = fixture.Create<TestCommand>();
+
+            var correlationId = fixture.Create<Guid>();
+
+            mockCommandConsumeContext.SetupGet(p => p.Message).Returns(body);
+            mockCommandConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.CorrelationIdKey]).Returns(correlationId.ToString());
+
+            var message = sut.CreateCommandMessage(mockCommandConsumeContext.Object);
+
+            Assert.That(message.SentOn, Is.EqualTo(now));
+        }
+
+        [Test]
+        public void CreateCommandMessage_returns_NewGuid_if_CorrelationId_is_missing()
+        {
+            var sut = CreateSystemUnderTest();
+
+            var body = fixture.Create<TestCommand>();
+
+            mockCommandConsumeContext.SetupGet(p => p.Message).Returns(body);
+            mockCommandConsumeContext.Setup(p => p.Headers[RabbitMqContextManager.MessageSentKey]).Returns(now.ToString("O"));
+
+            var message = sut.CreateCommandMessage(mockCommandConsumeContext.Object);
+
+            Assert.That(message.CorrelationId, Is.Not.EqualTo(Guid.Empty));
+        }
+
 
         [Test]
         public void SetCommandMessageHeaders_sets_correlationId_to_context()

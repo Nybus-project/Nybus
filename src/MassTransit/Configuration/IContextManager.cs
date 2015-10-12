@@ -58,7 +58,14 @@ namespace Nybus.Configuration
 
         private Guid ExtractCorrelationId(IMessageHeaders messageHeaders)
         {
-            return Guid.Parse(messageHeaders[CorrelationIdKey]);
+            var header = messageHeaders[CorrelationIdKey];
+
+            if (header == null)
+            {
+                return Guid.NewGuid();
+            }
+
+            return Guid.Parse(header);
         }
 
         private void PersistCorrelationId(ISendContext sendContext, Guid correlationId)
@@ -68,7 +75,14 @@ namespace Nybus.Configuration
 
         private DateTimeOffset ExtractMessageSentTime(IMessageHeaders messageHeaders)
         {
-            return DateTimeOffset.Parse(messageHeaders[MessageSentKey]);
+            var header = messageHeaders[MessageSentKey];
+
+            if (header == null)
+            {
+                return Clock.Default.Now;
+            }
+
+            return DateTimeOffset.Parse(header);
         }
 
         private void PersistMessageSentTime(ISendContext sendContext, DateTimeOffset sentTime)
