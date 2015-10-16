@@ -25,7 +25,11 @@ namespace Nybus
         }
 
         public TCommand Message { get; private set; }
+
         public DateTimeOffset ReceivedOn { get; private set; }
+
         public Guid CorrelationId { get; set; }
+
+        public DateTimeOffset InvokedOn { get; set; }
     }
 }

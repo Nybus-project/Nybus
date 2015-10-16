@@ -29,6 +29,114 @@ namespace Tests.Logging
         }
 
         [TestFixture]
+        public class LogTests : LogTestBase
+        {
+            public IEnumerable<LogLevel> GetAllLogLevels()
+            {
+                yield return LogLevel.Verbose;
+
+                yield return LogLevel.Debug;
+
+                yield return LogLevel.Information;
+
+                yield return LogLevel.Warning;
+
+                yield return LogLevel.Error;
+
+                yield return LogLevel.Critical;
+            }
+
+            [Test]
+            [TestCaseSource(nameof(GetAllLogLevels))]
+            public void Log_Object_Error_uses_provided_formatter(LogLevel level)
+            {
+                var state = new
+                {
+                    text = Fixture.Create<string>()
+                };
+
+                var exception = Fixture.Create<Exception>();
+
+                var formattedState = Fixture.Create<string>();
+
+                bool isFormatted = false;
+
+                LoggerExtensions.Log(MockLogger.Object, level, state, exception, (a, e) =>
+                {
+                    isFormatted = true;
+                    return formattedState;
+                });
+
+                MockLogger.Verify(p=> p.Log(level, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey] == formattedState), exception));
+
+                Assert.That(isFormatted, Is.True);
+            }
+
+            [Test]
+            [TestCaseSource(nameof(GetAllLogLevels))]
+
+            public void Log_string_adds_message(LogLevel level)
+            {
+                var message = Fixture.Create<string>();
+
+                LoggerExtensions.Log(MockLogger.Object, level, message);
+
+                MockLogger.Verify(p => p.Log(level, It.Is<IDictionary<string, object>>(d => (string) d[LoggerExtensions.MessageKey] == message), null));
+            }
+
+            [Test]
+            [TestCaseSource(nameof(GetAllLogLevels))]
+            public void Log_exception_adds_message(LogLevel level)
+            {
+                var exception = Fixture.Create<Exception>();
+
+                LoggerExtensions.Log(MockLogger.Object, level, exception);
+
+                MockLogger.Verify(p => p.Log(level, It.Is<IDictionary<string, object>>(d => (string) d[LoggerExtensions.MessageKey] == exception.ToString()), exception));
+            }
+
+            [Test]
+            [TestCaseSource(nameof(GetAllLogLevels))]
+            public void Log_object_uses_provided_formatter(LogLevel level)
+            {
+                var state = new
+                {
+                    text = Fixture.Create<string>()
+                };
+
+                var formattedState = Fixture.Create<string>();
+
+                bool isFormatted = false;
+
+                LoggerExtensions.Log(MockLogger.Object, level, state, a =>
+                {
+                    isFormatted = true;
+                    return formattedState;
+                });
+
+                MockLogger.Verify(p => p.Log(level, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey] == formattedState), null));
+
+                Assert.That(isFormatted, Is.True);
+            }
+
+            [Test]
+            [TestCaseSource(nameof(GetAllLogLevels))]
+            public void Log_object_does_not_add_message_when_no_formatter_is_specified(LogLevel level)
+            {
+                var state = new
+                {
+                    text = Fixture.Create<string>()
+                };
+
+
+                LoggerExtensions.Log(MockLogger.Object, level, state, null);
+
+                MockLogger.Verify(p => p.Log(level, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.text)) && !d.ContainsKey(LoggerExtensions.MessageKey)), null));
+
+            }
+        }
+
+        [TestFixture]
         public class LogVerboseTests : LogTestBase
         {
             [Test]
@@ -38,7 +146,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogVerbose(MockLogger.Object, message);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), null, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), null));
             }
 
             [Test]
@@ -49,7 +157,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogVerbose(MockLogger.Object, message, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), exception));
             }
 
             [Test]
@@ -58,14 +166,16 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
+
+                var formattedState = Fixture.Create<string>();
 
                 Exception exception = Fixture.Create<Exception>();
 
-                LoggerExtensions.LogVerbose(MockLogger.Object, state, exception);
+                LoggerExtensions.LogVerbose(MockLogger.Object, state, exception, (a, e) => formattedState);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string) d[LoggerExtensions.MessageKey] == formattedState), exception));
             }
 
             [Test]
@@ -75,7 +185,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogVerbose(MockLogger.Object, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Verbose, null, exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IDictionary<string, object>>(d => (string) d[LoggerExtensions.MessageKey] == exception.ToString()), exception));
             }
 
             [Test]
@@ -84,12 +194,14 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
-                LoggerExtensions.LogVerbose(MockLogger.Object, state);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), null, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogVerbose(MockLogger.Object, state, a => formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Verbose, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey] == formattedState), null));
             }
         }
 
@@ -103,7 +215,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogWarning(MockLogger.Object, message);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), null, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), null));
             }
 
             [Test]
@@ -114,7 +226,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogWarning(MockLogger.Object, message, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), exception));
             }
 
             [Test]
@@ -123,14 +235,16 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
                 Exception exception = Fixture.Create<Exception>();
 
-                LoggerExtensions.LogWarning(MockLogger.Object, state, exception);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), exception, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogWarning(MockLogger.Object, state, exception, (a, e) => formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey] == formattedState), exception));
             }
 
             [Test]
@@ -140,7 +254,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogWarning(MockLogger.Object, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Warning, null, exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IDictionary<string, object>>(d => (string) d[LoggerExtensions.MessageKey] == exception.ToString()), exception));
             }
 
             [Test]
@@ -149,12 +263,14 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
-                LoggerExtensions.LogWarning(MockLogger.Object, state);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), null, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogWarning(MockLogger.Object, state, a => formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Warning, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey] == formattedState), null));
             }
 
         }
@@ -169,7 +285,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogDebug(MockLogger.Object, message);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), null, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), null));
             }
 
             [Test]
@@ -180,7 +296,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogDebug(MockLogger.Object, message, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), exception));
             }
 
             [Test]
@@ -189,14 +305,16 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
                 Exception exception = Fixture.Create<Exception>();
 
-                LoggerExtensions.LogDebug(MockLogger.Object, state, exception);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), exception, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogDebug(MockLogger.Object, state, exception, (a,e) => formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey] == formattedState), exception));
             }
 
             [Test]
@@ -206,7 +324,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogDebug(MockLogger.Object, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Debug, null, exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IDictionary<string, object>>(d => (string) d[LoggerExtensions.MessageKey] == exception.ToString()), exception));
             }
 
             [Test]
@@ -218,9 +336,11 @@ namespace Tests.Logging
                     message = Fixture.Create<string>()
                 };
 
-                LoggerExtensions.LogDebug(MockLogger.Object, state);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), null, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogDebug(MockLogger.Object, state, a => formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Debug, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey]== formattedState), null));
             }
 
         }
@@ -235,7 +355,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogInformation(MockLogger.Object, message);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), null, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), null));
             }
 
             [Test]
@@ -246,7 +366,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogInformation(MockLogger.Object, message, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), exception));
             }
 
             [Test]
@@ -255,14 +375,16 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
+
+                var formattedState = Fixture.Create<string>();
 
                 Exception exception = Fixture.Create<Exception>();
 
-                LoggerExtensions.LogInformation(MockLogger.Object, state, exception);
+                LoggerExtensions.LogInformation(MockLogger.Object, state, exception,(a,e)=>formattedState);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string) d[LoggerExtensions.MessageKey] == formattedState), exception));
             }
 
             [Test]
@@ -272,7 +394,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogInformation(MockLogger.Object, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Information, null, exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IDictionary<string, object>>(d => (string) d[LoggerExtensions.MessageKey] == exception.ToString()), exception));
             }
 
             [Test]
@@ -281,12 +403,14 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
-                LoggerExtensions.LogInformation(MockLogger.Object, state);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), null, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogInformation(MockLogger.Object, state, a => formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Information, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text))), null));
             }
 
         }
@@ -301,7 +425,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogError(MockLogger.Object, message);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), null, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), null));
             }
 
             [Test]
@@ -312,7 +436,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogError(MockLogger.Object, message, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), exception));
             }
 
             [Test]
@@ -321,14 +445,16 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
                 Exception exception = Fixture.Create<Exception>();
 
-                LoggerExtensions.LogError(MockLogger.Object, state, exception);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), exception, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogError(MockLogger.Object, state, exception, (a,e)=>formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string) d[LoggerExtensions.MessageKey] == formattedState), exception));
             }
 
             [Test]
@@ -338,7 +464,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogError(MockLogger.Object, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Error, null, exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IDictionary<string, object>>(d => (string) d[LoggerExtensions.MessageKey] == exception.ToString()), exception));
             }
 
             [Test]
@@ -347,12 +473,14 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
-                LoggerExtensions.LogError(MockLogger.Object, state);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), null, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogError(MockLogger.Object, state, a => formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Error, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string) d[LoggerExtensions.MessageKey] == formattedState), null));
             }
 
         }
@@ -367,7 +495,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogCritical(MockLogger.Object, message);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), null, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), null));
             }
 
             [Test]
@@ -378,7 +506,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogCritical(MockLogger.Object, message, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey("message")), exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IDictionary<string, object>>(d => d.ContainsKey(LoggerExtensions.MessageKey)), exception));
             }
 
             [Test]
@@ -387,14 +515,16 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
                 Exception exception = Fixture.Create<Exception>();
 
-                LoggerExtensions.LogCritical(MockLogger.Object, state, exception);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), exception, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogCritical(MockLogger.Object, state, exception, (a,e)=>formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey] == formattedState), exception));
             }
 
             [Test]
@@ -404,7 +534,7 @@ namespace Tests.Logging
 
                 LoggerExtensions.LogCritical(MockLogger.Object, exception);
 
-                MockLogger.Verify(p => p.Log(LogLevel.Critical, null, exception, It.IsAny<MessageFormatter>()));
+                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IDictionary<string, object>>(d => (string) d[LoggerExtensions.MessageKey] == exception.ToString()), exception));
             }
 
             [Test]
@@ -413,12 +543,14 @@ namespace Tests.Logging
                 var state = new
                 {
                     text = Fixture.Create<string>(),
-                    message = Fixture.Create<string>()
+                    data = Fixture.Create<string>()
                 };
 
-                LoggerExtensions.LogCritical(MockLogger.Object, state);
+                var formattedState = Fixture.Create<string>();
 
-                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IReadOnlyDictionary<string, object>>(d => d.ContainsKey(nameof(state.message)) && d.ContainsKey(nameof(state.text))), null, It.IsAny<MessageFormatter>()));
+                LoggerExtensions.LogCritical(MockLogger.Object, state, a => formattedState);
+
+                MockLogger.Verify(p => p.Log(LogLevel.Critical, It.Is<IDictionary<string, object>>(d => d.ContainsKey(nameof(state.data)) && d.ContainsKey(nameof(state.text)) && (string)d[LoggerExtensions.MessageKey] == formattedState), null));
             }
 
         }

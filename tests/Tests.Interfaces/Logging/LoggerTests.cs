@@ -86,13 +86,12 @@ namespace Tests.Logging
             var level = fixture.Create<LogLevel>();
             var state = fixture.Create<Dictionary<string, object>>();
             var error = Mock.Of<Exception>();
-            MessageFormatter formatter = null;
 
             mockLogger.Setup(p => p.IsEnabled(level)).Returns(true);
 
-            sut.Log(level, state, error, formatter);
+            sut.Log(level, state, error);
 
-            mockLogger.Verify(p => p.Log(level, state, error, formatter));
+            mockLogger.Verify(p => p.Log(level, state, error));
         }
 
         [Test]
@@ -106,12 +105,11 @@ namespace Tests.Logging
             var level = fixture.Create<LogLevel>();
             var state = fixture.Create<Dictionary<string, object>>();
             var error = Mock.Of<Exception>();
-            MessageFormatter formatter = null;
 
             mockLogger.Setup(p => p.IsEnabled(level)).Returns(true);
-            mockLogger.Setup(p => p.Log(level, state, error, formatter)).Throws(Mock.Of<Exception>());
+            mockLogger.Setup(p => p.Log(level, state, error)).Throws(Mock.Of<Exception>());
 
-            sut.Log(level, state, error, formatter);
+            sut.Log(level, state, error);
         }
 
         [Test]
@@ -154,6 +152,26 @@ namespace Tests.Logging
             mockLogger.Setup(p => p.IsEnabled(level)).Throws(Mock.Of<Exception>());
 
             sut.IsEnabled(level);
+        }
+
+        [Test]
+        public void New_creates_logger_from_provider()
+        {
+            mockFactory.Setup(p => p.GetProviders()).Returns(new[] {mockProvider.Object});
+
+            var sut = new Logger(mockFactory.Object, logName);
+
+            mockProvider.Verify(p => p.CreateLogger(logName));
+        }
+
+        [Test]
+        public void IsEnabled_returns_false_if_lower_than_MinimumLevel()
+        {
+            mockFactory.SetupGet(p => p.MinimumLevel).Returns(LogLevel.Error);
+
+            var sut = CreateSystemUnderTest();
+
+            Assert.That(sut.IsEnabled(LogLevel.Information), Is.False);
         }
     }
 }

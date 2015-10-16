@@ -19,7 +19,7 @@ namespace Nybus.Configuration
             _busEngine = busEngine;
             _options = options;
 
-            _logger = _options.LoggerFactory.CreateLogger(nameof(NybusBusBuilder));
+            _logger = _options.LoggerFactory.CreateLogger(nameof(NybusBus));
         }
 
         public NybusBusBuilder(IBusEngine busEngine) : this(busEngine, new NybusOptions()) { }
@@ -67,7 +67,7 @@ namespace Nybus.Configuration
                 }
                 else
                 {
-                    _logger.LogError(new { message = "Handler not found", eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName, correlationId = message.CorrelationId, containerType = _options.Container.GetType().FullName });
+                    _logger.LogError(new { eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName, correlationId = message.CorrelationId, containerType = _options.Container.GetType().FullName }, arg => $"Handler for event {arg.eventType} not found: {arg.handlerType}. Event with correlationId {arg.correlationId} was not served.");
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace Nybus.Configuration
             where TEventHandler : IEventHandler<TEvent> 
             where TEvent : class, IEvent
         {
-            _logger.LogVerbose(new { eventType = typeof(TEvent).FullName, handlerType = typeof(TEventHandler).FullName, correlationId = message.CorrelationId, message = "Handling event" });
+            _logger.LogVerbose(new { eventType = typeof(TEvent).FullName, handlerType = handler.GetType().FullName, correlationId = message.CorrelationId, @event = message.Event.ToString() }, arg => $"Handling event of type {arg.eventType} with correlationId {arg.correlationId} with handler of type {arg.handlerType}. Event: {arg.@event}");
 
             var context = _options.EventContextFactory.CreateContext(message, _options);
             await handler.Handle(context).ConfigureAwait(false);
@@ -127,7 +127,7 @@ namespace Nybus.Configuration
                 }
                 else
                 {
-                    _logger.LogError(new {message = "Handler not found", commandType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName, correlationId = message.CorrelationId, containerType = _options.Container.GetType().FullName });
+                    _logger.LogError(new {commandType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName, correlationId = message.CorrelationId, containerType = _options.Container.GetType().FullName }, arg => $"Handler for command {arg.commandType} not found: {arg.handlerType}. Command with correlationId {arg.correlationId} was not served.");
                 }
             }
         }
@@ -135,7 +135,7 @@ namespace Nybus.Configuration
         private async Task HandleCommandMessage<TCommandHandler, TCommand>(TCommandHandler handler, CommandMessage<TCommand> message)
             where TCommandHandler : ICommandHandler<TCommand> where TCommand : class, ICommand
         {
-            _logger.LogVerbose(new { eventType = typeof(TCommand).FullName, handlerType = typeof(TCommandHandler).FullName, correlationId = message.CorrelationId, message = "Handling command" });
+            _logger.LogVerbose(new { commandType = typeof(TCommand).FullName, handlerType = handler.GetType().FullName, correlationId = message.CorrelationId, command = message.Command.ToString() }, arg => $"Handling command of type {arg.commandType} with correlationId {arg.correlationId} with handler of type {arg.handlerType}. Command: {arg.command}");
 
             var context = _options.CommandContextFactory.CreateContext(message, _options);
             await handler.Handle(context).ConfigureAwait(false);

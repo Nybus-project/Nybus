@@ -16,31 +16,32 @@ namespace Nybus.Utils
         /// Converts an anonymous object into a IReadOnlyDictionary
         /// </summary>
         /// <returns>An IReadOnlyDictionary that contains the values of the properties as items</returns>
-        public static IReadOnlyDictionary<string, object> Convert(object dataObject)
+        public static IDictionary<string, object> Convert(object dataObject)
         {
             if (dataObject == null)
             {
                 return new Dictionary<string, object>();
             }
 
-            if (dataObject is IReadOnlyDictionary<string, object>)
+            if (dataObject is IDictionary<string, object>)
             {
-                return (IReadOnlyDictionary<string, object>)dataObject;
+                return (IDictionary<string, object>)dataObject;
             }
 
-            return (IReadOnlyDictionary<string, object>)GetObjectToDictionaryConverter(dataObject)(dataObject);
+            return (IDictionary<string, object>)GetObjectToDictionaryConverter(dataObject)(dataObject);
         }
 
-        internal static readonly Dictionary<Type, Func<object, IReadOnlyDictionary<string, object>>> Cache = new Dictionary<Type, Func<object, IReadOnlyDictionary<string, object>>>();
+        internal static readonly Dictionary<Type, Func<object, IDictionary<string, object>>> Cache = new Dictionary<Type, Func<object, IDictionary<string, object>>>();
+
         private static readonly ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
 
-        private static Func<object, IReadOnlyDictionary<string, object>> CreateObjectToDictionaryConverter(Type itemType)
+        private static Func<object, IDictionary<string, object>> CreateObjectToDictionaryConverter(Type itemType)
         {
             var dictType = typeof(Dictionary<string, object>);
 
             // setup dynamic method
             // Important: make itemType owner of the method to allow access to internal types
-            var dm = new DynamicMethod(string.Empty, typeof(IReadOnlyDictionary<string, object>), new[] { typeof(object) }, itemType);
+            var dm = new DynamicMethod(string.Empty, typeof(IDictionary<string, object>), new[] { typeof(object) }, itemType);
             var il = dm.GetILGenerator();
 
             // Dictionary.Add(object key, object value)
@@ -80,16 +81,16 @@ namespace Nybus.Utils
             il.Emit(OpCodes.Ldloc_0);
             il.Emit(OpCodes.Ret);
 
-            return (Func<object, IReadOnlyDictionary<string, object>>)dm.CreateDelegate(typeof(Func<object, IReadOnlyDictionary<string, object>>));
+            return (Func<object, IDictionary<string, object>>)dm.CreateDelegate(typeof(Func<object, IDictionary<string, object>>));
         }
 
-        private static Func<object, IReadOnlyDictionary<string, object>> GetObjectToDictionaryConverter(object item)
+        private static Func<object, IDictionary<string, object>> GetObjectToDictionaryConverter(object item)
         {
             rwLock.EnterUpgradeableReadLock();
 
             try
             {
-                Func<object, IReadOnlyDictionary<string, object>> ft;
+                Func<object, IDictionary<string, object>> ft;
 
                 if (!Cache.TryGetValue(item.GetType(), out ft))
                 {

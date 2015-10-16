@@ -30,7 +30,7 @@ namespace Nybus
         public async Task InvokeCommand<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
             var message = _options.CommandMessageFactory.CreateMessage(command, correlationId);
-            _logger.LogInformation(new { type = typeof(TCommand).FullName, correlationId = message.CorrelationId, message = "Invoking command" });
+            _logger.LogVerbose(new { type = typeof(TCommand).FullName, correlationId = message.CorrelationId, command }, arg => $"Invoking command of type {arg.type} with correlationId {arg.correlationId}. Command: {arg.command.ToString()}");
             await _engine.SendCommand(message).ConfigureAwait(false);
         }
 
@@ -43,7 +43,7 @@ namespace Nybus
         public async Task RaiseEvent<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
         {
             var message = _options.EventMessageFactory.CreateMessage(@event, correlationId);
-            _logger.LogInformation(new { type = typeof(TEvent).FullName, correlationId = message.CorrelationId, message = "Raising event" });
+            _logger.LogVerbose(new { type = typeof(TEvent).FullName, correlationId = message.CorrelationId, @event }, arg => $"Raising event of type {arg.type} with correlationId {arg.correlationId}. Event: {arg.@event.ToString()}");
             await _engine.SendEvent(message).ConfigureAwait(false);
         }
 

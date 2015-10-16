@@ -74,7 +74,8 @@ namespace Nybus.MassTransit
         {
             CommandMessage<TCommand> message = _options.ContextManager.CreateCommandMessage(context);
 
-            _logger.LogVerbose(new { message = "Received command", commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount });
+            _logger.LogVerbose(new { commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, command = message.Command.ToString() },
+                arg => $"Received command of type {arg.commandType} with correlationId {arg.correlationId}. (Try n. {arg.retryCount}). Command: {arg.command}");
 
             try
             {
@@ -82,7 +83,8 @@ namespace Nybus.MassTransit
             }
             catch (Exception ex)
             {
-                _logger.LogError(new { message = "Error while processing a command", commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, command = context.Message }, ex);
+                _logger.LogError(new { commandType = typeof(TCommand).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, command = context.Message.ToString() }, ex,
+                    (arg, e) => $"Error while processing event of type {arg.commandType} with correlationId {arg.correlationId}. (Try n. {arg.retryCount}). Command: {arg.command}. Error: {e.Message}");
 
                 var handled = await _options.CommandErrorStrategy.HandleError(context, ex).ConfigureAwait(false);
 
@@ -113,7 +115,8 @@ namespace Nybus.MassTransit
         {
             EventMessage<TEvent> message = _options.ContextManager.CreateEventMessage(context);
 
-            _logger.LogVerbose(new { message= "Received event", eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount });
+            _logger.LogVerbose(new { @event = message.Event.ToString(), eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount },
+                arg => $"Received event of type {arg.eventType} with correlationId {arg.correlationId}. (Try n. {arg.retryCount}). Event: {arg.@event}");
 
             try
             {
@@ -121,7 +124,8 @@ namespace Nybus.MassTransit
             }
             catch (Exception ex)
             {
-                _logger.LogError(new { message= "Error while processing an event", eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, @event = context.Message }, ex);
+                _logger.LogError(new { eventType = typeof(TEvent).FullName, correlationId = message.CorrelationId, retryCount = context.RetryCount, @event = context.Message.ToString() }, ex, 
+                    (arg, e) =>$"Error while processing event of type {arg.eventType} with correlationId {arg.correlationId}. (Try n. {arg.retryCount}). Event: {arg.@event}. Error: {e.Message}");
 
                 var handled = await _options.EventErrorStrategy.HandleError(context, ex).ConfigureAwait(false);
 
