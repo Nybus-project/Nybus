@@ -35,4 +35,20 @@ namespace Nybus.Configuration
     {
         public string GetQueueName() => Guid.NewGuid().ToString("N");
     }
+
+    public class PrefixedTemporaryQueueStrategy : IQueueStrategy
+    {
+        private readonly string _prefix;
+
+        public PrefixedTemporaryQueueStrategy(string prefix)
+        {
+            if (string.IsNullOrEmpty(prefix))
+            {
+                throw new ArgumentNullException(nameof(prefix));
+            }
+            _prefix = prefix;
+        }
+
+        public string GetQueueName() => $"{_prefix}-{Guid.NewGuid():N}?temporary=true";
+    }
 }
