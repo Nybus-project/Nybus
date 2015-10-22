@@ -18,6 +18,6 @@ namespace Nybus.Utils
 
     public class SystemClock : IClock
     {
-        public DateTimeOffset Now { get; } = DateTimeOffset.Now;
+        public DateTimeOffset Now => DateTimeOffset.Now;
     }
 }
