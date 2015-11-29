@@ -75,7 +75,7 @@ namespace Tests.Logging
         }
 
         [Test]
-        public async Task Data_is_added_as_properties()
+        public void Data_is_added_as_properties()
         {
             IDictionary<string, object> dictionary = new Dictionary<string, object>
             {
@@ -91,7 +91,7 @@ namespace Tests.Logging
         }
 
         [Test]
-        public async Task Message_is_added_as_message()
+        public void Message_is_added_as_message()
         {
             IDictionary<string, object> dictionary = new Dictionary<string, object>
             {
