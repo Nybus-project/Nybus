@@ -39,12 +39,6 @@ namespace Nybus.Logging
 
         private LogEventInfo CreateLogEventInfo(NLog.LogLevel level, string message, IDictionary<string, object> dictionary, Exception exception)
         {
-            string assemblyProp = string.Empty;
-            string classProp = string.Empty;
-            string methodProp = string.Empty;
-            string messageProp = string.Empty;
-            string innerMessageProp = string.Empty;
-
             LogEventInfo logEvent = new LogEventInfo(level, _logger.Name, message);
 
             foreach (var item in dictionary)
@@ -54,22 +48,16 @@ namespace Nybus.Logging
 
             if (exception != null)
             {
-                assemblyProp = exception.Source;
-                classProp = exception.TargetSite.DeclaringType.FullName;
-                methodProp = exception.TargetSite.Name;
-                messageProp = exception.Message;
+                logEvent.Properties["error-source"] = exception.Source;
+                logEvent.Properties["error-class"] = exception.TargetSite.DeclaringType.FullName;
+                logEvent.Properties["error-method"] = exception.TargetSite.Name;
+                logEvent.Properties["error-message"] = exception.Message;
 
                 if (exception.InnerException != null)
                 {
-                    innerMessageProp = exception.InnerException.Message;
+                    logEvent.Properties["inner-error-message"] = exception.InnerException.Message;
                 }
             }
-
-            logEvent.Properties["error-source"] = assemblyProp;
-            logEvent.Properties["error-class"] = classProp;
-            logEvent.Properties["error-method"] = methodProp;
-            logEvent.Properties["error-message"] = messageProp;
-            logEvent.Properties["inner-error-message"] = innerMessageProp;
 
             return logEvent;
         }
