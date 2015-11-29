@@ -96,7 +96,7 @@ namespace Tests
 
 
         [Test]
-        public async Task Commands_are_pushed_into_observable()
+        public void Commands_are_pushed_into_observable()
         {
             var busEngine = new InMemoryBusEngine();
             var builder = new NybusBusBuilder(busEngine);
@@ -146,7 +146,7 @@ namespace Tests
         }
 
         [Test]
-        public async Task Events_are_pushed_into_observable()
+        public void Events_are_pushed_into_observable()
         {
             var busEngine = new InMemoryBusEngine();
             var builder = new NybusBusBuilder(busEngine);
