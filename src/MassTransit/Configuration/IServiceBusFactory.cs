@@ -17,7 +17,7 @@ namespace Nybus.Configuration
 
         public RabbitMqServiceBusFactory(int concurrencyLimit)
         {
-            if (concurrencyLimit <= 1)
+            if (concurrencyLimit <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(concurrencyLimit));
             }

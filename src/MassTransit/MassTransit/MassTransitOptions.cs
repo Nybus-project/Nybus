@@ -14,7 +14,7 @@ namespace Nybus.MassTransit
 
         public IErrorStrategy EventErrorStrategy { get; set; } = new RetryErrorStrategy(5);
 
-        public IServiceBusFactory ServiceBusFactory { get; set; } = new RabbitMqServiceBusFactory(Math.Max(1, Environment.ProcessorCount));
+        public IServiceBusFactory ServiceBusFactory { get; set; } = new RabbitMqServiceBusFactory(Environment.ProcessorCount);
 
         public IContextManager ContextManager { get; set; } = new RabbitMqContextManager();
 
