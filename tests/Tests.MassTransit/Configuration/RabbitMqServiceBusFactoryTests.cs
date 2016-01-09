@@ -22,7 +22,7 @@ namespace Tests.Configuration
 
         private RabbitMqServiceBusFactory CreateSystemUnderTest()
         {
-            return new RabbitMqServiceBusFactory();
+            return new RabbitMqServiceBusFactory(1);
         }
     }
 }

@@ -13,6 +13,17 @@ namespace Nybus.Configuration
 
     public class RabbitMqServiceBusFactory : IServiceBusFactory
     {
+        private readonly int _concurrencyLimit;
+
+        public RabbitMqServiceBusFactory(int concurrencyLimit)
+        {
+            if (concurrencyLimit <= 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(concurrencyLimit));
+            }
+            _concurrencyLimit = concurrencyLimit;
+        }
+
         public IServiceBus CreateServiceBus(MassTransitConnectionDescriptor connectionDescriptor, IQueueStrategy queueStrategy, IReadOnlyList<Action<SubscriptionBusServiceConfigurator>> subscriptions)
         {
             return ServiceBusFactory.New(bus =>
@@ -30,6 +41,7 @@ namespace Nybus.Configuration
 
                 bus.ReceiveFrom(receiveUri);
                 bus.UseJsonSerializer();
+                bus.SetConcurrentConsumerLimit(_concurrencyLimit);
 
                 foreach (var subscription in subscriptions)
                     bus.Subscribe(subscription);
@@ -50,7 +62,6 @@ namespace Nybus.Configuration
                 var receiveUri = new Uri(builder.Uri, queueStrategy.GetQueueName());
 
                 bus.ReceiveFrom(receiveUri);
-
                 bus.UseJsonSerializer();
 
                 foreach (var subscription in subscriptions)
