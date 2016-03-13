@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="BusExtensionsTests.cs" />
     <Compile Include="Logging\LoggerExtensionsTests.cs" />
+    <Compile Include="Logging\LoggerFactoryExtensionsTests.cs" />
     <Compile Include="Logging\LoggerFactoryTests.cs" />
     <Compile Include="Logging\LoggerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
