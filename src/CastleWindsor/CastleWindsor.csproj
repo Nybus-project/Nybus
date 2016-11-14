@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="Container\DefaultHandlerInstaller.cs" />
     <Compile Include="Container\WindsorBusContainer.cs" />
+    <Compile Include="Logging\LoggingRegistrationExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WindsorExtensions.cs" />
   </ItemGroup>
