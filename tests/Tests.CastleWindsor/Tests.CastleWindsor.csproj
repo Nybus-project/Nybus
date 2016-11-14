@@ -66,6 +66,7 @@
     <Compile Include="Container\TestEvent.cs" />
     <Compile Include="Container\WindsorBusContainerTests.cs" />
     <Compile Include="Container\WindsorScopeTests.cs" />
+    <Compile Include="Logging\LoggingRegistrationExtensionsTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WindsorExtensionsTests.cs" />
   </ItemGroup>
