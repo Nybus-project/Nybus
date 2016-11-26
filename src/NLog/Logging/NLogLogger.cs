@@ -49,8 +49,15 @@ namespace Nybus.Logging
             if (exception != null)
             {
                 logEvent.Properties["error-source"] = exception.Source;
-                logEvent.Properties["error-class"] = exception.TargetSite.DeclaringType.FullName;
-                logEvent.Properties["error-method"] = exception.TargetSite.Name;
+                if (exception.TargetSite != null)
+                {
+                    if (exception.TargetSite.DeclaringType != null)
+                    {
+                        logEvent.Properties["error-class"] = exception.TargetSite.DeclaringType.FullName;
+                    }
+                    logEvent.Properties["error-method"] = exception.TargetSite.Name;
+
+                }
                 logEvent.Properties["error-message"] = exception.Message;
 
                 if (exception.InnerException != null)
