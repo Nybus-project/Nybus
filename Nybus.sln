@@ -7,9 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E2365000-65A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{11C637BE-1BF6-4395-81F1-BC006C513F3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.Abstractions", "src\Nybus.Abstractions\Nybus.Abstractions.csproj", "{9A2D237D-A683-42EB-8118-DA53BDC5D750}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.Abstractions", "src\Nybus.Abstractions\Nybus.Abstractions.csproj", "{9A2D237D-A683-42EB-8118-DA53BDC5D750}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus", "src\Nybus\Nybus.csproj", "{20AE3A60-E874-4BF8-9867-F299A16977CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus", "src\Nybus\Nybus.csproj", "{20AE3A60-E874-4BF8-9867-F299A16977CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.RabbitMQ", "src\Nybus.RabbitMQ\Nybus.RabbitMQ.csproj", "{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +27,10 @@ Global
 		{20AE3A60-E874-4BF8-9867-F299A16977CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20AE3A60-E874-4BF8-9867-F299A16977CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20AE3A60-E874-4BF8-9867-F299A16977CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,5 +38,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{9A2D237D-A683-42EB-8118-DA53BDC5D750} = {E2365000-65A2-48EE-A1CA-E85FCB1E63DC}
 		{20AE3A60-E874-4BF8-9867-F299A16977CD} = {E2365000-65A2-48EE-A1CA-E85FCB1E63DC}
+		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3} = {E2365000-65A2-48EE-A1CA-E85FCB1E63DC}
 	EndGlobalSection
 EndGlobal
