@@ -74,13 +74,15 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
-        public async Task StopAsync()
+        public Task StopAsync()
         {
             _logger.LogInformation("Bus stopping");
-            await _engine.Stop().ConfigureAwait(false);
+            _engine.Stop();
             _disposable.Dispose();
 
             _logger.LogInformation("Bus stopped");
+
+            return Task.CompletedTask;
         }
 
         private List<ProcessMessage> processes = new List<ProcessMessage>();

@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.Abstractions", "src\N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus", "src\Nybus\Nybus.csproj", "{20AE3A60-E874-4BF8-9867-F299A16977CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.RabbitMQ", "src\Nybus.RabbitMQ\Nybus.RabbitMQ.csproj", "{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.RabbitMQ", "src\Nybus.RabbitMQ\Nybus.RabbitMQ.csproj", "{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E92BBEBE-9CE5-47AA-96C4-A8522E8B8C6C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreConsoleApp", "samples\NetCoreConsoleApp\NetCoreConsoleApp.csproj", "{542D012A-09F4-4A24-B56A-EE1397365BE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +35,10 @@ Global
 		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{542D012A-09F4-4A24-B56A-EE1397365BE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{542D012A-09F4-4A24-B56A-EE1397365BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{542D012A-09F4-4A24-B56A-EE1397365BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{542D012A-09F4-4A24-B56A-EE1397365BE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -39,5 +47,6 @@ Global
 		{9A2D237D-A683-42EB-8118-DA53BDC5D750} = {E2365000-65A2-48EE-A1CA-E85FCB1E63DC}
 		{20AE3A60-E874-4BF8-9867-F299A16977CD} = {E2365000-65A2-48EE-A1CA-E85FCB1E63DC}
 		{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3} = {E2365000-65A2-48EE-A1CA-E85FCB1E63DC}
+		{542D012A-09F4-4A24-B56A-EE1397365BE7} = {E92BBEBE-9CE5-47AA-96C4-A8522E8B8C6C}
 	EndGlobalSection
 EndGlobal
