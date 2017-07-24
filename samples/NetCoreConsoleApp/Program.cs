@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Nybus;
 using System;
 using System.Threading.Tasks;
@@ -9,12 +10,19 @@ namespace NetCoreConsoleApp
     {
         static void Main(string[] args)
         {
-            ILoggerFactory loggerFactory = new LoggerFactory();
+            IServiceCollection services = new ServiceCollection();
+            services.AddLogging();
+
+            services.AddSingleton<IBusEngine>(new InMemoryBusEngine());
+
+            services.AddSingleton<IBus, NybusBus>();
+
+            IServiceProvider serviceProvider = services.BuildServiceProvider();
+
+            ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             loggerFactory.AddConsole(LogLevel.Trace);
 
-            var busEngine = new InMemoryBusEngine();
-
-            IBus bus = new NybusBus(busEngine, loggerFactory.CreateLogger<NybusBus>());
+            IBus bus = serviceProvider.GetRequiredService<IBus>();
 
             bus.SubscribeToCommand<TestCommand>(async ctx => {
 

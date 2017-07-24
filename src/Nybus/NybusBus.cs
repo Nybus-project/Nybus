@@ -4,6 +4,7 @@ using System.Text;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Nybus.Utils;
 using System.Linq;
 using System.Reactive;
@@ -13,12 +14,14 @@ namespace Nybus
     public class NybusBus : IBus
     {
         private readonly IBusEngine _engine;
+        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<NybusBus> _logger;
 
-        public NybusBus(IBusEngine busEngine, ILogger<NybusBus> logger)
+        public NybusBus(IBusEngine busEngine, IServiceProvider serviceProvider, ILogger<NybusBus> logger)
         {
             _engine = busEngine ?? throw new ArgumentNullException(nameof(busEngine));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
 
@@ -98,6 +101,13 @@ namespace Nybus
             processes.Add(process);
         }
 
+        public void SubscribeToCommand<TCommand, TCommandHandler>()
+            where TCommand : class, ICommand
+            where TCommandHandler : class, ICommandHandler<TCommand>
+        {
+            _engine.SubscribeToCommand<TCommand>();
+        }
+
         public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
         {
             _engine.SubscribeToEvent<TEvent>();
@@ -111,6 +121,13 @@ namespace Nybus
 
             processes.Add(process);
 
+        }
+
+        public void SubscribeToEvent<TEvent, TEventHandler>()
+            where TEvent : class, IEvent
+            where TEventHandler : class, IEventHandler<TEvent>
+        {
+            _engine.SubscribeToEvent<TEvent>();
         }
 
         private delegate IObservable<Unit> ProcessMessage(IObservable<Message> message);
