@@ -16,7 +16,15 @@ namespace Nybus
 
         void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand;
 
+        void SubscribeToCommand<TCommand, TCommandHandler>()
+            where TCommand : class, ICommand
+            where TCommandHandler : class, ICommandHandler<TCommand>;
+
         void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent;
+
+        void SubscribeToEvent<TEvent, TEventHandler>()
+            where TEvent : class, IEvent
+            where TEventHandler : class, IEventHandler<TEvent>;
     }
 
     public delegate Task CommandReceived<TCommand>(ICommandContext<TCommand> context) where TCommand : class, ICommand;

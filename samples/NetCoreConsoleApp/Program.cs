@@ -17,6 +17,9 @@ namespace NetCoreConsoleApp
 
             services.AddSingleton<IBus, NybusBus>();
 
+            services.AddTransient<ICommandHandler<TestCommand>, TestCommandHandler>();
+            services.AddTransient<TestEventHandler>();
+
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
             ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
@@ -32,12 +35,14 @@ namespace NetCoreConsoleApp
                 });
             });
 
-            bus.SubscribeToEvent<TestEvent>(ctx => {
+            //bus.SubscribeToEvent<TestEvent>(ctx => {
 
-                Console.WriteLine(ctx.Event.Message);
+            //    Console.WriteLine(ctx.Event.Message);
 
-                return Task.CompletedTask;
-            });
+            //    return Task.CompletedTask;
+            //});
+
+            bus.SubscribeToEvent<TestEvent, TestEventHandler>();
 
             bus.StartAsync().GetAwaiter().GetResult();
 

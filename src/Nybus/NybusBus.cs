@@ -105,7 +105,12 @@ namespace Nybus
             where TCommand : class, ICommand
             where TCommandHandler : class, ICommandHandler<TCommand>
         {
-            _engine.SubscribeToCommand<TCommand>();
+            SubscribeToCommand<TCommand>(async ctx => 
+            {
+                TCommandHandler handler = _serviceProvider.GetRequiredService<TCommandHandler>();
+
+                await handler.HandleAsync(ctx).ConfigureAwait(false);
+            });
         }
 
         public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
@@ -127,7 +132,12 @@ namespace Nybus
             where TEvent : class, IEvent
             where TEventHandler : class, IEventHandler<TEvent>
         {
-            _engine.SubscribeToEvent<TEvent>();
+            SubscribeToEvent<TEvent>(async ctx => 
+            {
+                TEventHandler handler = _serviceProvider.GetRequiredService<TEventHandler>();
+
+                await handler.HandleAsync(ctx).ConfigureAwait(false);
+            });
         }
 
         private delegate IObservable<Unit> ProcessMessage(IObservable<Message> message);
