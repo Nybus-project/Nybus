@@ -69,8 +69,8 @@ namespace Nybus
                 Command = command,
                 Headers = new HeaderBag
                 {
-                    [Headers.CorrelationId] = Guid.NewGuid().ToString(),
-                    [Headers.SentOn] = Clock.Default.Now.ToString("O")
+                    [Headers.CorrelationId] = Helpers.StringfyGuid(Guid.NewGuid()),
+                    [Headers.SentOn] = Helpers.StringfyDateTimeOffset(Clock.Default.Now)
                 }
             });
 
@@ -84,8 +84,8 @@ namespace Nybus
                 Event = @event,
                 Headers = new HeaderBag
                 {
-                    [Headers.CorrelationId] = Guid.NewGuid().ToString(),
-                    [Headers.SentOn] = Clock.Default.Now.ToString("O")
+                    [Headers.CorrelationId] = Helpers.StringfyGuid(Guid.NewGuid()),
+                    [Headers.SentOn] = Helpers.StringfyDateTimeOffset(Clock.Default.Now)
                 }
             });
 

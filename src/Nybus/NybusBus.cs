@@ -21,9 +21,6 @@ namespace Nybus
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        string StringfyGuid(Guid guid) => guid.ToString("N");
-
-        string StringfyDateTimeOffset(DateTimeOffset dto) => dto.ToString("O");
 
         public async Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
@@ -31,8 +28,8 @@ namespace Nybus
             {
                 Headers = new HeaderBag
                 {
-                    [Headers.CorrelationId] = StringfyGuid(correlationId),
-                    [Headers.SentOn] = StringfyDateTimeOffset(Clock.Default.Now)
+                    [Headers.CorrelationId] = Helpers.StringfyGuid(correlationId),
+                    [Headers.SentOn] = Helpers.StringfyDateTimeOffset(Clock.Default.Now)
                 },
                 Command = command
             };
@@ -47,8 +44,8 @@ namespace Nybus
             {
                 Headers = new HeaderBag
                 {
-                    [Headers.CorrelationId] = StringfyGuid(correlationId),
-                    [Headers.SentOn] = StringfyDateTimeOffset(Clock.Default.Now)
+                    [Headers.CorrelationId] = Helpers.StringfyGuid(correlationId),
+                    [Headers.SentOn] = Helpers.StringfyDateTimeOffset(Clock.Default.Now)
                 },
                 Event = @event
             };
