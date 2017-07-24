@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Nybus
 {
@@ -8,16 +9,14 @@ namespace Nybus
 
         Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent;
 
-        void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand;
+        IObservable<Message> Start();
 
-        void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent;
+        void Stop();
 
-        Task StartAsync();
+        void SubscribeToCommand<TCommand>() where TCommand : class, ICommand;
 
-        Task StopAsync();
+        void SubscribeToEvent<TEvent>() where TEvent : class, IEvent;
     }
 
-    public delegate Task CommandReceived<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand;
-
-    public delegate Task EventReceived<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent;
+    public delegate Task MessageReceived(Message message);
 }

@@ -1,10 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Nybus
 {
     public abstract class Message
     {
         public HeaderBag Headers { get; set; }
+
+        public abstract MessageType MessageType { get; }
+    }
+
+    public enum MessageType
+    {
+        Command, Event
     }
 
     public class HeaderBag : Dictionary<string, string> { }
@@ -15,13 +23,31 @@ namespace Nybus
         public static readonly string SentOn = "SentOn";
     }
 
-    public class CommandMessage<TCommand> : Message where TCommand: class, ICommand
+    public abstract class CommandMessage : Message
     {
-        public TCommand Command { get; set; }
+        public abstract Type CommandType { get; }
+
+        public override MessageType MessageType => MessageType.Command;
     }
 
-    public class EventMessage<TEvent> : Message where TEvent : class, IEvent
+    public class CommandMessage<TCommand> : CommandMessage where TCommand: class, ICommand
+    {
+        public TCommand Command { get; set; }
+
+        public override Type CommandType => typeof(TCommand);
+    }
+
+    public abstract class EventMessage : Message
+    {
+        public abstract Type EventType { get; }
+
+        public override MessageType MessageType => MessageType.Event;
+    }
+
+    public class EventMessage<TEvent> : EventMessage where TEvent : class, IEvent
     {
         public TEvent Event { get; set; }
+
+        public override Type EventType => typeof(TEvent);
     }
 }

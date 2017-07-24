@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Nybus.Utils;
+using System.Linq;
+using System.Reactive;
 
 namespace Nybus
 {
@@ -54,18 +57,64 @@ namespace Nybus
             await _engine.SendEventAsync(message).ConfigureAwait(false);
         }
 
-        public async Task StartAsync()
+        private IDisposable _disposable;
+
+        public Task StartAsync()
         {
             _logger.LogInformation("Bus starting");
-            await _engine.StartAsync().ConfigureAwait(false);
+
+            IObservable<Message> fromEngine = _engine.Start();
+
+            var sequence = processes.ToObservable().Select(p => p(fromEngine)).SelectMany(p => p);
+
+            _disposable = sequence.Subscribe();
+
             _logger.LogInformation("Bus started");
+
+            return Task.CompletedTask;
         }
 
         public async Task StopAsync()
         {
             _logger.LogInformation("Bus stopping");
-            await _engine.StopAsync().ConfigureAwait(false);
+            await _engine.Stop().ConfigureAwait(false);
+            _disposable.Dispose();
+
             _logger.LogInformation("Bus stopped");
         }
+
+        private List<ProcessMessage> processes = new List<ProcessMessage>();
+
+        public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
+        {
+            _engine.SubscribeToCommand<TCommand>();
+
+            ProcessMessage process = messages => from message in messages
+                                                 where message is CommandMessage<TCommand>
+                                                 let commandMessage = (CommandMessage<TCommand>)message
+                                                 let context = new NybusCommandContext<TCommand>(commandMessage)
+                                                 from task in Observable.FromAsync(() => commandReceived(context))
+                                                 select task;
+
+            processes.Add(process);
+        }
+
+        public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
+        {
+            _engine.SubscribeToEvent<TEvent>();
+
+            ProcessMessage process = messages => from message in messages
+                                                 where message is EventMessage<TEvent>
+                                                 let eventMessage = (EventMessage<TEvent>)message
+                                                 let context = new NybusEventContext<TEvent>(eventMessage)
+                                                 from task in Observable.FromAsync(() => eventReceived(context))
+                                                 select task;
+
+            processes.Add(process);
+
+        }
+
+        private delegate IObservable<Unit> ProcessMessage(IObservable<Message> message);
+
     }
 }
