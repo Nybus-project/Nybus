@@ -1,17 +1,20 @@
-﻿using System;
+﻿using Nybus.Utils;
+using System;
 
 namespace Nybus
 {
-    public abstract class NybusContext
+    public abstract class NybusContext : IContext
     {
         protected NybusContext (Message message)
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            ReceivedOn = DateTimeOffset.Parse(message.Headers[Headers.SentOn]);
+            SentOn = DateTimeOffset.Parse(message.Headers[Headers.SentOn]);
             CorrelationId = Guid.Parse(message.Headers[Headers.CorrelationId]);
-
+            ReceivedOn = Clock.Default.Now;
         }
+
+        public DateTimeOffset SentOn { get; private set; }
 
         public DateTimeOffset ReceivedOn { get; private set; }
 

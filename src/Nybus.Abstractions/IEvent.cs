@@ -12,12 +12,8 @@ namespace Nybus
         Task HandleAsync(IEventContext<TEvent> incomingEvent);
     }
     
-    public interface IEventContext<TEvent> where TEvent : class, IEvent
+    public interface IEventContext<TEvent> : IContext where TEvent : class, IEvent
     {
         TEvent Event { get; }
-
-        DateTimeOffset ReceivedOn { get; }
-
-        Guid CorrelationId { get; }
     }
 }
