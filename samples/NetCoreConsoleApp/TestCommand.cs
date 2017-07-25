@@ -11,16 +11,9 @@ namespace NetCoreConsoleApp
 
     public class TestCommandHandler : ICommandHandler<TestCommand>
     {
-        private readonly IBus _bus;
-
-        public TestCommandHandler(IBus bus)
+        public async Task HandleAsync(IBusDispatcher bus, ICommandContext<TestCommand> incomingCommand)
         {
-            _bus = bus ?? throw new ArgumentNullException(nameof(bus));
-        }
-
-        public async Task HandleAsync(ICommandContext<TestCommand> incomingCommand)
-        {
-            await _bus.RaiseEventAsync(new TestEvent
+            await bus.RaiseEventAsync(new TestEvent
             {
                 Message = $"Received: {incomingCommand.Command.Message}"
             });

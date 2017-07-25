@@ -21,7 +21,7 @@ namespace NetCoreConsoleApp
             _logger.LogTrace($"ctor: {nameof(TestEventHandler)}");
         }
 
-        public Task HandleAsync(IEventContext<TestEvent> incomingEvent)
+        public Task HandleAsync(IBusDispatcher bus, IEventContext<TestEvent> incomingEvent)
         {
             _logger.LogInformation(incomingEvent.Event.Message);
 

@@ -29,15 +29,20 @@ namespace Nybus
             return bus;
         }
 
+        public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
+        {
+            _subscriptions.Add(bus => bus.SubscribeToCommand(commandReceived));
+        }
+
         public void SubscribeToCommand<TCommand, TCommandHandler>()
             where TCommand : class, ICommand
             where TCommandHandler : class, ICommandHandler<TCommand>
         {
-            _subscriptions.Add(bus => bus.SubscribeToCommand<TCommand>(async ctx =>
+            _subscriptions.Add(bus => bus.SubscribeToCommand<TCommand>(async (b, ctx) =>
             {
                 TCommandHandler handler = _serviceProvider.GetRequiredService<TCommandHandler>();
 
-                await handler.HandleAsync(ctx).ConfigureAwait(false);
+                await handler.HandleAsync(b, ctx).ConfigureAwait(false);
             }));
         }
 
@@ -45,12 +50,17 @@ namespace Nybus
             where TEvent : class, IEvent
             where TEventHandler : class, IEventHandler<TEvent>
         {
-            _subscriptions.Add(bus => bus.SubscribeToEvent<TEvent>(async ctx =>
+            _subscriptions.Add(bus => bus.SubscribeToEvent<TEvent>(async (b, ctx) =>
             {
                 TEventHandler handler = _serviceProvider.GetRequiredService<TEventHandler>();
 
-                await handler.HandleAsync(ctx).ConfigureAwait(false);
+                await handler.HandleAsync(b, ctx).ConfigureAwait(false);
             }));
+        }
+
+        public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
+        {
+            _subscriptions.Add(bus => bus.SubscribeToEvent(eventReceived));
         }
     }
 }

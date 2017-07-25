@@ -21,6 +21,14 @@ namespace NetCoreConsoleApp
                 cfg.UseInMemoryBusEngine();
 
                 cfg.SubscribeToEvent<TestEvent, TestEventHandler>();
+
+                cfg.SubscribeToCommand<TestCommand>(async (b, ctx) => {
+
+                    await b.RaiseEventAsync(new TestEvent
+                    {
+                        Message = $@"Received ""{ctx.Command.Message}"""
+                    }, ctx.CorrelationId);
+                });
             });
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -30,19 +38,13 @@ namespace NetCoreConsoleApp
 
             IBus bus = serviceProvider.GetRequiredService<IBus>();
 
-            bus.SubscribeToCommand<TestCommand>(async ctx => {
-                
-                await bus.RaiseEventAsync(new TestEvent
-                {
-                    Message = $@"Received ""{ctx.Command.Message}"""
-                }, ctx.CorrelationId);
-            });
-
             bus.StartAsync().GetAwaiter().GetResult();
 
             bus.InvokeCommandAsync(new TestCommand { Message = "Hello World" });
 
             bus.InvokeCommandAsync(new TestCommand { Message = "Foo bar" });
+
+            bus.StopAsync().GetAwaiter().GetResult();
 
             Console.ReadLine();
         }

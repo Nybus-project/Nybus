@@ -38,6 +38,11 @@ namespace Nybus.Configuration
             serviceConfigurations.Add(services => services.AddTransient<TCommandHandler>());
         }
 
+        public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
+        {
+            busBuilderConfigurations.Add(builder => builder.SubscribeToCommand(commandReceived));
+        }
+
         public void SubscribeToEvent<TEvent, TEventHandler>()
             where TEvent : class, IEvent
             where TEventHandler : class, IEventHandler<TEvent>
@@ -45,6 +50,11 @@ namespace Nybus.Configuration
             busBuilderConfigurations.Add(builder => builder.SubscribeToEvent<TEvent, TEventHandler>());
 
             serviceConfigurations.Add(services => services.AddTransient<TEventHandler>());
+        }
+
+        public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
+        {
+            busBuilderConfigurations.Add(builder => builder.SubscribeToEvent(eventReceived));
         }
     }
 }

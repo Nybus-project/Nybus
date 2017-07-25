@@ -11,8 +11,12 @@ namespace Nybus.Configuration
             where TCommand : class, ICommand
             where TCommandHandler : class, ICommandHandler<TCommand>;
 
+        void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand;
+
         void SubscribeToEvent<TEvent, TEventHandler>()
             where TEvent : class, IEvent
             where TEventHandler : class, IEventHandler<TEvent>;
+
+        void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent;
     }
 }

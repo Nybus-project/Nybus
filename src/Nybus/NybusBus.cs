@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 using Nybus.Utils;
 using System.Linq;
 using System.Reactive;
@@ -61,7 +59,7 @@ namespace Nybus
 
         public Task StartAsync()
         {
-            _logger.LogInformation("Bus starting");
+            _logger.LogTrace("Bus starting");
 
             IObservable<Message> fromEngine = _engine.Start();
 
@@ -69,18 +67,18 @@ namespace Nybus
 
             _disposable = sequence.Subscribe();
 
-            _logger.LogInformation("Bus started");
+            _logger.LogTrace("Bus started");
 
             return Task.CompletedTask;
         }
 
         public Task StopAsync()
         {
-            _logger.LogInformation("Bus stopping");
+            _logger.LogTrace("Bus stopping");
             _engine.Stop();
             _disposable.Dispose();
 
-            _logger.LogInformation("Bus stopped");
+            _logger.LogTrace("Bus stopped");
 
             return Task.CompletedTask;
         }
@@ -95,7 +93,7 @@ namespace Nybus
                                                          where message is CommandMessage<TCommand>
                                                          let commandMessage = (CommandMessage<TCommand>)message
                                                          let context = new NybusCommandContext<TCommand>(commandMessage)
-                                                         from task in Observable.FromAsync(() => commandReceived(context))
+                                                         from task in Observable.FromAsync(() => commandReceived(this, context))
                                                          select task;
 
             pipelineFactories.Add(factory);
@@ -109,7 +107,7 @@ namespace Nybus
                                                          where message is EventMessage<TEvent>
                                                          let eventMessage = (EventMessage<TEvent>)message
                                                          let context = new NybusEventContext<TEvent>(eventMessage)
-                                                         from task in Observable.FromAsync(() => eventReceived(context))
+                                                         from task in Observable.FromAsync(() => eventReceived(this, context))
                                                          select task;
 
             pipelineFactories.Add(factory);
