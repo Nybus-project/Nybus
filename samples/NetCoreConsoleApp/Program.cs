@@ -13,12 +13,15 @@ namespace NetCoreConsoleApp
             IServiceCollection services = new ServiceCollection();
             services.AddLogging();
 
-            services.AddSingleton<IBusEngine>(new InMemoryBusEngine());
+            //services.AddTransient<ICommandHandler<TestCommand>, TestCommandHandler>();
 
-            services.AddSingleton<IBus, NybusBus>();
 
-            services.AddTransient<ICommandHandler<TestCommand>, TestCommandHandler>();
-            services.AddTransient<TestEventHandler>();
+            services.AddNybus(cfg =>
+            {
+                cfg.UseInMemoryBusEngine();
+
+                cfg.SubscribeToEvent<TestEvent, TestEventHandler>();
+            });
 
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
@@ -28,25 +31,18 @@ namespace NetCoreConsoleApp
             IBus bus = serviceProvider.GetRequiredService<IBus>();
 
             bus.SubscribeToCommand<TestCommand>(async ctx => {
-
+                
                 await bus.RaiseEventAsync(new TestEvent
                 {
-                    Message = $"Received: {ctx.Command.Message}"
-                });
+                    Message = $@"Received ""{ctx.Command.Message}"""
+                }, ctx.CorrelationId);
             });
-
-            //bus.SubscribeToEvent<TestEvent>(ctx => {
-
-            //    Console.WriteLine(ctx.Event.Message);
-
-            //    return Task.CompletedTask;
-            //});
-
-            bus.SubscribeToEvent<TestEvent, TestEventHandler>();
 
             bus.StartAsync().GetAwaiter().GetResult();
 
             bus.InvokeCommandAsync(new TestCommand { Message = "Hello World" });
+
+            bus.InvokeCommandAsync(new TestCommand { Message = "Foo bar" });
 
             Console.ReadLine();
         }

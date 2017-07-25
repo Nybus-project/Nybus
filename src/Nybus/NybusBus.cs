@@ -65,7 +65,7 @@ namespace Nybus
 
             IObservable<Message> fromEngine = _engine.Start();
 
-            var sequence = processes.ToObservable().Select(p => p(fromEngine)).SelectMany(p => p);
+            var sequence = pipelineFactories.ToObservable().Select(factory => factory(fromEngine)).SelectMany(p => p);
 
             _disposable = sequence.Subscribe();
 
@@ -85,62 +85,38 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
-        private List<ProcessMessage> processes = new List<ProcessMessage>();
+        private List<MessagePipelineFactory> pipelineFactories = new List<MessagePipelineFactory>();
 
         public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
         {
             _engine.SubscribeToCommand<TCommand>();
 
-            ProcessMessage process = messages => from message in messages
-                                                 where message is CommandMessage<TCommand>
-                                                 let commandMessage = (CommandMessage<TCommand>)message
-                                                 let context = new NybusCommandContext<TCommand>(commandMessage)
-                                                 from task in Observable.FromAsync(() => commandReceived(context))
-                                                 select task;
+            MessagePipelineFactory factory = messages => from message in messages
+                                                         where message is CommandMessage<TCommand>
+                                                         let commandMessage = (CommandMessage<TCommand>)message
+                                                         let context = new NybusCommandContext<TCommand>(commandMessage)
+                                                         from task in Observable.FromAsync(() => commandReceived(context))
+                                                         select task;
 
-            processes.Add(process);
-        }
-
-        public void SubscribeToCommand<TCommand, TCommandHandler>()
-            where TCommand : class, ICommand
-            where TCommandHandler : class, ICommandHandler<TCommand>
-        {
-            SubscribeToCommand<TCommand>(async ctx => 
-            {
-                TCommandHandler handler = _serviceProvider.GetRequiredService<TCommandHandler>();
-
-                await handler.HandleAsync(ctx).ConfigureAwait(false);
-            });
+            pipelineFactories.Add(factory);
         }
 
         public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
         {
             _engine.SubscribeToEvent<TEvent>();
 
-            ProcessMessage process = messages => from message in messages
-                                                 where message is EventMessage<TEvent>
-                                                 let eventMessage = (EventMessage<TEvent>)message
-                                                 let context = new NybusEventContext<TEvent>(eventMessage)
-                                                 from task in Observable.FromAsync(() => eventReceived(context))
-                                                 select task;
+            MessagePipelineFactory factory = messages => from message in messages
+                                                         where message is EventMessage<TEvent>
+                                                         let eventMessage = (EventMessage<TEvent>)message
+                                                         let context = new NybusEventContext<TEvent>(eventMessage)
+                                                         from task in Observable.FromAsync(() => eventReceived(context))
+                                                         select task;
 
-            processes.Add(process);
+            pipelineFactories.Add(factory);
 
         }
 
-        public void SubscribeToEvent<TEvent, TEventHandler>()
-            where TEvent : class, IEvent
-            where TEventHandler : class, IEventHandler<TEvent>
-        {
-            SubscribeToEvent<TEvent>(async ctx => 
-            {
-                TEventHandler handler = _serviceProvider.GetRequiredService<TEventHandler>();
-
-                await handler.HandleAsync(ctx).ConfigureAwait(false);
-            });
-        }
-
-        private delegate IObservable<Unit> ProcessMessage(IObservable<Message> message);
+        private delegate IObservable<Unit> MessagePipelineFactory(IObservable<Message> message);
 
     }
 }
