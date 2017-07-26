@@ -16,6 +16,8 @@ namespace Nybus
         void SubscribeToCommand<TCommand>() where TCommand : class, ICommand;
 
         void SubscribeToEvent<TEvent>() where TEvent : class, IEvent;
+
+        Task NotifySuccess(Message message);
     }
 
     public delegate Task MessageReceived(Message message);

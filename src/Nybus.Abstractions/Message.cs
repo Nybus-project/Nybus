@@ -5,6 +5,8 @@ namespace Nybus
 {
     public abstract class Message
     {
+        public string MessageId { get; set; }
+
         public HeaderBag Headers { get; set; }
 
         public abstract MessageType MessageType { get; }

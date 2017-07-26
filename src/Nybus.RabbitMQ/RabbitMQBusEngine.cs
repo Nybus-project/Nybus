@@ -22,22 +22,27 @@ namespace Nybus
             throw new NotImplementedException();
         }
 
-        Task IBusEngine.SendCommandAsync<TCommand>(CommandMessage<TCommand> message)
+        public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
         {
             throw new NotImplementedException();
         }
 
-        Task IBusEngine.SendEventAsync<TEvent>(EventMessage<TEvent> message)
+        public Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
         {
             throw new NotImplementedException();
         }
 
-        void IBusEngine.SubscribeToCommand<TCommand>()
+        public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
         {
             throw new NotImplementedException();
         }
 
-        void IBusEngine.SubscribeToEvent<TEvent>()
+        public void SubscribeToEvent<TEvent>() where TEvent : class, IEvent
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task NotifySuccess(Message message)
         {
             throw new NotImplementedException();
         }

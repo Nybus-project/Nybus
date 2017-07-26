@@ -93,10 +93,23 @@ namespace Nybus
                                                          where message is CommandMessage<TCommand>
                                                          let commandMessage = (CommandMessage<TCommand>)message
                                                          let context = new NybusCommandContext<TCommand>(commandMessage)
-                                                         from task in Observable.FromAsync(() => commandReceived(this, context))
-                                                         select task;
+                                                         from t1 in ExecuteHandler(context)
+                                                         from t2 in NotifySuccess(commandMessage)
+                                                         select Unit.Default;
 
             pipelineFactories.Add(factory);
+
+            async Task<Unit> ExecuteHandler(ICommandContext<TCommand> context)
+            {
+                await commandReceived(this, context);
+                return Unit.Default;
+            }
+
+            async Task<Unit> NotifySuccess(CommandMessage<TCommand> message)
+            {
+                await _engine.NotifySuccess(message);
+                return Unit.Default;
+            }
         }
 
         public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
@@ -107,11 +120,23 @@ namespace Nybus
                                                          where message is EventMessage<TEvent>
                                                          let eventMessage = (EventMessage<TEvent>)message
                                                          let context = new NybusEventContext<TEvent>(eventMessage)
-                                                         from task in Observable.FromAsync(() => eventReceived(this, context))
-                                                         select task;
+                                                         from t1 in ExecuteHandler(context)
+                                                         from t2 in NotifySuccess(eventMessage)
+                                                         select Unit.Default;
 
             pipelineFactories.Add(factory);
 
+            async Task<Unit> ExecuteHandler(IEventContext<TEvent> context)
+            {
+                await eventReceived(this, context);
+                return Unit.Default;
+            }
+
+            async Task<Unit> NotifySuccess(EventMessage<TEvent> message)
+            {
+                await _engine.NotifySuccess(message);
+                return Unit.Default;
+            }
         }
 
         private delegate IObservable<Unit> MessagePipelineFactory(IObservable<Message> message);

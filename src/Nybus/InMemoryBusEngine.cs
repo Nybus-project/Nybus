@@ -62,6 +62,11 @@ namespace Nybus
             _acceptedTypes.Add(typeof(TEvent));
         }
 
+        public Task NotifySuccess(Message message)
+        {
+            return Task.CompletedTask;
+        }
+
         public Task PushCommandAsync<TCommand>(TCommand command) where TCommand : class, ICommand
         {
             _sequenceOfMessages.OnNext(new CommandMessage<TCommand>
