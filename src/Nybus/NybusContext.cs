@@ -12,6 +12,8 @@ namespace Nybus
             SentOn = DateTimeOffset.Parse(message.Headers[Headers.SentOn]);
             CorrelationId = Guid.Parse(message.Headers[Headers.CorrelationId]);
             ReceivedOn = Clock.Default.Now;
+
+            Message = message;
         }
 
         public DateTimeOffset SentOn { get; private set; }
@@ -19,6 +21,8 @@ namespace Nybus
         public DateTimeOffset ReceivedOn { get; private set; }
 
         public Guid CorrelationId { get; private set; }
+
+        protected Message Message { get; private set; }
     }
 
     public class NybusCommandContext<TCommand> : NybusContext, ICommandContext<TCommand> where TCommand : class, ICommand

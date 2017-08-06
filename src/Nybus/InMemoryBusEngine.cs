@@ -67,6 +67,11 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
+        public Task NotifyFail(Message message)
+        {
+            return Task.CompletedTask;
+        }
+
         public Task PushCommandAsync<TCommand>(TCommand command) where TCommand : class, ICommand
         {
             _sequenceOfMessages.OnNext(new CommandMessage<TCommand>

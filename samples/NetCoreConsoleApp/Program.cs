@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Nybus;
 using System;
 using System.Threading.Tasks;
+using Nybus.Policies;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace NetCoreConsoleApp
 {
@@ -10,19 +13,43 @@ namespace NetCoreConsoleApp
     {
         static void Main(string[] args)
         {
+            IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
+            configurationBuilder.AddInMemoryCollection(new Dictionary<string, string>
+            {
+                //["Nybus:Policies:CommandError:Retry:MaxRetries"] = "5",
+                //["Nybus:Policies:EventError:Retry:MaxRetries"] = "5",
+                ["RetryCommandError:MaxRetries"] = "5",
+                ["RetryEventError:MaxRetries"] = "5"
+            });
+
+            IConfiguration configuration = configurationBuilder.Build();
+
             IServiceCollection services = new ServiceCollection();
             services.AddLogging();
+            services.AddOptions();
+
+            services.AddTransient<RetryCommandErrorPolicy>();
+            services.AddTransient<RetryEventErrorPolicy>();
+            services.Configure<RetryCommandErrorPolicyOptions>(configuration.GetSection("RetryCommandError"));
+            services.Configure<RetryEventErrorPolicyOptions>(configuration.GetSection("RetryEventError"));
 
             //services.AddTransient<ICommandHandler<TestCommand>, TestCommandHandler>();
 
-
             services.AddNybus(cfg =>
             {
+                cfg.CustomizeOptions(options => 
+                {
+                    options.SetCommandErrorPolicy<RetryCommandErrorPolicy>();
+                    options.SetEventErrorPolicy<RetryEventErrorPolicy>();
+                });
+
                 cfg.UseInMemoryBusEngine();
 
                 cfg.SubscribeToEvent<TestEvent, TestEventHandler>();
 
-                cfg.SubscribeToCommand<TestCommand>(async (b, ctx) => {
+                cfg.SubscribeToCommand<TestCommand>(async (b, ctx) => 
+                {
+                    throw new Exception("Error");
 
                     await b.RaiseEventAsync(new TestEvent
                     {

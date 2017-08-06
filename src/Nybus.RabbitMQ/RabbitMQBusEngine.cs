@@ -46,5 +46,10 @@ namespace Nybus
         {
             throw new NotImplementedException();
         }
+
+        public Task NotifyFail(Message message)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

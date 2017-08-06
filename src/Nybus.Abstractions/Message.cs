@@ -21,8 +21,9 @@ namespace Nybus
 
     public static class Headers
     {
-        public static readonly string CorrelationId = "CorrelationId";
-        public static readonly string SentOn = "SentOn";
+        public static readonly string CorrelationId = nameof(CorrelationId);
+        public static readonly string SentOn = nameof(SentOn);
+        public static readonly string RetryCount = nameof(RetryCount);
     }
 
     public abstract class CommandMessage : Message

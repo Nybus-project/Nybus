@@ -7,6 +7,8 @@ namespace Nybus.Configuration
     {
         void UseBusEngine<TEngine>(Action<IServiceCollection> configureServices = null) where TEngine : class, IBusEngine;
 
+        void CustomizeOptions(Action<INybusBusOptionsBuilder> configureOptions);
+
         void SubscribeToCommand<TCommand, TCommandHandler>()
             where TCommand : class, ICommand
             where TCommandHandler : class, ICommandHandler<TCommand>;

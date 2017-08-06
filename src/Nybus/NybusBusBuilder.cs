@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Nybus.Policies;
 
 namespace Nybus
 {
@@ -17,9 +18,15 @@ namespace Nybus
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        public IBus Build(IBusEngine engine)
+        public IBus Build(IBusEngine engine, NybusBusOptions options)
         {
-            var bus = new NybusBus(engine, _serviceProvider, _loggerFactory.CreateLogger<NybusBus>());
+            //var options = new NybusBusOptions
+            //{
+            //    CommandErrorPolicy = new RetryCommandErrorPolicy(5, _loggerFactory.CreateLogger<RetryCommandErrorPolicy>()),
+            //    EventErrorPolicy = new RetryEventErrorPolicy(5, _loggerFactory.CreateLogger<RetryEventErrorPolicy>())
+            //};
+
+            var bus = new NybusBus(engine, options, _loggerFactory.CreateLogger<NybusBus>());
 
             foreach (var subscription in _subscriptions)
             {

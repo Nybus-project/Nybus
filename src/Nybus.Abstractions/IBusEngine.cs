@@ -18,6 +18,8 @@ namespace Nybus
         void SubscribeToEvent<TEvent>() where TEvent : class, IEvent;
 
         Task NotifySuccess(Message message);
+
+        Task NotifyFail(Message message);
     }
 
     public delegate Task MessageReceived(Message message);

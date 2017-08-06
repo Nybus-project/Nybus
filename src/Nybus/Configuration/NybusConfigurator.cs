@@ -21,6 +21,19 @@ namespace Nybus.Configuration
                 cfg(builder);
         }
 
+        public void ConfigureOptions(INybusBusOptionsBuilder optionsBuilder)
+        {
+            if (_configureOptions != null)
+                _configureOptions(optionsBuilder);
+        }
+
+        private Action<INybusBusOptionsBuilder> _configureOptions;
+
+        public void CustomizeOptions(Action<INybusBusOptionsBuilder> configureOptions)
+        {
+            _configureOptions = configureOptions ?? throw new ArgumentNullException(nameof(configureOptions));
+        }
+
         public void UseBusEngine<TEngine>(Action<IServiceCollection> configureServices = null) where TEngine : class, IBusEngine
         {
             serviceConfigurations.Add(svcs => svcs.AddSingleton<IBusEngine, TEngine>());
