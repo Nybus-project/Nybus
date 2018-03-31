@@ -1,73 +1,116 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using Nybus.Policies;
 
 namespace Nybus.Configuration
 {
+    public interface INybusConfigurator
+    {
+        void AddServiceConfiguration(Action<IServiceCollection> configurator);
+
+        void AddHostBuilderConfiguration(Action<NybusHostBuilder> configurator);
+    }
+
     public class NybusConfigurator : INybusConfigurator
     {
-        private readonly List<Action<IServiceCollection>> serviceConfigurations = new List<Action<IServiceCollection>>();
-        private readonly List<Action<NybusBusBuilder>> busBuilderConfigurations = new List<Action<NybusBusBuilder>>();
+        private readonly IList<Action<IServiceCollection>> _serviceConfigurations  = new List<Action<IServiceCollection>>();
+        private readonly IList<Action<NybusHostBuilder>> _hostBuilderConfigurations  = new List<Action<NybusHostBuilder>>();
 
         public void ConfigureServices(IServiceCollection services)
         {
-            foreach (var cfg in serviceConfigurations)
+            foreach (var cfg in _serviceConfigurations)
                 cfg(services);
         }
 
-        public void ConfigureBuilder(NybusBusBuilder builder)
+        public void ConfigureBuilder(NybusHostBuilder builder)
         {
-            foreach (var cfg in busBuilderConfigurations)
+            foreach (var cfg in _hostBuilderConfigurations)
                 cfg(builder);
         }
 
-        public void ConfigureOptions(INybusBusOptionsBuilder optionsBuilder)
+        public void ConfigureOptions(NybusBusOptionsBuilder optionsBuilder)
         {
-            if (_configureOptions != null)
-                _configureOptions(optionsBuilder);
+            _configureOptions?.Invoke(optionsBuilder);
         }
 
-        private Action<INybusBusOptionsBuilder> _configureOptions;
+        private Action<NybusBusOptionsBuilder> _configureOptions;
 
-        public void CustomizeOptions(Action<INybusBusOptionsBuilder> configureOptions)
+        public void CustomizeOptions(Action<NybusBusOptionsBuilder> configureOptions)
         {
             _configureOptions = configureOptions ?? throw new ArgumentNullException(nameof(configureOptions));
         }
 
-        public void UseBusEngine<TEngine>(Action<IServiceCollection> configureServices = null) where TEngine : class, IBusEngine
+        public void AddServiceConfiguration(Action<IServiceCollection> configurator)
         {
-            serviceConfigurations.Add(svcs => svcs.AddSingleton<IBusEngine, TEngine>());
-
-            if (configureServices != null)
-                serviceConfigurations.Add(configureServices);
+            _serviceConfigurations.Add(configurator);
         }
 
-        public void SubscribeToCommand<TCommand, TCommandHandler>()
+        public void AddHostBuilderConfiguration(Action<NybusHostBuilder> configurator)
+        {
+            _hostBuilderConfigurations.Add(configurator);
+        }
+    }
+
+    public static class NybusConfiguratorExtensions
+    {
+        public static void UseBusEngine<TEngine>(this INybusConfigurator configurator, Action<IServiceCollection> configureServices = null)
+            where TEngine : class, IBusEngine
+        {
+            configurator.AddServiceConfiguration(svcs => svcs.AddSingleton<IBusEngine, TEngine>());
+
+            if (configureServices != null)
+                configurator.AddServiceConfiguration(configureServices);
+        }
+
+        public static void UseInMemoryBusEngine(this INybusConfigurator configurator)
+        {
+            configurator.UseBusEngine<InMemoryBusEngine>();
+        }
+
+        public static void RegisterPolicy<TPolicy>(this INybusConfigurator configurator) where TPolicy : class, IPolicy
+        {
+
+        }
+
+        public static void SubscribeToCommand<TCommand, TCommandHandler>(this INybusConfigurator configurator)
             where TCommand : class, ICommand
             where TCommandHandler : class, ICommandHandler<TCommand>
         {
-            busBuilderConfigurations.Add(builder => builder.SubscribeToCommand<TCommand, TCommandHandler>());
+            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand<TCommand>(typeof(TCommandHandler)));
 
-            serviceConfigurations.Add(services => services.AddTransient<TCommandHandler>());
+            configurator.AddServiceConfiguration(services => services.AddTransient<TCommandHandler>());
         }
 
-        public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
+        public static void SubscribeToCommand<TCommand>(this INybusConfigurator configurator, CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
         {
-            busBuilderConfigurations.Add(builder => builder.SubscribeToCommand(commandReceived));
+            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand(commandReceived));
         }
 
-        public void SubscribeToEvent<TEvent, TEventHandler>()
+        public static void SubscribeToCommand<TCommand>(this INybusConfigurator configurator)
+            where TCommand : class, ICommand
+        {
+            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand<TCommand>(typeof(ICommandHandler<TCommand>)));
+        }
+
+        public static void SubscribeToEvent<TEvent, TEventHandler>(this INybusConfigurator configurator)
             where TEvent : class, IEvent
             where TEventHandler : class, IEventHandler<TEvent>
         {
-            busBuilderConfigurations.Add(builder => builder.SubscribeToEvent<TEvent, TEventHandler>());
+            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent<TEvent>(typeof(TEventHandler)));
 
-            serviceConfigurations.Add(services => services.AddTransient<TEventHandler>());
+            configurator.AddServiceConfiguration(services => services.AddTransient<TEventHandler>());
         }
 
-        public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
+        public static void SubscribeToEvent<TEvent>(this INybusConfigurator configurator, EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
         {
-            busBuilderConfigurations.Add(builder => builder.SubscribeToEvent(eventReceived));
+            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent(eventReceived));
+        }
+
+        public static void SubscribeToEvent<TEvent>(this INybusConfigurator configurator)
+            where TEvent : class, IEvent
+        {
+            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent<TEvent>(typeof(IEventHandler<TEvent>)));
         }
     }
 }

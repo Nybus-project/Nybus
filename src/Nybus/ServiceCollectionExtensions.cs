@@ -3,6 +3,7 @@ using Nybus.Configuration;
 using Nybus.Policies;
 using System;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace Nybus
 {
@@ -11,12 +12,25 @@ namespace Nybus
         public static IServiceCollection AddNybus(this IServiceCollection services, Action<INybusConfigurator> configuration)
         {
             var configurator = new NybusConfigurator();
+            configurator.AddServiceConfiguration(svc => svc.AddSingleton<NoopErrorPolicy>());
 
             configuration(configurator);
 
-            services.AddSingleton<NybusBusBuilder>();
+            services.AddSingleton(sp =>
+            {
+                var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                var builder = new NybusHostBuilder(sp, loggerFactory);
 
-            services.AddSingleton<NybusBusOptionsBuilder>();
+                return builder;
+            });
+
+            services.AddSingleton(sp =>
+            {
+                NybusBusOptionsBuilder builder = new NybusBusOptionsBuilder(sp);
+                builder.SetErrorPolicy<NoopErrorPolicy>();
+
+                return builder;
+            });
 
             services.AddSingleton(sp => 
             {
@@ -30,25 +44,19 @@ namespace Nybus
             services.AddSingleton(sp => 
             {
                 var engine = sp.GetRequiredService<IBusEngine>();
-                var builder = sp.GetRequiredService<NybusBusBuilder>();
+                var builder = sp.GetRequiredService<NybusHostBuilder>();
                 var options = sp.GetRequiredService<NybusBusOptions>();
 
                 configurator.ConfigureBuilder(builder);
 
-                return builder.Build(engine, options);
+                return builder.BuildHost(engine, options);
             });
 
+            services.AddSingleton<IBusHost>(sp => sp.GetRequiredService<NybusHost>());
+
+            services.AddSingleton<IBus>(sp => sp.GetRequiredService<NybusHost>());
+
             return services;
-        }
-
-        public static void UseInMemoryBusEngine(this INybusConfigurator configurator)
-        {
-            configurator.UseBusEngine<InMemoryBusEngine>();
-        }
-
-        public static void RegisterPolicy<TPolicy>(this INybusConfigurator configurator) where TPolicy : class, IPolicy
-        {
-
         }
     }
 }

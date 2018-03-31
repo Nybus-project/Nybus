@@ -4,7 +4,7 @@ using System;
 
 namespace Nybus.Configuration
 {
-    public class NybusBusOptionsBuilder : INybusBusOptionsBuilder
+    public class NybusBusOptionsBuilder
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -15,27 +15,19 @@ namespace Nybus.Configuration
 
         public NybusBusOptions Build()
         {
-            ICommandErrorPolicy commandErrorPolicy = (ICommandErrorPolicy)_serviceProvider.GetRequiredService(_commandErrorPolicyType);
-            IEventErrorPolicy eventErrorPolicy = (IEventErrorPolicy)_serviceProvider.GetRequiredService(_eventErrorPolicyType);
+            var errorPolicy = (IErrorPolicy)_serviceProvider.GetRequiredService(_errorPolicyType);
 
             return new NybusBusOptions
             {
-                CommandErrorPolicy = commandErrorPolicy,
-                EventErrorPolicy = eventErrorPolicy
+                ErrorPolicy = errorPolicy,
             };
         }
 
-        private Type _commandErrorPolicyType;
-        private Type _eventErrorPolicyType;
+        private Type _errorPolicyType;
 
-        public void SetCommandErrorPolicy<TPolicy>() where TPolicy : ICommandErrorPolicy
+        public void SetErrorPolicy<TPolicy>() where TPolicy : IErrorPolicy
         {
-            _commandErrorPolicyType = typeof(TPolicy);
-        }
-
-        public void SetEventErrorPolicy<TPolicy>() where TPolicy : IEventErrorPolicy
-        {
-            _eventErrorPolicyType = typeof(TPolicy);
+            _errorPolicyType = typeof(TPolicy);
         }
     }
 }

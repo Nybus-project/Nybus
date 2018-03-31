@@ -11,13 +11,13 @@ using Nybus.Policies;
 
 namespace Nybus
 {
-    public class NybusBus : IBus
+    public class NybusHost : IBusHost, IBus
     {
         private readonly IBusEngine _engine;
-        private readonly ILogger<NybusBus> _logger;
+        private readonly ILogger<NybusHost> _logger;
         private readonly NybusBusOptions _options;
 
-        public NybusBus(IBusEngine busEngine, NybusBusOptions options, ILogger<NybusBus> logger)
+        public NybusHost(IBusEngine busEngine, NybusBusOptions options, ILogger<NybusHost> logger)
         {
             _engine = busEngine ?? throw new ArgumentNullException(nameof(busEngine));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -64,7 +64,7 @@ namespace Nybus
 
             IObservable<Message> fromEngine = _engine.Start();
 
-            var sequence = pipelineFactories.ToObservable().Select(factory => factory(fromEngine)).SelectMany(p => p);
+            var sequence = _pipelineFactories.ToObservable().Select(factory => factory(fromEngine)).SelectMany(p => p);
 
             _disposable = sequence.Subscribe();
 
@@ -84,7 +84,7 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
-        private List<MessagePipelineFactory> pipelineFactories = new List<MessagePipelineFactory>();
+        private readonly List<MessagePipelineFactory> _pipelineFactories = new List<MessagePipelineFactory>();
 
         public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
         {
@@ -98,11 +98,12 @@ namespace Nybus
                                                          from t2 in NotifySuccess(commandMessage)
                                                          select Unit.Default;
 
-            pipelineFactories.Add(factory);
+            _pipelineFactories.Add(factory);
 
             IObservable<Unit> ExecuteHandler(ICommandContext<TCommand> context)
             {
-                return commandReceived(this, context).ToObservable();
+                var dispatcher = new NybusDispatcher(this, context.CorrelationId);
+                return commandReceived(dispatcher, context).ToObservable();
             }
 
             IObservable<Unit> NotifySuccess(CommandMessage<TCommand> message)
@@ -113,7 +114,7 @@ namespace Nybus
             IObservable<Unit> HandleError(Exception exception, CommandMessage<TCommand> message, ICommandContext<TCommand> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, CommandType = typeof(TCommand).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.CommandType}. {s.Exception.Message}");
-                return _options.CommandErrorPolicy.HandleError(_engine, exception, message).ToObservable();
+                return _options.ErrorPolicy.HandleError(_engine, exception, message).ToObservable();
             }
         }
 
@@ -129,11 +130,12 @@ namespace Nybus
                                                          from t2 in NotifySuccess(eventMessage)
                                                          select Unit.Default;
 
-            pipelineFactories.Add(factory);
+            _pipelineFactories.Add(factory);
 
             IObservable<Unit> ExecuteHandler(IEventContext<TEvent> context)
             {
-                return Observable.FromAsync(() => eventReceived(this, context));
+                var dispatcher = new NybusDispatcher(this, context.CorrelationId);
+                return Observable.FromAsync(() => eventReceived(dispatcher, context));
             }
 
             async Task<Unit> NotifySuccess(EventMessage<TEvent> message)
@@ -145,7 +147,7 @@ namespace Nybus
             IObservable<Unit> HandleError(Exception exception, EventMessage<TEvent> message, IEventContext<TEvent> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, EventType = typeof(TEvent).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.EventType}. {s.Exception.Message}");
-                return _options.EventErrorPolicy.HandleError(_engine, exception, message).ToObservable();
+                return _options.ErrorPolicy.HandleError(_engine, exception, message).ToObservable();
             }
         }
 
@@ -155,8 +157,30 @@ namespace Nybus
 
     public class NybusBusOptions
     {
-        public ICommandErrorPolicy CommandErrorPolicy { get; set; }
+        public IErrorPolicy ErrorPolicy { get; set; }
+    }
 
-        public IEventErrorPolicy EventErrorPolicy { get; set; }
+    public class NybusDispatcher : IDispatcher
+    {
+        private readonly IBus _innerBus;
+        private readonly Guid _correlationId;
+
+        public NybusDispatcher(IBus innerBus, Guid correlationId)
+        {
+            _innerBus = innerBus;
+            _correlationId = correlationId;
+        }
+
+        public Task InvokeCommandAsync<TCommand>(TCommand command)
+            where TCommand : class, ICommand
+        {
+            return _innerBus.InvokeCommandAsync(command, _correlationId);
+        }
+
+        public Task RaiseEventAsync<TEvent>(TEvent @event)
+            where TEvent : class, IEvent
+        {
+            return _innerBus.RaiseEventAsync(@event, _correlationId);
+        }
     }
 }

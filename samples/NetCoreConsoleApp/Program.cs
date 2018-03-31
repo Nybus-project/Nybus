@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 using Nybus.Policies;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using Nybus.Configuration;
 
 namespace NetCoreConsoleApp
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string>
@@ -28,52 +29,62 @@ namespace NetCoreConsoleApp
             services.AddLogging();
             services.AddOptions();
 
-            services.AddTransient<RetryCommandErrorPolicy>();
-            services.AddTransient<RetryEventErrorPolicy>();
-            services.Configure<RetryCommandErrorPolicyOptions>(configuration.GetSection("RetryCommandError"));
-            services.Configure<RetryEventErrorPolicyOptions>(configuration.GetSection("RetryEventError"));
-
-            //services.AddTransient<ICommandHandler<TestCommand>, TestCommandHandler>();
+            services.AddTransient<RetryErrorPolicy>();
+            services.Configure<RetryErrorPolicyOptions>(configuration.GetSection("RetryCommandError"));
 
             services.AddNybus(cfg =>
             {
-                cfg.CustomizeOptions(options => 
-                {
-                    options.SetCommandErrorPolicy<RetryCommandErrorPolicy>();
-                    options.SetEventErrorPolicy<RetryEventErrorPolicy>();
-                });
+                //cfg.CustomizeOptions(options => 
+                //{
+                //    //options.SetErrorPolicy<RetryErrorPolicy>();
+                //    //options.SetErrorPolicy<NoopErrorPolicy>();
+                //});
 
                 cfg.UseInMemoryBusEngine();
 
                 cfg.SubscribeToEvent<TestEvent, TestEventHandler>();
 
-                cfg.SubscribeToCommand<TestCommand>(async (b, ctx) => 
+                cfg.SubscribeToCommand<TestCommand>(async (b, ctx) =>
                 {
-                    throw new Exception("Error");
+                    if (ctx.ReceivedOn.Second % 2 == 0)
+                    {
+                        throw new Exception("Error");
+                    }
 
                     await b.RaiseEventAsync(new TestEvent
                     {
                         Message = $@"Received ""{ctx.Command.Message}"""
-                    }, ctx.CorrelationId);
+                    });
                 });
+
+                //cfg.RegisterPolicy<RetryErrorPolicy>();
             });
 
-            IServiceProvider serviceProvider = services.BuildServiceProvider();
+            var serviceProvider = services.BuildServiceProvider();
 
-            ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             loggerFactory.AddConsole(LogLevel.Trace);
 
-            IBus bus = serviceProvider.GetRequiredService<IBus>();
+            try
+            {
+                var host = serviceProvider.GetRequiredService<IBusHost>();
 
-            bus.StartAsync().GetAwaiter().GetResult();
+                var bus = serviceProvider.GetRequiredService<IBus>();
 
-            bus.InvokeCommandAsync(new TestCommand { Message = "Hello World" });
+                await host.StartAsync();
 
-            bus.InvokeCommandAsync(new TestCommand { Message = "Foo bar" });
+                await bus.InvokeCommandAsync(new TestCommand { Message = "Hello World" });
 
-            bus.StopAsync().GetAwaiter().GetResult();
+                await bus.InvokeCommandAsync(new TestCommand { Message = "Foo bar" });
 
-            Console.ReadLine();
+                await host.StopAsync();
+
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
         }
     }
 }

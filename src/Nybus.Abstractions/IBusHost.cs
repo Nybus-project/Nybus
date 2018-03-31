@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Nybus
 {
-    public interface IBusDispatcher
+    public interface IBus
     {
         Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand;
 
@@ -12,7 +12,7 @@ namespace Nybus
 
     }
 
-    public interface IBus : IBusDispatcher
+    public interface IBusHost
     {
         Task StartAsync();
 
@@ -23,8 +23,15 @@ namespace Nybus
         void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent;
     }
 
-    public delegate Task CommandReceived<TCommand>(IBus bus, ICommandContext<TCommand> context) where TCommand : class, ICommand;
+    public delegate Task CommandReceived<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context) where TCommand : class, ICommand;
 
-    public delegate Task EventReceived<TEvent>(IBus bus, IEventContext<TEvent> context) where TEvent : class, IEvent;
+    public delegate Task EventReceived<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context) where TEvent : class, IEvent;
 
+    public interface IDispatcher
+    {
+        Task InvokeCommandAsync<TCommand>(TCommand command) where TCommand : class, ICommand;
+
+        Task RaiseEventAsync<TEvent>(TEvent @event) where TEvent : class, IEvent;
+
+    }
 }
