@@ -12,7 +12,7 @@ namespace Nybus
         public static IServiceCollection AddNybus(this IServiceCollection services, Action<INybusConfigurator> configuration)
         {
             var configurator = new NybusConfigurator();
-            configurator.AddServiceConfiguration(svc => svc.AddSingleton<NoopErrorPolicy>());
+            configurator.UseErrorPolicy<NoopErrorPolicy>();
 
             configuration(configurator);
 
@@ -26,17 +26,10 @@ namespace Nybus
 
             services.AddSingleton(sp =>
             {
-                NybusBusOptionsBuilder builder = new NybusBusOptionsBuilder(sp);
-                builder.SetErrorPolicy<NoopErrorPolicy>();
+                var options = new NybusHostOptions();
+                configurator.ConfigureOptions(sp, options);
 
-                return builder;
-            });
-
-            services.AddSingleton(sp => 
-            {
-                var optionBuilder = sp.GetRequiredService<NybusBusOptionsBuilder>();
-                configurator.ConfigureOptions(optionBuilder);
-                return optionBuilder.Build();
+                return options;
             });
 
             configurator.ConfigureServices(services);
@@ -45,7 +38,7 @@ namespace Nybus
             {
                 var engine = sp.GetRequiredService<IBusEngine>();
                 var builder = sp.GetRequiredService<NybusHostBuilder>();
-                var options = sp.GetRequiredService<NybusBusOptions>();
+                var options = sp.GetRequiredService<NybusHostOptions>();
 
                 configurator.ConfigureBuilder(builder);
 

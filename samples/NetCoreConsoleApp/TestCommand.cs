@@ -7,6 +7,8 @@ namespace NetCoreConsoleApp
     public class TestCommand : ICommand
     {
         public string Message { get; set; }
+
+        public override string ToString() => Message;
     }
 
     public class TestCommandHandler : ICommandHandler<TestCommand>

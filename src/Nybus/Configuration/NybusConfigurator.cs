@@ -1,21 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using Nybus.Policies;
+using Microsoft.Extensions.Configuration;
 
 namespace Nybus.Configuration
 {
-    public interface INybusConfigurator
-    {
-        void AddServiceConfiguration(Action<IServiceCollection> configurator);
-
-        void AddHostBuilderConfiguration(Action<NybusHostBuilder> configurator);
-    }
-
     public class NybusConfigurator : INybusConfigurator
     {
         private readonly IList<Action<IServiceCollection>> _serviceConfigurations  = new List<Action<IServiceCollection>>();
         private readonly IList<Action<NybusHostBuilder>> _hostBuilderConfigurations  = new List<Action<NybusHostBuilder>>();
+        private readonly IList<Action<IServiceProvider, NybusHostOptions>> _optionsConfigurations = new List<Action<IServiceProvider, NybusHostOptions>>();
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -29,88 +23,57 @@ namespace Nybus.Configuration
                 cfg(builder);
         }
 
-        public void ConfigureOptions(NybusBusOptionsBuilder optionsBuilder)
+        public void ConfigureOptions(IServiceProvider serviceProvider, NybusHostOptions options)
         {
-            _configureOptions?.Invoke(optionsBuilder);
+            foreach (var cfg in _optionsConfigurations)
+                cfg(serviceProvider, options);
         }
 
-        private Action<NybusBusOptionsBuilder> _configureOptions;
+        public IConfiguration Configuration { get; private set; }
 
-        public void CustomizeOptions(Action<NybusBusOptionsBuilder> configureOptions)
+        public void UseConfiguration(IConfiguration configuration, string sectionName = "Nybus")
         {
-            _configureOptions = configureOptions ?? throw new ArgumentNullException(nameof(configureOptions));
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            if (sectionName == null)
+            {
+                throw new ArgumentNullException(nameof(sectionName));
+            }
+
+            Configuration = configuration.GetSection(sectionName);
         }
 
         public void AddServiceConfiguration(Action<IServiceCollection> configurator)
         {
+            if (configurator == null)
+            {
+                throw new ArgumentNullException(nameof(configurator));
+            }
+
             _serviceConfigurations.Add(configurator);
         }
 
         public void AddHostBuilderConfiguration(Action<NybusHostBuilder> configurator)
         {
+            if (configurator == null)
+            {
+                throw new ArgumentNullException(nameof(configurator));
+            }
+
             _hostBuilderConfigurations.Add(configurator);
         }
-    }
 
-    public static class NybusConfiguratorExtensions
-    {
-        public static void UseBusEngine<TEngine>(this INybusConfigurator configurator, Action<IServiceCollection> configureServices = null)
-            where TEngine : class, IBusEngine
+        public void AddOptionsConfiguration(Action<IServiceProvider, NybusHostOptions> configurator)
         {
-            configurator.AddServiceConfiguration(svcs => svcs.AddSingleton<IBusEngine, TEngine>());
+            if (configurator == null)
+            {
+                throw new ArgumentNullException(nameof(configurator));
+            }
 
-            if (configureServices != null)
-                configurator.AddServiceConfiguration(configureServices);
-        }
-
-        public static void UseInMemoryBusEngine(this INybusConfigurator configurator)
-        {
-            configurator.UseBusEngine<InMemoryBusEngine>();
-        }
-
-        public static void RegisterPolicy<TPolicy>(this INybusConfigurator configurator) where TPolicy : class, IPolicy
-        {
-
-        }
-
-        public static void SubscribeToCommand<TCommand, TCommandHandler>(this INybusConfigurator configurator)
-            where TCommand : class, ICommand
-            where TCommandHandler : class, ICommandHandler<TCommand>
-        {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand<TCommand>(typeof(TCommandHandler)));
-
-            configurator.AddServiceConfiguration(services => services.AddTransient<TCommandHandler>());
-        }
-
-        public static void SubscribeToCommand<TCommand>(this INybusConfigurator configurator, CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
-        {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand(commandReceived));
-        }
-
-        public static void SubscribeToCommand<TCommand>(this INybusConfigurator configurator)
-            where TCommand : class, ICommand
-        {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand<TCommand>(typeof(ICommandHandler<TCommand>)));
-        }
-
-        public static void SubscribeToEvent<TEvent, TEventHandler>(this INybusConfigurator configurator)
-            where TEvent : class, IEvent
-            where TEventHandler : class, IEventHandler<TEvent>
-        {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent<TEvent>(typeof(TEventHandler)));
-
-            configurator.AddServiceConfiguration(services => services.AddTransient<TEventHandler>());
-        }
-
-        public static void SubscribeToEvent<TEvent>(this INybusConfigurator configurator, EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
-        {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent(eventReceived));
-        }
-
-        public static void SubscribeToEvent<TEvent>(this INybusConfigurator configurator)
-            where TEvent : class, IEvent
-        {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent<TEvent>(typeof(IEventHandler<TEvent>)));
+            _optionsConfigurations.Add(configurator);
         }
     }
 }

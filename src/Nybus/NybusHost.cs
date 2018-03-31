@@ -15,9 +15,9 @@ namespace Nybus
     {
         private readonly IBusEngine _engine;
         private readonly ILogger<NybusHost> _logger;
-        private readonly NybusBusOptions _options;
+        private readonly NybusHostOptions _options;
 
-        public NybusHost(IBusEngine busEngine, NybusBusOptions options, ILogger<NybusHost> logger)
+        public NybusHost(IBusEngine busEngine, NybusHostOptions options, ILogger<NybusHost> logger)
         {
             _engine = busEngine ?? throw new ArgumentNullException(nameof(busEngine));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -155,7 +155,7 @@ namespace Nybus
 
     }
 
-    public class NybusBusOptions
+    public class NybusHostOptions
     {
         public IErrorPolicy ErrorPolicy { get; set; }
     }

@@ -9,7 +9,6 @@ namespace Nybus
         Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand;
 
         Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent;
-
     }
 
     public interface IBusHost

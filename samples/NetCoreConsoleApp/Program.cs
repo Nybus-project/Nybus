@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 using Nybus.Policies;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
+using System.Threading;
 using Nybus.Configuration;
 
 namespace NetCoreConsoleApp
 {
     class Program
     {
+        private static int _counter;
+
         static async Task Main(string[] args)
         {
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string>
             {
-                //["Nybus:Policies:CommandError:Retry:MaxRetries"] = "5",
-                //["Nybus:Policies:EventError:Retry:MaxRetries"] = "5",
-                ["RetryCommandError:MaxRetries"] = "5",
-                ["RetryEventError:MaxRetries"] = "5"
+                ["Nybus:RetryPolicy:MaxRetries"] = "5",
             });
 
             IConfiguration configuration = configurationBuilder.Build();
@@ -29,16 +29,9 @@ namespace NetCoreConsoleApp
             services.AddLogging();
             services.AddOptions();
 
-            services.AddTransient<RetryErrorPolicy>();
-            services.Configure<RetryErrorPolicyOptions>(configuration.GetSection("RetryCommandError"));
-
             services.AddNybus(cfg =>
             {
-                //cfg.CustomizeOptions(options => 
-                //{
-                //    //options.SetErrorPolicy<RetryErrorPolicy>();
-                //    //options.SetErrorPolicy<NoopErrorPolicy>();
-                //});
+                cfg.UseConfiguration(configuration);
 
                 cfg.UseInMemoryBusEngine();
 
@@ -46,7 +39,9 @@ namespace NetCoreConsoleApp
 
                 cfg.SubscribeToCommand<TestCommand>(async (b, ctx) =>
                 {
-                    if (ctx.ReceivedOn.Second % 2 == 0)
+                    Interlocked.Increment(ref _counter);
+
+                    if (_counter > 2 && _counter < 6)
                     {
                         throw new Exception("Error");
                     }
@@ -57,7 +52,7 @@ namespace NetCoreConsoleApp
                     });
                 });
 
-                //cfg.RegisterPolicy<RetryErrorPolicy>();
+                cfg.UseRetryErrorPolicy();
             });
 
             var serviceProvider = services.BuildServiceProvider();
@@ -76,6 +71,8 @@ namespace NetCoreConsoleApp
                 await bus.InvokeCommandAsync(new TestCommand { Message = "Hello World" });
 
                 await bus.InvokeCommandAsync(new TestCommand { Message = "Foo bar" });
+
+                await bus.InvokeCommandAsync(new TestCommand { Message = "Another message" });
 
                 await host.StopAsync();
 
