@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Nybus\Nybus.csproj" />
+    <ProjectReference Include="..\..\..\src\Nybus\Nybus.csproj" />
   </ItemGroup>
 
 </Project>
