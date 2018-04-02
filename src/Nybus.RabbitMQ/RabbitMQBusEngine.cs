@@ -31,30 +31,13 @@ namespace Nybus
             _connection = connectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            var eventQueue = _channel.QueueDeclare();
+            var hasEvents = _acceptedEventTypes.Any();
+            var hasCommands = _acceptedCommandTypes.Any();
 
-            foreach (var type in _acceptedEventTypes)
+            if (!hasEvents && !hasCommands)
             {
-                var exchangeName = GetExchangeNameForType(type);
-
-                _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
-
-                _channel.ExchangeBind(destination: eventQueue.QueueName, source: exchangeName, routingKey: string.Empty);
+                return Observable.Never<Message>();
             }
-
-            var commandQueue = _channel.QueueDeclare(queue: _options.CommandQueueName, durable: true, exclusive: false, autoDelete: false);
-
-            foreach (var type in _acceptedCommandTypes)
-            {
-                var exchangeName = GetExchangeNameForType(type);
-
-                _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
-
-                _channel.ExchangeBind(destination: commandQueue.QueueName, source: exchangeName, routingKey: string.Empty);
-            }
-
-            //var asyncConsumer = new AsyncEventingBasicConsumer(_channel);
-            //var asyncObservable = Observable.FromEvent<AsyncEventHandler<BasicDeliverEventArgs>, BasicDeliverEventArgs>(a => asyncConsumer.Received += a, a => asyncConsumer.Received -= a);
 
             var consumer = new EventingBasicConsumer(_channel);
             var observable = Observable.FromEventPattern<BasicDeliverEventArgs>(a => consumer.Received += a, a => consumer.Received -= a).Select(e => e.EventArgs);
@@ -64,15 +47,48 @@ namespace Nybus
                            where message != null
                            select message;
 
-            _channel.BasicConsume(eventQueue.QueueName, false, consumer);
-            _channel.BasicConsume(commandQueue.QueueName, false, consumer);
+            if (hasEvents)
+            {
+                var eventQueue = _channel.QueueDeclare();
+
+                foreach (var type in _acceptedEventTypes)
+                {
+                    var exchangeName = GetExchangeNameForType(type);
+
+                    _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+
+                    _channel.ExchangeBind(destination: eventQueue.QueueName, source: exchangeName, routingKey: string.Empty);
+                }
+
+                _channel.BasicConsume(eventQueue.QueueName, false, consumer);
+            }
+
+            if (hasCommands)
+            {
+                var commandQueue = _channel.QueueDeclare(queue: _options.CommandQueueName, durable: true, exclusive: false, autoDelete: false);
+
+                foreach (var type in _acceptedCommandTypes)
+                {
+                    var exchangeName = GetExchangeNameForType(type);
+
+                    _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+
+                    _channel.QueueBind(queue: commandQueue.QueueName, exchange: exchangeName, routingKey: string.Empty);
+                }
+
+                _channel.BasicConsume(commandQueue.QueueName, false, consumer);
+            }
 
             return messages;
 
+            //var asyncConsumer = new AsyncEventingBasicConsumer(_channel);
+            //var asyncObservable = Observable.FromEvent<AsyncEventHandler<BasicDeliverEventArgs>, BasicDeliverEventArgs>(a => asyncConsumer.Received += a, a => asyncConsumer.Received -= a);
+
             Message GetMessage(BasicDeliverEventArgs args)
             {
-                var body = Encoding.GetEncoding(args.BasicProperties.ContentEncoding).GetString(args.Body);
-                var messageTypeName = args.BasicProperties.Headers["Nybus:MessageType"] as string;
+                var encoding = Encoding.GetEncoding(args.BasicProperties.ContentEncoding);
+                var body = encoding.GetString(args.Body);
+                var messageTypeName = GetHeader(args.BasicProperties, "Nybus:MessageType", encoding);
 
                 Message message = null;
 
@@ -92,12 +108,15 @@ namespace Nybus
                     return null;
                 }
 
-                message.MessageId = args.BasicProperties.Headers["Nybus:MessageId"] as string;
-                message.Headers[Headers.CorrelationId] = args.BasicProperties.Headers[Nybus(Headers.CorrelationId)] as string;
-                message.Headers[Headers.SentOn] = args.BasicProperties.Headers[Nybus(Headers.SentOn)] as string;
-                message.Headers[Headers.RetryCount] = args.BasicProperties.Headers[Nybus(Headers.RetryCount)] as string;
-                message.Headers[RabbitMqHeaders.DeliveryTag] = args.DeliveryTag.ToString();
-                message.Headers[RabbitMqHeaders.MessageId] = args.BasicProperties.MessageId;
+                message.MessageId = GetHeader(args.BasicProperties,"Nybus:MessageId", encoding);
+                message.Headers = new HeaderBag
+                {
+                    [Headers.CorrelationId] = GetHeader(args.BasicProperties, Nybus(Headers.CorrelationId), encoding),
+                    [Headers.SentOn] = GetHeader(args.BasicProperties, Nybus(Headers.SentOn), encoding),
+                    [Headers.RetryCount] = GetHeader(args.BasicProperties, Nybus(Headers.RetryCount), encoding),
+                    [RabbitMqHeaders.DeliveryTag] = args.DeliveryTag.ToString(),
+                    [RabbitMqHeaders.MessageId] = args.BasicProperties.MessageId
+                };
 
                 return message;
             }
@@ -131,6 +150,16 @@ namespace Nybus
                 type = typeList.FirstOrDefault(o => o.FullName == typeName);
                 return type != null;
             }
+
+            string GetHeader(IBasicProperties properties, string headerName, Encoding encoding)
+            {
+                if (properties.Headers.TryGetValue(headerName, out var value) && value is byte[] bytes)
+                {
+                    return encoding.GetString(bytes);
+                }
+
+                return null;
+            }
         }
 
         public void Stop()
@@ -141,7 +170,31 @@ namespace Nybus
 
         public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
         {
-            throw new NotImplementedException();
+            var serialized = JsonConvert.SerializeObject(message.Command);
+            var body = Encoding.UTF8.GetBytes(serialized);
+
+            var properties = _channel.CreateBasicProperties();
+            properties.ContentEncoding = Encoding.UTF8.WebName;
+            properties.Headers = new Dictionary<string, object>
+            {
+                ["Nybus:MessageId"] = message.MessageId,
+                ["Nybus:MessageType"] = message.CommandType.FullName,
+                [Nybus(Headers.CorrelationId)] = message.Headers[Headers.CorrelationId],
+                [Nybus(Headers.SentOn)] = message.Headers[Headers.SentOn]
+            };
+
+            if (message.Headers.ContainsKey(Headers.RetryCount))
+            {
+                properties.Headers[Nybus(Headers.RetryCount)] = message.Headers[Headers.RetryCount];
+            }
+
+            var exchangeName = GetExchangeNameForType(message.CommandType);
+
+            _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+
+            _channel.BasicPublish(exchange: exchangeName, routingKey: string.Empty, body: body, basicProperties: properties);
+
+            return Task.CompletedTask;
         }
 
         public Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent

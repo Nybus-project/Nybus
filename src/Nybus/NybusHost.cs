@@ -26,8 +26,9 @@ namespace Nybus
         
         public async Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
-            CommandMessage<TCommand> message = new CommandMessage<TCommand>
+            var message = new CommandMessage<TCommand>
             {
+                MessageId = Helpers.StringfyGuid(Guid.NewGuid()),
                 Headers = new HeaderBag
                 {
                     [Headers.CorrelationId] = Helpers.StringfyGuid(correlationId),
@@ -42,8 +43,9 @@ namespace Nybus
 
         public async Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
         {
-            EventMessage<TEvent> message = new EventMessage<TEvent>
+            var message = new EventMessage<TEvent>
             {
+                MessageId = Helpers.StringfyGuid(Guid.NewGuid()),
                 Headers = new HeaderBag
                 {
                     [Headers.CorrelationId] = Helpers.StringfyGuid(correlationId),
@@ -157,7 +159,7 @@ namespace Nybus
 
     public class NybusHostOptions
     {
-        public IErrorPolicy ErrorPolicy { get; set; }
+        public IErrorPolicy ErrorPolicy { get; set; } = new NoopErrorPolicy();
     }
 
     public class NybusDispatcher : IDispatcher

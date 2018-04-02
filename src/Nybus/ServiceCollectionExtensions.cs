@@ -12,7 +12,6 @@ namespace Nybus
         public static IServiceCollection AddNybus(this IServiceCollection services, Action<INybusConfigurator> configuration)
         {
             var configurator = new NybusConfigurator();
-            configurator.UseErrorPolicy<NoopErrorPolicy>();
 
             configuration(configurator);
 
