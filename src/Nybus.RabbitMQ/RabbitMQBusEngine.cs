@@ -199,7 +199,31 @@ namespace Nybus
 
         public Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
         {
-            throw new NotImplementedException();
+            var serialized = JsonConvert.SerializeObject(message.Event);
+            var body = Encoding.UTF8.GetBytes(serialized);
+
+            var properties = _channel.CreateBasicProperties();
+            properties.ContentEncoding = Encoding.UTF8.WebName;
+            properties.Headers = new Dictionary<string, object>
+            {
+                ["Nybus:MessageId"] = message.MessageId,
+                ["Nybus:MessageType"] = message.EventType.FullName,
+                [Nybus(Headers.CorrelationId)] = message.Headers[Headers.CorrelationId],
+                [Nybus(Headers.SentOn)] = message.Headers[Headers.SentOn]
+            };
+
+            if (message.Headers.ContainsKey(Headers.RetryCount))
+            {
+                properties.Headers[Nybus(Headers.RetryCount)] = message.Headers[Headers.RetryCount];
+            }
+
+            var exchangeName = GetExchangeNameForType(message.EventType);
+
+            _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+
+            _channel.BasicPublish(exchange: exchangeName, routingKey: string.Empty, body: body, basicProperties: properties);
+
+            return Task.CompletedTask;
         }
 
         public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
