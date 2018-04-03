@@ -11,13 +11,13 @@ using RabbitMQ.Client.Events;
 
 namespace Nybus
 {
-    public class RabbitMQBusEngine : IBusEngine
+    public class RabbitMqBusEngine : IBusEngine
     {
         private readonly HashSet<Type> _acceptedEventTypes = new HashSet<Type>();
         private readonly HashSet<Type> _acceptedCommandTypes = new HashSet<Type>();
         private readonly RabbitMqBusEngineOptions _options;
 
-        public RabbitMQBusEngine(RabbitMqBusEngineOptions options)
+        public RabbitMqBusEngine(RabbitMqBusEngineOptions options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
@@ -39,10 +39,9 @@ namespace Nybus
                 return Observable.Never<Message>();
             }
 
-            var consumer = new EventingBasicConsumer(_channel);
-            var observable = Observable.FromEventPattern<BasicDeliverEventArgs>(a => consumer.Received += a, a => consumer.Received -= a).Select(e => e.EventArgs);
+            var observableConsumer = new ObservableConsumer(_channel);
 
-            var messages = from incoming in observable
+            var messages = from incoming in observableConsumer
                            let message = GetMessage(incoming)
                            where message != null
                            select message;
@@ -60,7 +59,7 @@ namespace Nybus
                     _channel.ExchangeBind(destination: eventQueue.QueueName, source: exchangeName, routingKey: string.Empty);
                 }
 
-                _channel.BasicConsume(eventQueue.QueueName, false, consumer);
+                observableConsumer.ConsumeFrom(eventQueue.QueueName);
             }
 
             if (hasCommands)
@@ -76,13 +75,10 @@ namespace Nybus
                     _channel.QueueBind(queue: commandQueue.QueueName, exchange: exchangeName, routingKey: string.Empty);
                 }
 
-                _channel.BasicConsume(commandQueue.QueueName, false, consumer);
+                observableConsumer.ConsumeFrom(commandQueue.QueueName);
             }
 
             return messages;
-
-            //var asyncConsumer = new AsyncEventingBasicConsumer(_channel);
-            //var asyncObservable = Observable.FromEvent<AsyncEventHandler<BasicDeliverEventArgs>, BasicDeliverEventArgs>(a => asyncConsumer.Received += a, a => asyncConsumer.Received -= a);
 
             Message GetMessage(BasicDeliverEventArgs args)
             {
@@ -108,7 +104,7 @@ namespace Nybus
                     return null;
                 }
 
-                message.MessageId = GetHeader(args.BasicProperties,"Nybus:MessageId", encoding);
+                message.MessageId = GetHeader(args.BasicProperties, "Nybus:MessageId", encoding);
                 message.Headers = new HeaderBag
                 {
                     [Headers.CorrelationId] = GetHeader(args.BasicProperties, Nybus(Headers.CorrelationId), encoding),
@@ -168,7 +164,8 @@ namespace Nybus
             _connection.Dispose();
         }
 
-        public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
+        public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message)
+            where TCommand : class, ICommand
         {
             var serialized = JsonConvert.SerializeObject(message.Command);
             var body = Encoding.UTF8.GetBytes(serialized);
@@ -197,7 +194,8 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
-        public Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
+        public Task SendEventAsync<TEvent>(EventMessage<TEvent> message)
+            where TEvent : class, IEvent
         {
             var serialized = JsonConvert.SerializeObject(message.Event);
             var body = Encoding.UTF8.GetBytes(serialized);
@@ -226,12 +224,14 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
-        public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
+        public void SubscribeToCommand<TCommand>()
+            where TCommand : class, ICommand
         {
             _acceptedCommandTypes.Add(typeof(TCommand));
         }
 
-        public void SubscribeToEvent<TEvent>() where TEvent : class, IEvent
+        public void SubscribeToEvent<TEvent>()
+            where TEvent : class, IEvent
         {
             _acceptedEventTypes.Add(typeof(TEvent));
         }
@@ -266,11 +266,5 @@ namespace Nybus
         public string CommandQueueName { get; set; }
 
         public string EventQueueName { get; set; }
-    }
-
-    public static class RabbitMqHeaders
-    {
-        public static readonly string MessageId = "RabbitMq:MessageId";
-        public static readonly string DeliveryTag = "RabbitMq:DeliveryTag";
     }
 }

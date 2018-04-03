@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -16,11 +17,16 @@ namespace RabbitMQ
 
             services.AddNybus(cfg =>
             {
-                cfg.UseBusEngine<RabbitMQBusEngine>(svc => svc.AddSingleton(new RabbitMqBusEngineOptions { CommandQueueName = "test-queue" }));
+                cfg.UseBusEngine<RabbitMqBusEngine>(svc => svc.AddSingleton(new RabbitMqBusEngineOptions { CommandQueueName = "test-queue" }));
 
                 cfg.SubscribeToCommand<TestCommand>(async (d, msg) =>
                 {
                     Console.WriteLine($"Received {msg.Command.Message} at {msg.ReceivedOn:G}");
+
+                    Thread.Sleep(TimeSpan.FromSeconds(2));
+                    //await Task.Delay(TimeSpan.FromSeconds(1)); // will not work because it will free up the thread
+
+                    Console.WriteLine($"Processed {msg.Command.Message}");
                 });
             });
 

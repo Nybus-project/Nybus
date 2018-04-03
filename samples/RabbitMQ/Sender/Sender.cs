@@ -16,7 +16,7 @@ namespace RabbitMQ
 
             services.AddNybus(cfg =>
             {
-                cfg.UseBusEngine<RabbitMQBusEngine>(svc =>
+                cfg.UseBusEngine<RabbitMqBusEngine>(svc =>
                 {
                     svc.AddSingleton(new RabbitMqBusEngineOptions
                     {
@@ -35,8 +35,10 @@ namespace RabbitMQ
             try
             {
                 await host.StartAsync();
-
-                await host.InvokeCommandAsync(new TestCommand { Message = "Hello world" });
+                for (var i = 0; i < 10; i++)
+                {
+                    await host.InvokeCommandAsync(new TestCommand { Message = $"Hello world {i}" });
+                }
 
                 await host.StopAsync();
             }
