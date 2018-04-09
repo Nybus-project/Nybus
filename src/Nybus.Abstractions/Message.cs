@@ -10,6 +10,8 @@ namespace Nybus
         public HeaderBag Headers { get; set; }
 
         public abstract MessageType MessageType { get; }
+
+        public abstract Type Type { get; }
     }
 
     public enum MessageType
@@ -28,8 +30,6 @@ namespace Nybus
 
     public abstract class CommandMessage : Message
     {
-        public abstract Type CommandType { get; }
-
         public override MessageType MessageType => MessageType.Command;
     }
 
@@ -37,13 +37,11 @@ namespace Nybus
     {
         public TCommand Command { get; set; }
 
-        public override Type CommandType => typeof(TCommand);
+        public override Type Type => typeof(TCommand);
     }
 
     public abstract class EventMessage : Message
     {
-        public abstract Type EventType { get; }
-
         public override MessageType MessageType => MessageType.Event;
     }
 
@@ -51,6 +49,6 @@ namespace Nybus
     {
         public TEvent Event { get; set; }
 
-        public override Type EventType => typeof(TEvent);
+        public override Type Type => typeof(TEvent);
     }
 }

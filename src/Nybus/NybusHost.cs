@@ -78,6 +78,7 @@ namespace Nybus
         public Task StopAsync()
         {
             _logger.LogTrace("Bus stopping");
+
             _engine.Stop();
             _disposable.Dispose();
 

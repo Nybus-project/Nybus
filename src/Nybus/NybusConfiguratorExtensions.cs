@@ -1,24 +1,12 @@
 ﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Nybus.Configuration;
 using Nybus.Policies;
 
-namespace Nybus.Configuration
+namespace Nybus
 {
     public static class NybusConfiguratorExtensions
     {
-        public static void UseBusEngine<TEngine>(this INybusConfigurator configurator, Action<IServiceCollection> configureServices = null)
-            where TEngine : class, IBusEngine
-        {
-            configurator.AddServiceConfiguration(svcs => svcs.AddSingleton<IBusEngine, TEngine>());
-
-            if (configureServices != null)
-            {
-                configurator.AddServiceConfiguration(configureServices);
-            }
-        }
-
         public static void UseInMemoryBusEngine(this INybusConfigurator configurator)
         {
             configurator.UseBusEngine<InMemoryBusEngine>();
@@ -27,12 +15,7 @@ namespace Nybus.Configuration
         public static void UseErrorPolicy<TErrorPolicy>(this INybusConfigurator configurator, Action<IServiceCollection> configureServices = null)
             where TErrorPolicy : class, IErrorPolicy
         {
-            configurator.AddOptionsConfiguration((services, options) =>
-            {
-                var errorPolicy = services.GetRequiredService<TErrorPolicy>();
-
-                options.ErrorPolicy = errorPolicy;
-            });
+            configurator.SetErrorPolicy(sp => sp.GetRequiredService<TErrorPolicy>());
 
             configurator.AddServiceConfiguration(services => services.AddSingleton<TErrorPolicy>());
 
@@ -42,9 +25,14 @@ namespace Nybus.Configuration
             }
         }
 
-        public static void UseRetryErrorPolicy(this INybusConfigurator configurator)
+        public static void UseRetryErrorPolicy(this INybusConfigurator configurator, string sectionName = "RetryPolicy")
         {
-            UseErrorPolicy<RetryErrorPolicy>(configurator, services => services.Configure<RetryErrorPolicyOptions>(configurator.Configuration.GetSection("RetryPolicy")));
+            if (sectionName == null)
+            {
+                throw new ArgumentNullException(nameof(sectionName));
+            }
+
+            UseErrorPolicy<RetryErrorPolicy>(configurator, services => services.Configure<RetryErrorPolicyOptions>(configurator.Configuration.GetSection(sectionName)));
         }
 
         #region Subscribe to Command
@@ -53,7 +41,7 @@ namespace Nybus.Configuration
             where TCommand : class, ICommand
             where TCommandHandler : class, ICommandHandler<TCommand>
         {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand<TCommand>(typeof(TCommandHandler)));
+            configurator.AddSubscription(builder => builder.SubscribeToCommand<TCommand>(typeof(TCommandHandler)));
 
             configurator.AddServiceConfiguration(services => services.AddTransient<TCommandHandler>());
         }
@@ -68,14 +56,14 @@ namespace Nybus.Configuration
         public static void SubscribeToCommand<TCommand>(this INybusConfigurator configurator)
             where TCommand : class, ICommand
         {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand<TCommand>(typeof(ICommandHandler<TCommand>)));
+            configurator.AddSubscription(builder => builder.SubscribeToCommand<TCommand>(typeof(ICommandHandler<TCommand>)));
         }
 
         public static void SubscribeToCommand<TCommand, TCommandHandler>(this INybusConfigurator configurator, TCommandHandler handler)
             where TCommand : class, ICommand
             where TCommandHandler : class, ICommandHandler<TCommand>
         {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToCommand<TCommand>(typeof(TCommandHandler)));
+            configurator.AddSubscription(builder => builder.SubscribeToCommand<TCommand>(typeof(TCommandHandler)));
 
             configurator.AddServiceConfiguration(services => services.AddSingleton(handler));
         }
@@ -88,7 +76,7 @@ namespace Nybus.Configuration
             where TEvent : class, IEvent
             where TEventHandler : class, IEventHandler<TEvent>
         {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent<TEvent>(typeof(TEventHandler)));
+            configurator.AddSubscription(builder => builder.SubscribeToEvent<TEvent>(typeof(TEventHandler)));
 
             configurator.AddServiceConfiguration(services => services.AddTransient<TEventHandler>());
         }
@@ -103,50 +91,18 @@ namespace Nybus.Configuration
         public static void SubscribeToEvent<TEvent>(this INybusConfigurator configurator)
             where TEvent : class, IEvent
         {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent<TEvent>(typeof(IEventHandler<TEvent>)));
+            configurator.AddSubscription(builder => builder.SubscribeToEvent<TEvent>(typeof(IEventHandler<TEvent>)));
         }
 
         public static void SubscribeToEvent<TEvent, TEventHandler>(this INybusConfigurator configurator, TEventHandler handler)
             where TEvent : class, IEvent
             where TEventHandler : class, IEventHandler<TEvent>
         {
-            configurator.AddHostBuilderConfiguration(builder => builder.SubscribeToEvent<TEvent>(typeof(TEventHandler)));
+            configurator.AddSubscription(builder => builder.SubscribeToEvent<TEvent>(typeof(TEventHandler)));
 
             configurator.AddServiceConfiguration(services => services.AddSingleton(handler));
         }
 
         #endregion
-    }
-
-    public class DelegateWrapperCommandHandler<TCommand> : ICommandHandler<TCommand>
-        where TCommand : class, ICommand
-    {
-        private readonly CommandReceived<TCommand> _handler;
-
-        public DelegateWrapperCommandHandler(CommandReceived<TCommand> handler)
-        {
-            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-        }
-
-        public Task HandleAsync(IDispatcher dispatcher, ICommandContext<TCommand> incomingCommand)
-        {
-            return _handler.Invoke(dispatcher, incomingCommand);
-        }
-    }
-
-    public class DelegateWrapperEventHandler<TEvent> : IEventHandler<TEvent>
-        where TEvent : class, IEvent
-    {
-        private readonly EventReceived<TEvent> _handler;
-
-        public DelegateWrapperEventHandler(EventReceived<TEvent> handler)
-        {
-            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-        }
-
-        public Task HandleAsync(IDispatcher dispatcher, IEventContext<TEvent> incomingEvent)
-        {
-            return _handler.Invoke(dispatcher, incomingEvent);
-        }
     }
 }

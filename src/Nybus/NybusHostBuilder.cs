@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.InteropServices.ComTypes;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Nybus.Policies;
+using Nybus.Configuration;
 
 namespace Nybus
 {
-    public class NybusHostBuilder
+    public class NybusHostBuilder : ISubscriptionBuilder
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILoggerFactory _loggerFactory;
-        private readonly List<Action<IBusHost>> _subscriptions = new List<Action<IBusHost>>();
+        private readonly IList<Action<IBusHost>> _subscriptions = new List<Action<IBusHost>>();
 
         public NybusHostBuilder(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         {

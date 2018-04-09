@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
+using Nybus.Policies;
 
 namespace Nybus.Configuration
 {
@@ -56,7 +57,7 @@ namespace Nybus.Configuration
             _serviceConfigurations.Add(configurator);
         }
 
-        public void AddHostBuilderConfiguration(Action<NybusHostBuilder> configurator)
+        public void AddSubscription(Action<ISubscriptionBuilder> configurator)
         {
             if (configurator == null)
             {
@@ -66,14 +67,14 @@ namespace Nybus.Configuration
             _hostBuilderConfigurations.Add(configurator);
         }
 
-        public void AddOptionsConfiguration(Action<IServiceProvider, NybusHostOptions> configurator)
+        public void SetErrorPolicy(Func<IServiceProvider, IErrorPolicy> policyGenerator)
         {
-            if (configurator == null)
+            if (policyGenerator == null)
             {
-                throw new ArgumentNullException(nameof(configurator));
+                throw new ArgumentNullException(nameof(policyGenerator));
             }
 
-            _optionsConfigurations.Add(configurator);
+            _optionsConfigurations.Add((sp, o) => o.ErrorPolicy = policyGenerator(sp));
         }
     }
 }

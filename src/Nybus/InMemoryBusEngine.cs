@@ -1,9 +1,7 @@
-﻿using Nybus.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Threading.Tasks;
 // ReSharper disable InvokeAsExtensionMethod
 
@@ -21,13 +19,13 @@ namespace Nybus
             var commands = _sequenceOfMessages
                                 .Where(m => m.MessageType == MessageType.Command)
                                 .Cast<CommandMessage>()
-                                .Where(m => _acceptedTypes.Contains(m.CommandType))
+                                .Where(m => _acceptedTypes.Contains(m.Type))
                                 .Cast<Message>();
 
             var events = _sequenceOfMessages
                                 .Where(m => m.MessageType == MessageType.Event)
                                 .Cast<EventMessage>()
-                                .Where(m => _acceptedTypes.Contains(m.EventType))
+                                .Where(m => _acceptedTypes.Contains(m.Type))
                                 .Cast<Message>();
 
             return Observable.Merge(commands, events);
@@ -70,36 +68,6 @@ namespace Nybus
 
         public Task NotifyFail(Message message)
         {
-            return Task.CompletedTask;
-        }
-
-        public Task PushCommandAsync<TCommand>(TCommand command) where TCommand : class, ICommand
-        {
-            _sequenceOfMessages.OnNext(new CommandMessage<TCommand>
-            {
-                Command = command,
-                Headers = new HeaderBag
-                {
-                    [Headers.CorrelationId] = Helpers.StringfyGuid(Guid.NewGuid()),
-                    [Headers.SentOn] = Helpers.StringfyDateTimeOffset(Clock.Default.Now)
-                }
-            });
-
-            return Task.CompletedTask;
-        }
-
-        public Task PushEventAsync<TEvent>(TEvent @event) where TEvent : class, IEvent
-        {
-            _sequenceOfMessages.OnNext(new EventMessage<TEvent>
-            {
-                Event = @event,
-                Headers = new HeaderBag
-                {
-                    [Headers.CorrelationId] = Helpers.StringfyGuid(Guid.NewGuid()),
-                    [Headers.SentOn] = Helpers.StringfyDateTimeOffset(Clock.Default.Now)
-                }
-            });
-
             return Task.CompletedTask;
         }
     }

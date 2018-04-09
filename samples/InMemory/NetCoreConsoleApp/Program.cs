@@ -3,11 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Nybus;
 using System;
 using System.Threading.Tasks;
-using Nybus.Policies;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading;
-using Nybus.Configuration;
+using Nybus.Utils;
 
 namespace NetCoreConsoleApp
 {
@@ -68,11 +67,21 @@ namespace NetCoreConsoleApp
 
                 await host.StartAsync();
 
-                await bus.InvokeCommandAsync(new TestCommand { Message = "Hello World" });
+                if (args.Length == 1 && int.TryParse(args[0], out var messages))
+                {
+                    for (var i = 0; i < messages; i++)
+                    {
+                        await bus.InvokeCommandAsync(new TestCommand { Message = $"Message {i} {Clock.Default.Now:yyyyMMdd-hhmmss}" });
+                    }
+                }
+                else
+                {
+                    await bus.InvokeCommandAsync(new TestCommand { Message = "Hello World" });
 
-                await bus.InvokeCommandAsync(new TestCommand { Message = "Foo bar" });
+                    await bus.InvokeCommandAsync(new TestCommand { Message = "Foo bar" });
 
-                await bus.InvokeCommandAsync(new TestCommand { Message = "Another message" });
+                    await bus.InvokeCommandAsync(new TestCommand { Message = "Another message" });
+                }
 
                 await host.StopAsync();
 

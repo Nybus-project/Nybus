@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Subjects;
+using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -8,7 +9,7 @@ namespace Nybus
 {
     public class ObservableConsumer : IBasicConsumer, IObservable<BasicDeliverEventArgs>
     {
-        private readonly ISubject<BasicDeliverEventArgs> _subject = new ReplaySubject<BasicDeliverEventArgs>();
+        private readonly ISubject<BasicDeliverEventArgs> _subject = new Subject<BasicDeliverEventArgs>();
         private readonly ISet<string> _consumerTags = new HashSet<string>();
         private readonly object _consumerTagsLock = new object();
 
@@ -24,7 +25,9 @@ namespace Nybus
                 throw new ArgumentNullException(nameof(queueName));
             }
 
-            var consumerTag = Model.BasicConsume(queueName, false, this);
+            Task.Delay(TimeSpan.FromMilliseconds(50))
+                .ContinueWith(_ => Model.BasicConsume(queueName, false, this))
+                .Wait();
         }
 
         public bool IsRunning => _consumerTags.Count > 0;
@@ -53,6 +56,8 @@ namespace Nybus
                 {
                     _consumerTags.Remove(consumerTag);
                 }
+
+                ConsumerCancelled?.Invoke(this, new ConsumerEventArgs(consumerTag));
             }
         }
 
@@ -64,6 +69,8 @@ namespace Nybus
                 {
                     _consumerTags.Add(consumerTag);
                 }
+
+                ConsumerCancelled?.Invoke(this, new ConsumerEventArgs(consumerTag));
             }
         }
 

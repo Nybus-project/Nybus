@@ -17,16 +17,29 @@ namespace RabbitMQ
 
             services.AddNybus(cfg =>
             {
-                cfg.UseBusEngine<RabbitMqBusEngine>(svc => svc.AddSingleton(new RabbitMqBusEngineOptions { CommandQueueName = "test-queue" }));
+                cfg.UseRabbitMqBusEngine(configure =>
+                {
+                    configure.Connection(connection =>
+                    {
+                        connection.HostName = "localhost";
+                        connection.UserName = "guest";
+                        connection.Password = "guest";
+                    });
+
+                    configure.Connection("RabbitMq");
+                });
 
                 cfg.SubscribeToCommand<TestCommand>(async (d, msg) =>
                 {
-                    Console.WriteLine($"Received {msg.Command.Message} at {msg.ReceivedOn:G}");
-
-                    Thread.Sleep(TimeSpan.FromSeconds(2));
-                    //await Task.Delay(TimeSpan.FromSeconds(1)); // will not work because it will free up the thread
-
                     Console.WriteLine($"Processed {msg.Command.Message}");
+                    await d.RaiseEventAsync(new TestEvent());
+
+                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                });
+
+                cfg.SubscribeToEvent<TestEvent>(async (d, msg) =>
+                {
+                    Console.WriteLine($"Processed {msg.Event.Message}");
                 });
             });
 
@@ -60,5 +73,10 @@ namespace RabbitMQ
         public string Message { get; set; }
 
         public override string ToString() => Message;
+    }
+
+    public class TestEvent : IEvent
+    {
+        public string Message { get; set; }
     }
 }

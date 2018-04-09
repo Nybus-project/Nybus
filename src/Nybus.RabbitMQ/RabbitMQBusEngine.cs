@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace Nybus
 {
@@ -15,11 +18,14 @@ namespace Nybus
     {
         private readonly HashSet<Type> _acceptedEventTypes = new HashSet<Type>();
         private readonly HashSet<Type> _acceptedCommandTypes = new HashSet<Type>();
+        private readonly ConcurrentList<ulong> _processingMessages = new ConcurrentList<ulong>();
         private readonly RabbitMqBusEngineOptions _options;
+        private readonly ILogger<RabbitMqBusEngine> _logger;
 
-        public RabbitMqBusEngine(RabbitMqBusEngineOptions options)
+        public RabbitMqBusEngine(RabbitMqBusEngineOptions options, ILogger<RabbitMqBusEngine> logger)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         private IConnection _connection;
@@ -27,7 +33,7 @@ namespace Nybus
 
         public IObservable<Message> Start()
         {
-            var connectionFactory = new ConnectionFactory() { HostName = "localhost" };
+            IConnectionFactory connectionFactory = new ConnectionFactory() { HostName = "localhost" };
             _connection = connectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
 
@@ -39,16 +45,11 @@ namespace Nybus
                 return Observable.Never<Message>();
             }
 
-            var observableConsumer = new ObservableConsumer(_channel);
-
-            var messages = from incoming in observableConsumer
-                           let message = GetMessage(incoming)
-                           where message != null
-                           select message;
+            var queueToConsume = new List<string>();
 
             if (hasEvents)
             {
-                var eventQueue = _channel.QueueDeclare();
+                var eventQueue = _channel.QueueDeclare(durable: true);
 
                 foreach (var type in _acceptedEventTypes)
                 {
@@ -56,10 +57,10 @@ namespace Nybus
 
                     _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
 
-                    _channel.ExchangeBind(destination: eventQueue.QueueName, source: exchangeName, routingKey: string.Empty);
+                    _channel.QueueBind(queue: eventQueue.QueueName, exchange: exchangeName, routingKey: string.Empty);
                 }
 
-                observableConsumer.ConsumeFrom(eventQueue.QueueName);
+                queueToConsume.Add(eventQueue.QueueName);
             }
 
             if (hasCommands)
@@ -75,13 +76,47 @@ namespace Nybus
                     _channel.QueueBind(queue: commandQueue.QueueName, exchange: exchangeName, routingKey: string.Empty);
                 }
 
-                observableConsumer.ConsumeFrom(commandQueue.QueueName);
+                queueToConsume.Add(commandQueue.QueueName);
             }
 
-            return messages;
 
+            return Observable.Defer(() => from queue in queueToConsume.ToObservable()
+                                          from args in SubscribeMessages(_channel, queue)
+                                          let message = GetMessage(args)
+                                          where message != null
+                                          select message);
+
+            IObservable<BasicDeliverEventArgs> SubscribeMessages(IModel channel, string queueName)
+            {
+                var consumer = new ObservableConsumer(channel);
+                consumer.ConsumeFrom(queueName);
+
+                return consumer;
+            }
+            
+            //var observable = Observable.Defer(() =>
+            //{
+            //    var ob = new ObservableConsumer(_channel);
+
+            //    foreach (var queue in queueToConsume)
+            //    {
+            //        ob.ConsumeFrom(queue);
+            //    }
+
+            //    return ob;
+            //});
+
+            //var messages = from incoming in observable
+            //               let message = GetMessage(incoming)
+            //               where message != null
+            //               select message;
+
+            //return messages;
+                
             Message GetMessage(BasicDeliverEventArgs args)
             {
+                _processingMessages.Add(args.DeliveryTag);
+
                 var encoding = Encoding.GetEncoding(args.BasicProperties.ContentEncoding);
                 var body = encoding.GetString(args.Body);
                 var messageTypeName = GetHeader(args.BasicProperties, "Nybus:MessageType", encoding);
@@ -101,6 +136,7 @@ namespace Nybus
                 else
                 {
                     _channel.BasicNack(args.DeliveryTag, false, true);
+                    _processingMessages.TryRemoveItem(args.DeliveryTag);
                     return null;
                 }
 
@@ -164,18 +200,26 @@ namespace Nybus
             _connection.Dispose();
         }
 
-        public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message)
-            where TCommand : class, ICommand
+        public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand 
+            => SendItemAsync(message, message.Command);
+
+        public Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent 
+            => SendItemAsync(message, message.Event);
+
+        private Task SendItemAsync<T>(Message message, T item)
         {
-            var serialized = JsonConvert.SerializeObject(message.Command);
+            var type = typeof(T);
+
+            var serialized = JsonConvert.SerializeObject(item);
             var body = Encoding.UTF8.GetBytes(serialized);
 
             var properties = _channel.CreateBasicProperties();
             properties.ContentEncoding = Encoding.UTF8.WebName;
+
             properties.Headers = new Dictionary<string, object>
             {
                 ["Nybus:MessageId"] = message.MessageId,
-                ["Nybus:MessageType"] = message.CommandType.FullName,
+                ["Nybus:MessageType"] = type.FullName,
                 [Nybus(Headers.CorrelationId)] = message.Headers[Headers.CorrelationId],
                 [Nybus(Headers.SentOn)] = message.Headers[Headers.SentOn]
             };
@@ -185,43 +229,14 @@ namespace Nybus
                 properties.Headers[Nybus(Headers.RetryCount)] = message.Headers[Headers.RetryCount];
             }
 
-            var exchangeName = GetExchangeNameForType(message.CommandType);
+            var exchangeName = GetExchangeNameForType(type);
 
             _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
 
             _channel.BasicPublish(exchange: exchangeName, routingKey: string.Empty, body: body, basicProperties: properties);
 
             return Task.CompletedTask;
-        }
 
-        public Task SendEventAsync<TEvent>(EventMessage<TEvent> message)
-            where TEvent : class, IEvent
-        {
-            var serialized = JsonConvert.SerializeObject(message.Event);
-            var body = Encoding.UTF8.GetBytes(serialized);
-
-            var properties = _channel.CreateBasicProperties();
-            properties.ContentEncoding = Encoding.UTF8.WebName;
-            properties.Headers = new Dictionary<string, object>
-            {
-                ["Nybus:MessageId"] = message.MessageId,
-                ["Nybus:MessageType"] = message.EventType.FullName,
-                [Nybus(Headers.CorrelationId)] = message.Headers[Headers.CorrelationId],
-                [Nybus(Headers.SentOn)] = message.Headers[Headers.SentOn]
-            };
-
-            if (message.Headers.ContainsKey(Headers.RetryCount))
-            {
-                properties.Headers[Nybus(Headers.RetryCount)] = message.Headers[Headers.RetryCount];
-            }
-
-            var exchangeName = GetExchangeNameForType(message.EventType);
-
-            _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
-
-            _channel.BasicPublish(exchange: exchangeName, routingKey: string.Empty, body: body, basicProperties: properties);
-
-            return Task.CompletedTask;
         }
 
         public void SubscribeToCommand<TCommand>()
@@ -240,9 +255,23 @@ namespace Nybus
         {
             if (message.Headers.TryGetValue(RabbitMqHeaders.DeliveryTag, out var headerValue) && ulong.TryParse(headerValue, out var deliveryTag))
             {
-                _channel.BasicAck(deliveryTag, false);
-            }
+                try
+                {
+                    _channel.BasicAck(deliveryTag, false);
+                    _processingMessages.TryRemoveItem(deliveryTag);
+                }
+                catch (AlreadyClosedException ex)
+                {
+                    var state = new
+                    {
+                        message.MessageId,
+                        DeliveryTag = deliveryTag
+                    };
 
+                    _logger.LogWarning(state, ex, (s,e) => $"Unable to ack message {s.MessageId} (delivery tag: {s.DeliveryTag})");
+                }
+            }
+            
             return Task.CompletedTask;
         }
 
@@ -250,7 +279,21 @@ namespace Nybus
         {
             if (message.Headers.TryGetValue(RabbitMqHeaders.DeliveryTag, out var headerValue) && ulong.TryParse(headerValue, out var deliveryTag))
             {
-                _channel.BasicNack(deliveryTag, false, true);
+                try
+                {
+                    _channel.BasicNack(deliveryTag, false, true);
+                    _processingMessages.TryRemoveItem(deliveryTag);
+                }
+                catch (AlreadyClosedException ex)
+                {
+                    var state = new
+                    {
+                        message.MessageId,
+                        DeliveryTag = deliveryTag
+                    };
+
+                    _logger.LogWarning(state, ex, (s, e) => $"Unable to ack message {s.MessageId} (delivery tag: {s.DeliveryTag})");
+                }
             }
 
             return Task.CompletedTask;
@@ -266,5 +309,28 @@ namespace Nybus
         public string CommandQueueName { get; set; }
 
         public string EventQueueName { get; set; }
+    }
+
+    public class ConcurrentList<T>
+    {
+        private const int DefaultValue = 0;
+        private readonly ConcurrentDictionary<T, int> _innerDictionary = new ConcurrentDictionary<T, int>();
+
+        public void Add(T item)
+        {
+            _innerDictionary.AddOrUpdate(item, i => DefaultValue, (k, v) => v);
+        }
+
+        public bool TryRemoveItem(T item)
+        {
+            return _innerDictionary.TryRemove(item, out int value);
+        }
+
+        public bool Contains(T item)
+        {
+            return _innerDictionary.ContainsKey(item);
+        }
+
+        public bool IsEmpty => _innerDictionary.IsEmpty;
     }
 }
