@@ -66,7 +66,7 @@ namespace Nybus
 
             IObservable<Message> fromEngine = _engine.Start();
 
-            var sequence = _pipelineFactories.ToObservable().Select(factory => factory(fromEngine)).SelectMany(p => p);
+            var sequence = _pipelineFactories.ToObservable().Select(factory => factory(fromEngine)).Merge();
 
             _disposable = sequence.Subscribe();
 

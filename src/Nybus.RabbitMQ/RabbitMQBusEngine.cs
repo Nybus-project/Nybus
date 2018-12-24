@@ -16,6 +16,7 @@ namespace Nybus
 {
     public class RabbitMqBusEngine : IBusEngine
     {
+        private const string FanOutExchangeType = "fanout";
         private readonly HashSet<Type> _acceptedEventTypes = new HashSet<Type>();
         private readonly HashSet<Type> _acceptedCommandTypes = new HashSet<Type>();
         private readonly ConcurrentList<ulong> _processingMessages = new ConcurrentList<ulong>();
@@ -55,7 +56,7 @@ namespace Nybus
                 {
                     var exchangeName = GetExchangeNameForType(type);
 
-                    _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+                    _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
                     _channel.QueueBind(queue: eventQueue.QueueName, exchange: exchangeName, routingKey: string.Empty);
                 }
@@ -71,7 +72,7 @@ namespace Nybus
                 {
                     var exchangeName = GetExchangeNameForType(type);
 
-                    _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+                    _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
                     _channel.QueueBind(queue: commandQueue.QueueName, exchange: exchangeName, routingKey: string.Empty);
                 }
@@ -93,33 +94,16 @@ namespace Nybus
 
                 return consumer;
             }
-            
-            //var observable = Observable.Defer(() =>
-            //{
-            //    var ob = new ObservableConsumer(_channel);
-
-            //    foreach (var queue in queueToConsume)
-            //    {
-            //        ob.ConsumeFrom(queue);
-            //    }
-
-            //    return ob;
-            //});
-
-            //var messages = from incoming in observable
-            //               let message = GetMessage(incoming)
-            //               where message != null
-            //               select message;
-
-            //return messages;
                 
             Message GetMessage(BasicDeliverEventArgs args)
             {
+                _logger.LogTrace($"Received message {args.DeliveryTag}");
+
                 _processingMessages.Add(args.DeliveryTag);
 
                 var encoding = Encoding.GetEncoding(args.BasicProperties.ContentEncoding);
                 var body = encoding.GetString(args.Body);
-                var messageTypeName = GetHeader(args.BasicProperties, "Nybus:MessageType", encoding);
+                var messageTypeName = GetHeader(args.BasicProperties, Nybus(Headers.MessageType), encoding);
 
                 Message message = null;
 
@@ -140,7 +124,7 @@ namespace Nybus
                     return null;
                 }
 
-                message.MessageId = GetHeader(args.BasicProperties, "Nybus:MessageId", encoding);
+                message.MessageId = GetHeader(args.BasicProperties, Nybus(Headers.MessageId), encoding);
                 message.Headers = new HeaderBag
                 {
                     [Headers.CorrelationId] = GetHeader(args.BasicProperties, Nybus(Headers.CorrelationId), encoding),
@@ -155,20 +139,24 @@ namespace Nybus
 
             CommandMessage CreateCommandMessage(ICommand command)
             {
+                const string propertyName = "Command";
+
                 var messageType = typeof(CommandMessage<>).MakeGenericType(command.GetType());
                 var message = Activator.CreateInstance(messageType);
 
-                messageType.GetProperty("Command").SetValue(message, command);
+                messageType.GetProperty(propertyName).SetValue(message, command);
 
                 return message as CommandMessage;
             }
 
             EventMessage CreateEventMessage(IEvent @event)
             {
+                const string propertyName = "Event";
+
                 var messageType = typeof(EventMessage<>).MakeGenericType(@event.GetType());
                 var message = Activator.CreateInstance(messageType);
 
-                messageType.GetProperty("Event").SetValue(message, @event);
+                messageType.GetProperty(propertyName).SetValue(message, @event);
 
                 return message as EventMessage;
             }
@@ -218,8 +206,8 @@ namespace Nybus
 
             properties.Headers = new Dictionary<string, object>
             {
-                ["Nybus:MessageId"] = message.MessageId,
-                ["Nybus:MessageType"] = type.FullName,
+                [Nybus(Headers.MessageId)] = message.MessageId,
+                [Nybus(Headers.MessageType)] = type.FullName,
                 [Nybus(Headers.CorrelationId)] = message.Headers[Headers.CorrelationId],
                 [Nybus(Headers.SentOn)] = message.Headers[Headers.SentOn]
             };
@@ -231,7 +219,7 @@ namespace Nybus
 
             var exchangeName = GetExchangeNameForType(type);
 
-            _channel.ExchangeDeclare(exchange: exchangeName, type: "fanout");
+            _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
             _channel.BasicPublish(exchange: exchangeName, routingKey: string.Empty, body: body, basicProperties: properties);
 

@@ -13,7 +13,7 @@ namespace RabbitMQ
         static async Task Main(string[] args)
         {
             IServiceCollection services = new ServiceCollection();
-            services.AddLogging();
+            services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
             services.AddNybus(cfg =>
             {
@@ -31,22 +31,21 @@ namespace RabbitMQ
 
                 cfg.SubscribeToCommand<TestCommand>(async (d, msg) =>
                 {
-                    Console.WriteLine($"Processed {msg.Command.Message}");
-                    await d.RaiseEventAsync(new TestEvent());
+                    Console.WriteLine($"Processed command {msg.Command.Message}");
+                    await d.RaiseEventAsync(new TestEvent { Message = msg.Command.Message });
 
                     await Task.Delay(TimeSpan.FromMilliseconds(100));
                 });
 
-                cfg.SubscribeToEvent<TestEvent>(async (d, msg) =>
+                cfg.SubscribeToEvent<TestEvent>((d, msg) =>
                 {
-                    Console.WriteLine($"Processed {msg.Event.Message}");
+                    Console.WriteLine($"Processed event {msg.Event.Message}");
+
+                    return Task.CompletedTask;
                 });
             });
 
             var serviceProvider = services.BuildServiceProvider();
-
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            loggerFactory.AddConsole(LogLevel.Trace);
 
             var host = serviceProvider.GetRequiredService<NybusHost>();
 

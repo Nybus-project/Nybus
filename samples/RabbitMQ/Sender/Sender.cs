@@ -13,7 +13,7 @@ namespace RabbitMQ
         static async Task Main(string[] args)
         {
             IServiceCollection services = new ServiceCollection();
-            services.AddLogging();
+            services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
             services.AddNybus(cfg =>
             {
@@ -23,7 +23,6 @@ namespace RabbitMQ
             var serviceProvider = services.BuildServiceProvider();
 
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            loggerFactory.AddConsole(LogLevel.Trace);
 
             var host = serviceProvider.GetRequiredService<NybusHost>();
 

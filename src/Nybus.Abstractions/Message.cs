@@ -23,6 +23,8 @@ namespace Nybus
 
     public static class Headers
     {
+        public static readonly string MessageId = nameof(MessageId);
+        public static readonly string MessageType = nameof(MessageType);
         public static readonly string CorrelationId = nameof(CorrelationId);
         public static readonly string SentOn = nameof(SentOn);
         public static readonly string RetryCount = nameof(RetryCount);
