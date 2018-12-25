@@ -4,7 +4,6 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Nybus.Utils;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Threading.Tasks;
 using Nybus.Policies;
@@ -64,11 +63,14 @@ namespace Nybus
         {
             _logger.LogTrace("Bus starting");
 
-            IObservable<Message> fromEngine = _engine.Start();
+            var incomingMessages = _engine.Start();
 
-            var sequence = _pipelineFactories.ToObservable().Select(factory => factory(fromEngine)).Merge();
-
-            _disposable = sequence.Subscribe();
+            var observable = from message in incomingMessages
+                             from pipeline in _messagePipelines
+                             from execution in pipeline(message).ToObservable()
+                             select Unit.Default;
+        
+            _disposable = observable.Subscribe();
 
             _logger.LogTrace("Bus started");
 
@@ -87,37 +89,52 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
-        private readonly List<MessagePipelineFactory> _pipelineFactories = new List<MessagePipelineFactory>();
+        private readonly List<MessagePipeline> _messagePipelines = new List<MessagePipeline>();
 
         public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
         {
             _engine.SubscribeToCommand<TCommand>();
 
-            MessagePipelineFactory factory = messages => from message in messages
-                                                         where message is CommandMessage<TCommand>
-                                                         let commandMessage = (CommandMessage<TCommand>)message
-                                                         let context = new NybusCommandContext<TCommand>(commandMessage)
-                                                         from t1 in ExecuteHandler(context).Catch<Unit, Exception>(ex => HandleError(ex, commandMessage, context))
-                                                         from t2 in NotifySuccess(commandMessage)
-                                                         select Unit.Default;
+            _messagePipelines.Add(ProcessMessage);
 
-            _pipelineFactories.Add(factory);
+            async Task ProcessMessage(Message message)
+            {
+                if (message == null)
+                {
+                    throw new ArgumentNullException(nameof(message));
+                }
 
-            IObservable<Unit> ExecuteHandler(ICommandContext<TCommand> context)
+                if (message is CommandMessage<TCommand> commandMessage)
+                {
+                    var context = new NybusCommandContext<TCommand>(commandMessage);
+
+                    try
+                    {
+                        await ExecuteHandler(context).ConfigureAwait(false);
+                        await NotifySuccess(commandMessage).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        await HandleError(ex, commandMessage, context).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            async Task ExecuteHandler(ICommandContext<TCommand> context)
             {
                 var dispatcher = new NybusDispatcher(this, context.CorrelationId);
-                return commandReceived(dispatcher, context).ToObservable();
+                await commandReceived(dispatcher, context).ConfigureAwait(false);
             }
 
-            IObservable<Unit> NotifySuccess(CommandMessage<TCommand> message)
+            async Task NotifySuccess(CommandMessage<TCommand> message)
             {
-                return _engine.NotifySuccess(message).ToObservable();
+                await _engine.NotifySuccess(message).ConfigureAwait(false);
             }
 
-            IObservable<Unit> HandleError(Exception exception, CommandMessage<TCommand> message, ICommandContext<TCommand> context)
+            async Task HandleError(Exception exception, CommandMessage<TCommand> message, ICommandContext<TCommand> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, CommandType = typeof(TCommand).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.CommandType}. {s.Exception.Message}");
-                return _options.ErrorPolicy.HandleError(_engine, exception, message).ToObservable();
+                await _options.ErrorPolicy.HandleError(_engine, exception, message).ConfigureAwait(false);
             }
         }
 
@@ -125,37 +142,50 @@ namespace Nybus
         {
             _engine.SubscribeToEvent<TEvent>();
 
-            MessagePipelineFactory factory = messages => from message in messages
-                                                         where message is EventMessage<TEvent>
-                                                         let eventMessage = (EventMessage<TEvent>)message
-                                                         let context = new NybusEventContext<TEvent>(eventMessage)
-                                                         from t1 in ExecuteHandler(context).Catch<Unit, Exception>(ex => HandleError(ex, eventMessage, context))
-                                                         from t2 in NotifySuccess(eventMessage)
-                                                         select Unit.Default;
+            _messagePipelines.Add(ProcessMessage);
 
-            _pipelineFactories.Add(factory);
+            async Task ProcessMessage(Message message)
+            {
+                if (message == null)
+                {
+                    throw new ArgumentNullException(nameof(message));
+                }
 
-            IObservable<Unit> ExecuteHandler(IEventContext<TEvent> context)
+                if (message is EventMessage<TEvent> eventMessage)
+                {
+                    var context = new NybusEventContext<TEvent>(eventMessage);
+
+                    try
+                    {
+                        await ExecuteHandler(context).ConfigureAwait(false);
+                        await NotifySuccess(eventMessage).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        await HandleError(ex, eventMessage, context).ConfigureAwait(false);
+                    }
+                }
+            }
+
+            async Task ExecuteHandler(IEventContext<TEvent> context)
             {
                 var dispatcher = new NybusDispatcher(this, context.CorrelationId);
-                return Observable.FromAsync(() => eventReceived(dispatcher, context));
+                await eventReceived(dispatcher, context).ConfigureAwait(false);
             }
 
-            async Task<Unit> NotifySuccess(EventMessage<TEvent> message)
+            async Task NotifySuccess(EventMessage<TEvent> message)
             {
-                await _engine.NotifySuccess(message);
-                return Unit.Default;
+                await _engine.NotifySuccess(message).ConfigureAwait(false);
             }
 
-            IObservable<Unit> HandleError(Exception exception, EventMessage<TEvent> message, IEventContext<TEvent> context)
+            async Task HandleError(Exception exception, EventMessage<TEvent> message, IEventContext<TEvent> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, EventType = typeof(TEvent).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.EventType}. {s.Exception.Message}");
-                return _options.ErrorPolicy.HandleError(_engine, exception, message).ToObservable();
+                await _options.ErrorPolicy.HandleError(_engine, exception, message).ConfigureAwait(false);
             }
         }
 
-        private delegate IObservable<Unit> MessagePipelineFactory(IObservable<Message> message);
-
+        private delegate Task MessagePipeline(Message message);
     }
 
     public class NybusHostOptions
