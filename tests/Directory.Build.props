@@ -1,4 +1,7 @@
 <Project>
+  <PropertyGroup>
+      <RootNamespace>Tests</RootNamespace>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.6.0" />

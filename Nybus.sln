@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -25,12 +26,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Receiver", "samples\RabbitMQ\Receiver\Receiver.csproj", "{6667FFE4-9CA6-4583-8917-03E4E417312C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{25B3E4B9-9110-4715-973B-C6FF2DE603A8}"
+	ProjectSection(SolutionItems) = preProject
+		tests\Directory.Build.props = tests\Directory.Build.props
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus", "tests\Tests.Nybus\Tests.Nybus.csproj", "{68E65629-E3FC-4D66-BB4A-6B0E14CC886A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Nybus", "tests\Tests.Nybus\Tests.Nybus.csproj", "{68E65629-E3FC-4D66-BB4A-6B0E14CC886A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.Abstractions", "tests\Tests.Nybus.Abstractions\Tests.Nybus.Abstractions.csproj", "{5053658B-E538-4432-8D19-DD41616BBCC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Nybus.Abstractions", "tests\Tests.Nybus.Abstractions\Tests.Nybus.Abstractions.csproj", "{5053658B-E538-4432-8D19-DD41616BBCC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.RabbitMq", "tests\Tests.Nybus.RabbitMq\Tests.Nybus.RabbitMq.csproj", "{432E7550-5383-48BB-9C27-F78AAA4A66E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Nybus.RabbitMq", "tests\Tests.Nybus.RabbitMq\Tests.Nybus.RabbitMq.csproj", "{432E7550-5383-48BB-9C27-F78AAA4A66E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
