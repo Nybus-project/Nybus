@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Nybus.Abstractions\Nybus.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Nybus.Abstractions\Nybus.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>
