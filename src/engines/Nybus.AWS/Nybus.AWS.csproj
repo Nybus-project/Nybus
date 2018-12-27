@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Nybus</RootNamespace>
+    <AssemblyName>Nybus.AWS</AssemblyName>
+    <Description />
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\Nybus.Abstractions\Nybus.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.3.3.8" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.3.3.44" />    
+  </ItemGroup>
+
+</Project>
