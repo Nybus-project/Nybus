@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Renato Golia</Authors>
+    <Version>1.0.0-alpha001</Version>
+    <Company>Nybus Project</Company>
+    <Product>Nybus</Product>
+    <license>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</license>
+    <projectUrl>https://github.com/Nybus-project/Nybus</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+  </PropertyGroup>
+</Project>

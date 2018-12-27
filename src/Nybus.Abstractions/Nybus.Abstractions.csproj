@@ -3,12 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Nybus</RootNamespace>
-    <Authors>Renato Golia</Authors>
-    <Company>Nybus Project</Company>
-    <Product>Nybus</Product>
     <Description />
-    <PackageLicenseUrl>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/Nybus-project/Nybus</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

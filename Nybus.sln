@@ -7,31 +7,37 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{79A9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InMemory", "InMemory", "{4999168F-4A72-4FAD-829A-9D99B6485948}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreConsoleApp", "samples\InMemory\NetCoreConsoleApp\NetCoreConsoleApp.csproj", "{A0D6716E-DB74-4C5B-B8C4-30B76A6AB528}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreConsoleApp", "samples\InMemory\NetCoreConsoleApp\NetCoreConsoleApp.csproj", "{A0D6716E-DB74-4C5B-B8C4-30B76A6AB528}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetFxWindowsService", "samples\InMemory\NetFxWindowsService\NetFxWindowsService.csproj", "{EB6D7136-68FC-49D5-9BB9-77124F944E88}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetFxWindowsService", "samples\InMemory\NetFxWindowsService\NetFxWindowsService.csproj", "{EB6D7136-68FC-49D5-9BB9-77124F944E88}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RabbitMQ", "RabbitMQ", "{E9C508D3-BE04-4072-97B8-5C47D63060AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Receiver", "samples\RabbitMQ\Receiver\Receiver.csproj", "{D3660DCE-0759-4C3F-BB36-A3F23CC71FAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Receiver", "samples\RabbitMQ\Receiver\Receiver.csproj", "{D3660DCE-0759-4C3F-BB36-A3F23CC71FAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sender", "samples\RabbitMQ\Sender\Sender.csproj", "{C499F59E-1A42-4F15-927F-AE46124AB324}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sender", "samples\RabbitMQ\Sender\Sender.csproj", "{C499F59E-1A42-4F15-927F-AE46124AB324}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E76431F6-F85A-49B7-BBBE-F2A200F9D540}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus", "src\Nybus\Nybus.csproj", "{737A92AC-F0F0-4160-8212-F4DCDB7C1AA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus", "src\Nybus\Nybus.csproj", "{737A92AC-F0F0-4160-8212-F4DCDB7C1AA7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.Abstractions", "src\Nybus.Abstractions\Nybus.Abstractions.csproj", "{74549224-1AE7-4F64-A87E-FC5EB93A84DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.Abstractions", "src\Nybus.Abstractions\Nybus.Abstractions.csproj", "{74549224-1AE7-4F64-A87E-FC5EB93A84DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.RabbitMq", "src\Nybus.RabbitMq\Nybus.RabbitMq.csproj", "{DFCDD765-B1F7-48BC-AE8A-2C85703CD640}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.RabbitMq", "src\Nybus.RabbitMq\Nybus.RabbitMq.csproj", "{DFCDD765-B1F7-48BC-AE8A-2C85703CD640}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{DEDC0121-A58D-41CB-A5FB-FF1999852A89}"
+	ProjectSection(SolutionItems) = preProject
+		tests\Directory.Build.props = tests\Directory.Build.props
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus", "tests\Tests.Nybus\Tests.Nybus.csproj", "{F4F3F0D2-927E-47C5-B5FC-572558A3389A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Nybus", "tests\Tests.Nybus\Tests.Nybus.csproj", "{F4F3F0D2-927E-47C5-B5FC-572558A3389A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.Abstractions", "tests\Tests.Nybus.Abstractions\Tests.Nybus.Abstractions.csproj", "{70008F8A-CA1B-468D-9AA9-A59C7D34857F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Nybus.Abstractions", "tests\Tests.Nybus.Abstractions\Tests.Nybus.Abstractions.csproj", "{70008F8A-CA1B-468D-9AA9-A59C7D34857F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.RabbitMq", "tests\Tests.Nybus.RabbitMq\Tests.Nybus.RabbitMq.csproj", "{39CC7277-D8A0-480C-86EA-68B8F5A392E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Nybus.RabbitMq", "tests\Tests.Nybus.RabbitMq\Tests.Nybus.RabbitMq.csproj", "{39CC7277-D8A0-480C-86EA-68B8F5A392E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,9 +47,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A0D6716E-DB74-4C5B-B8C4-30B76A6AB528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -167,6 +170,9 @@ Global
 		{39CC7277-D8A0-480C-86EA-68B8F5A392E7}.Release|x86.ActiveCfg = Release|Any CPU
 		{39CC7277-D8A0-480C-86EA-68B8F5A392E7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4999168F-4A72-4FAD-829A-9D99B6485948} = {79A9E4C6-B78D-406F-B1D5-6E9AA6085078}
 		{A0D6716E-DB74-4C5B-B8C4-30B76A6AB528} = {4999168F-4A72-4FAD-829A-9D99B6485948}
@@ -180,5 +186,8 @@ Global
 		{F4F3F0D2-927E-47C5-B5FC-572558A3389A} = {DEDC0121-A58D-41CB-A5FB-FF1999852A89}
 		{70008F8A-CA1B-468D-9AA9-A59C7D34857F} = {DEDC0121-A58D-41CB-A5FB-FF1999852A89}
 		{39CC7277-D8A0-480C-86EA-68B8F5A392E7} = {DEDC0121-A58D-41CB-A5FB-FF1999852A89}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {999029B1-580A-4108-A163-D6CF059407C5}
 	EndGlobalSection
 EndGlobal
