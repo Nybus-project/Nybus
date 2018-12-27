@@ -5,6 +5,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Nybus.Configuration;
 using Nybus.Utils;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
 using RabbitMQ.Client;
+using IConfiguration = Nybus.Configuration.IConfiguration;
 
 namespace Nybus
 {
@@ -12,7 +13,7 @@ namespace Nybus
     {
         public static void UseRabbitMqBusEngine(this INybusConfigurator configurator, Action<RabbitMqConfigurator> configure = null)
         {
-            IConfiguration configuration = new RabbitMqBusEngineConfiguration
+            IConfiguration configuration = new RabbitMqConfiguration
             {
                 CommandQueueFactory = new StaticQueueFactory("test-queue")
             };

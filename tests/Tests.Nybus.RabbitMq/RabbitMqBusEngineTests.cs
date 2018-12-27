@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Nybus;
+using Nybus.Configuration;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 using RabbitMQ.Client.Framing;

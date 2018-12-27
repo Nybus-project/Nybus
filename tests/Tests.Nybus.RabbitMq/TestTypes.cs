@@ -5,7 +5,10 @@ using Nybus;
 
 namespace Tests
 {
-    public class FirstTestCommand : ICommand { }
+    public class FirstTestCommand : ICommand
+    {
+        public string Message { get; set; }
+    }
 
     public class SecondTestCommand : ICommand { }
 
