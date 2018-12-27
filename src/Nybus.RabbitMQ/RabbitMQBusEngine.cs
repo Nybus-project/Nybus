@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Nybus.Utils;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
@@ -290,28 +290,5 @@ namespace Nybus
         private static string GetExchangeNameForType(Type type) => type.FullName;
 
         private static string Nybus(string key) => $"Nybus:{key}";
-    }
-
-    public class ConcurrentList<T>
-    {
-        private const int DefaultValue = 0;
-        private readonly ConcurrentDictionary<T, int> _innerDictionary = new ConcurrentDictionary<T, int>();
-
-        public void Add(T item)
-        {
-            _innerDictionary.AddOrUpdate(item, i => DefaultValue, (k, v) => v);
-        }
-
-        public bool TryRemoveItem(T item)
-        {
-            return _innerDictionary.TryRemove(item, out int value);
-        }
-
-        public bool Contains(T item)
-        {
-            return _innerDictionary.ContainsKey(item);
-        }
-
-        public bool IsEmpty => _innerDictionary.IsEmpty;
     }
 }

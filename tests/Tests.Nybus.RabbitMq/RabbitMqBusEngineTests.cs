@@ -1,24 +1,33 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using Nybus;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 using RabbitMQ.Client.Framing;
-using Headers = Nybus.Headers;
 
 namespace Tests
 {
     [TestFixture]
     public class RabbitMqBusEngineTests
     {
+        [Test]
+        public void Configuration_is_required()
+        {
+            Assert.Throws<ArgumentNullException>(() => new RabbitMqBusEngine(null, Mock.Of<ILogger<RabbitMqBusEngine>>()));
+        }
+
+        [Test]
+        public void Logger_is_required()
+        {
+            Assert.Throws<ArgumentNullException>(() => new RabbitMqBusEngine(Mock.Of<IConfiguration>(), null));
+        }
+
         [Test, AutoMoqData]
         public void SubscribeToCommand_registers_command_type(RabbitMqBusEngine sut)
         {
