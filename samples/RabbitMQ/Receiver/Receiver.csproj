@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\engines\Nybus.RabbitMq\Nybus.RabbitMq.csproj" />
     <ProjectReference Include="..\..\..\src\Nybus.Abstractions\Nybus.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\src\Nybus.RabbitMQ\Nybus.RabbitMq.csproj" />
     <ProjectReference Include="..\..\..\src\Nybus\Nybus.csproj" />
   </ItemGroup>
 
