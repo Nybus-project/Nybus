@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.Abstractions", "src\N
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus", "src\Nybus\Nybus.csproj", "{20AE3A60-E874-4BF8-9867-F299A16977CD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.RabbitMQ", "src\Nybus.RabbitMQ\Nybus.RabbitMQ.csproj", "{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.RabbitMq", "src\Nybus.RabbitMq\Nybus.RabbitMq.csproj", "{FB2D7AE4-F570-42AF-8546-A6B2E38DFFA3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{13765C03-9189-4764-A085-41C3D8ACC487}"
 EndProject

@@ -12,7 +12,12 @@ namespace Nybus
     {
         public static void UseRabbitMqBusEngine(this INybusConfigurator configurator, Action<RabbitMqConfigurator> configure = null)
         {
-            configurator.UseBusEngine<RabbitMqBusEngine>(svc => svc.AddSingleton(new RabbitMqBusEngineOptions { CommandQueueName = "test-queue" }));
+            IConfiguration configuration = new RabbitMqBusEngineConfiguration
+            {
+                CommandQueueFactory = new StaticQueueFactory("test-queue")
+            };
+
+            configurator.UseBusEngine<RabbitMqBusEngine>(svc => svc.AddSingleton(configuration));
         }
     }
 

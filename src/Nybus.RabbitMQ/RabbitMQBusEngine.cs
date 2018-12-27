@@ -3,11 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
@@ -17,29 +15,33 @@ namespace Nybus
     public class RabbitMqBusEngine : IBusEngine
     {
         private const string FanOutExchangeType = "fanout";
-        private readonly HashSet<Type> _acceptedEventTypes = new HashSet<Type>();
-        private readonly HashSet<Type> _acceptedCommandTypes = new HashSet<Type>();
         private readonly ConcurrentList<ulong> _processingMessages = new ConcurrentList<ulong>();
-        private readonly RabbitMqBusEngineOptions _options;
         private readonly ILogger<RabbitMqBusEngine> _logger;
 
-        public RabbitMqBusEngine(RabbitMqBusEngineOptions options, ILogger<RabbitMqBusEngine> logger)
+        public RabbitMqBusEngine(IConfiguration configuration, ILogger<RabbitMqBusEngine> logger)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         private IConnection _connection;
         private IModel _channel;
+        private readonly Dictionary<string, ObservableConsumer> _consumers = new Dictionary<string, ObservableConsumer>(StringComparer.OrdinalIgnoreCase);
+
+        public IConfiguration Configuration { get; }
+
+        public ISet<Type> AcceptedEventTypes { get; } = new HashSet<Type>();
+        public ISet<Type> AcceptedCommandTypes { get; } = new HashSet<Type>();
+
+        public IReadOnlyDictionary<string, ObservableConsumer> Consumers => _consumers;
 
         public IObservable<Message> Start()
         {
-            IConnectionFactory connectionFactory = new ConnectionFactory() { HostName = "localhost" };
-            _connection = connectionFactory.CreateConnection();
+            _connection = Configuration.ConnectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            var hasEvents = _acceptedEventTypes.Any();
-            var hasCommands = _acceptedCommandTypes.Any();
+            var hasEvents = AcceptedEventTypes.Any();
+            var hasCommands = AcceptedCommandTypes.Any();
 
             if (!hasEvents && !hasCommands)
             {
@@ -50,9 +52,9 @@ namespace Nybus
 
             if (hasEvents)
             {
-                var eventQueue = _channel.QueueDeclare(durable: true);
+                var eventQueue = Configuration.EventQueueFactory.CreateQueue(_channel);
 
-                foreach (var type in _acceptedEventTypes)
+                foreach (var type in AcceptedEventTypes)
                 {
                     var exchangeName = GetExchangeNameForType(type);
 
@@ -66,9 +68,9 @@ namespace Nybus
 
             if (hasCommands)
             {
-                var commandQueue = _channel.QueueDeclare(queue: _options.CommandQueueName, durable: true, exclusive: false, autoDelete: false);
+                var commandQueue = Configuration.CommandQueueFactory.CreateQueue(_channel);
 
-                foreach (var type in _acceptedCommandTypes)
+                foreach (var type in AcceptedCommandTypes)
                 {
                     var exchangeName = GetExchangeNameForType(type);
 
@@ -92,6 +94,8 @@ namespace Nybus
                 var consumer = new ObservableConsumer(channel);
                 consumer.ConsumeFrom(queueName);
 
+                _consumers.Add(queueName, consumer);
+
                 return consumer;
             }
                 
@@ -102,19 +106,18 @@ namespace Nybus
                 _processingMessages.Add(args.DeliveryTag);
 
                 var encoding = Encoding.GetEncoding(args.BasicProperties.ContentEncoding);
-                var body = encoding.GetString(args.Body);
                 var messageTypeName = GetHeader(args.BasicProperties, Nybus(Headers.MessageType), encoding);
 
                 Message message = null;
 
                 if (TryFindCommandByName(messageTypeName, out var commandType))
                 {
-                    var command = JsonConvert.DeserializeObject(body, commandType) as ICommand;
+                    var command = Configuration.Serializer.DeserializeObject(args.Body, commandType, encoding) as ICommand;
                     message = CreateCommandMessage(command);
                 }
                 else if (TryFindEventByName(messageTypeName, out var eventType))
                 {
-                    var @event = JsonConvert.DeserializeObject(body, eventType) as IEvent;
+                    var @event = Configuration.Serializer.DeserializeObject(args.Body, eventType, encoding) as IEvent;
                     message = CreateEventMessage(@event);
                 }
                 else
@@ -161,11 +164,11 @@ namespace Nybus
                 return message as EventMessage;
             }
 
-            bool TryFindCommandByName(string commandTypeName, out Type type) => TryFindTypeByName(_acceptedCommandTypes, commandTypeName, out type);
+            bool TryFindCommandByName(string commandTypeName, out Type type) => TryFindTypeByName(AcceptedCommandTypes, commandTypeName, out type);
 
-            bool TryFindEventByName(string eventTypeName, out Type type) => TryFindTypeByName(_acceptedEventTypes, eventTypeName, out type);
+            bool TryFindEventByName(string eventTypeName, out Type type) => TryFindTypeByName(AcceptedEventTypes, eventTypeName, out type);
 
-            bool TryFindTypeByName(IEnumerable<Type> typeList, string typeName, out Type type)
+            bool TryFindTypeByName(ISet<Type> typeList, string typeName, out Type type)
             {
                 type = typeList.FirstOrDefault(o => o.FullName == typeName);
                 return type != null;
@@ -198,23 +201,20 @@ namespace Nybus
         {
             var type = typeof(T);
 
-            var serialized = JsonConvert.SerializeObject(item);
-            var body = Encoding.UTF8.GetBytes(serialized);
+            var body = Configuration.Serializer.SerializeObject(item, Configuration.OutboundEncoding);
 
             var properties = _channel.CreateBasicProperties();
-            properties.ContentEncoding = Encoding.UTF8.WebName;
+            properties.ContentEncoding = Configuration.OutboundEncoding.WebName;
 
             properties.Headers = new Dictionary<string, object>
             {
                 [Nybus(Headers.MessageId)] = message.MessageId,
-                [Nybus(Headers.MessageType)] = type.FullName,
-                [Nybus(Headers.CorrelationId)] = message.Headers[Headers.CorrelationId],
-                [Nybus(Headers.SentOn)] = message.Headers[Headers.SentOn]
+                [Nybus(Headers.MessageType)] = type.FullName
             };
 
-            if (message.Headers.ContainsKey(Headers.RetryCount))
+            foreach (var header in message.Headers)
             {
-                properties.Headers[Nybus(Headers.RetryCount)] = message.Headers[Headers.RetryCount];
+                properties.Headers.Add(Nybus(header.Key), header.Value);
             }
 
             var exchangeName = GetExchangeNameForType(type);
@@ -230,13 +230,13 @@ namespace Nybus
         public void SubscribeToCommand<TCommand>()
             where TCommand : class, ICommand
         {
-            _acceptedCommandTypes.Add(typeof(TCommand));
+            AcceptedCommandTypes.Add(typeof(TCommand));
         }
 
         public void SubscribeToEvent<TEvent>()
             where TEvent : class, IEvent
         {
-            _acceptedEventTypes.Add(typeof(TEvent));
+            AcceptedEventTypes.Add(typeof(TEvent));
         }
 
         public Task NotifySuccess(Message message)
@@ -290,13 +290,6 @@ namespace Nybus
         private static string GetExchangeNameForType(Type type) => type.FullName;
 
         private static string Nybus(string key) => $"Nybus:{key}";
-    }
-
-    public class RabbitMqBusEngineOptions
-    {
-        public string CommandQueueName { get; set; }
-
-        public string EventQueueName { get; set; }
     }
 
     public class ConcurrentList<T>

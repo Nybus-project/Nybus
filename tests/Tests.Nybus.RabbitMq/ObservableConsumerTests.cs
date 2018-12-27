@@ -57,17 +57,14 @@ namespace Tests
         [Test, AutoMoqData]
         public void Messages_are_lost_if_not_subscribed(string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, IBasicProperties properties, byte[] body)
         {
-            var messages = new List<BasicDeliverEventArgs>();
-
+            
             var sut = CreateSystemUnderTest();
 
             sut.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
 
-            var subscription = sut.Subscribe(Observer.Create<BasicDeliverEventArgs>(item => messages.Add(item)));
+            var messages = sut.DumpInList();
 
             Assert.That(messages, Is.Empty);
-
-            subscription.Dispose();
         }
 
         [Test, AutoData]

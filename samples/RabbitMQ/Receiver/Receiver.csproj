@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Nybus.Abstractions\Nybus.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\src\Nybus.RabbitMQ\Nybus.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\..\src\Nybus.RabbitMQ\Nybus.RabbitMq.csproj" />
     <ProjectReference Include="..\..\..\src\Nybus\Nybus.csproj" />
   </ItemGroup>
 
