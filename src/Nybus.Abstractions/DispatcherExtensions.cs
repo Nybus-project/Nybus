@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Nybus {
+namespace Nybus
+{
     public static class DispatcherExtensions
     {
         public static async Task InvokeManyCommandsAsync<TCommand>(this IDispatcher dispatcher, IEnumerable<TCommand> commands)
