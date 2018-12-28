@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B1E390CC-8CB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "engines", "engines", "{22CE8614-4057-44E0-8140-FFB46C642539}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.RabbitMq", "src\engines\Nybus.RabbitMq\Nybus.RabbitMq.csproj", "{C13FA413-AC29-4194-A7AB-A39AB0D6607D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.Engine.RabbitMq", "src\engines\Nybus.Engine.RabbitMq\Nybus.Engine.RabbitMq.csproj", "{C13FA413-AC29-4194-A7AB-A39AB0D6607D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus", "src\Nybus\Nybus.csproj", "{B2A13A51-20A1-4753-8F54-893461AA33EE}"
 EndProject
@@ -33,9 +33,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus", "tests\Tests.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.Abstractions", "tests\Tests.Nybus.Abstractions\Tests.Nybus.Abstractions.csproj", "{D9A774DC-2733-457A-BBCB-AEE61601B8B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.RabbitMq", "tests\Tests.Nybus.RabbitMq\Tests.Nybus.RabbitMq.csproj", "{DAE769CB-590C-44B2-8BA2-14DFEB47881E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.Engine.RabbitMq", "tests\Tests.Nybus.Engine.RabbitMq\Tests.Nybus.Engine.RabbitMq.csproj", "{DAE769CB-590C-44B2-8BA2-14DFEB47881E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.AWS", "src\engines\Nybus.AWS\Nybus.AWS.csproj", "{283BF936-C10A-4C8D-B002-A8C80A3D003D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.Engine.AWS", "src\engines\Nybus.Engine.AWS\Nybus.Engine.AWS.csproj", "{283BF936-C10A-4C8D-B002-A8C80A3D003D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

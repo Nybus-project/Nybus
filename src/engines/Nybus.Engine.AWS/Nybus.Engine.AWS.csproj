@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Nybus</RootNamespace>
-    <AssemblyName>Nybus.AWS</AssemblyName>
+    <AssemblyName>Nybus.Engine.AWS</AssemblyName>
     <Description />
   </PropertyGroup>
   

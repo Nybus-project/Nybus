@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\engines\Nybus.RabbitMq\Nybus.RabbitMq.csproj" />
+    <ProjectReference Include="..\..\src\engines\Nybus.Engine.RabbitMq\Nybus.Engine.RabbitMq.csproj" />
   </ItemGroup>
 
 </Project>
