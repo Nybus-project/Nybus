@@ -26,6 +26,8 @@ namespace Tests
 
             fixture.Customizations.Add(new TypeRelay(typeof(ISerializer), typeof(JsonSerializer)));
 
+            fixture.Register(() => TemporaryQueueFactory.Instance as TemporaryQueueFactory);
+
             return fixture;
         }
     }
