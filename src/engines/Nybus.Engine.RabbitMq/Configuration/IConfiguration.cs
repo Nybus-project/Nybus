@@ -5,26 +5,26 @@ namespace Nybus.Configuration
 {
     public interface IConfiguration
     {
-        IConnectionFactory ConnectionFactory { get; }
+        IConnectionFactory ConnectionFactory { get; set; }
 
-        IQueueFactory CommandQueueFactory { get; }
+        IQueueFactory CommandQueueFactory { get; set; }
 
-        IQueueFactory EventQueueFactory { get; }
+        IQueueFactory EventQueueFactory { get; set; }
 
-        Encoding OutboundEncoding { get; }
+        Encoding OutboundEncoding { get; set; }
 
-        ISerializer Serializer { get; }
+        ISerializer Serializer { get; set; }
     }
 
     public class RabbitMqConfiguration : IConfiguration
     {
-        public IConnectionFactory ConnectionFactory { get; set; } = new ConnectionFactory { HostName = "localhost" };
+        public IConnectionFactory ConnectionFactory { get; set; }
 
-        public IQueueFactory CommandQueueFactory { get; set; } = new TemporaryQueueFactory();
+        public IQueueFactory CommandQueueFactory { get; set; }
 
-        public IQueueFactory EventQueueFactory { get; set; } = new TemporaryQueueFactory();
+        public IQueueFactory EventQueueFactory { get; set; }
 
-        public Encoding OutboundEncoding { get; set; } = Encoding.UTF8;
+        public Encoding OutboundEncoding { get; set; }
 
         public ISerializer Serializer { get; set; } = new JsonSerializer();
     }

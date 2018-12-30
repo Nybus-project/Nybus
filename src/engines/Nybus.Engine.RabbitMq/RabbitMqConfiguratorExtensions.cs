@@ -1,37 +1,103 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
-using RabbitMQ.Client;
+using Nybus.Utils;
 using IConfiguration = Nybus.Configuration.IConfiguration;
 
 namespace Nybus
 {
     public static class RabbitMqConfiguratorExtensions
     {
-        public static void UseRabbitMqBusEngine(this INybusConfigurator configurator, Action<RabbitMqConfigurator> configure = null)
+        public static void UseRabbitMqBusEngine(this INybusConfigurator nybus, Action<IRabbitMqConfigurator> configure = null)
         {
-            IConfiguration configuration = new RabbitMqConfiguration
-            {
-                CommandQueueFactory = new StaticQueueFactory("test-queue")
-            };
+            nybus.AddServiceConfiguration(svc => svc.AddSingleton<IConfigurationFactory, ConfigurationFactory>());
 
-            configurator.UseBusEngine<RabbitMqBusEngine>(svc => svc.AddSingleton(configuration));
+            var configurator = new RabbitMqConfigurator();
+
+            configurator.RegisterQueueFactoryProvider<StaticQueueFactoryProvider>();
+
+            configurator.RegisterQueueFactoryProvider<TemporaryQueueFactoryProvider>();
+
+            configure?.Invoke(configurator);
+
+            configurator.Apply(nybus);
+
+            nybus.UseBusEngine<RabbitMqBusEngine>();
         }
     }
 
-    public class RabbitMqConfigurator
+    public interface IRabbitMqConfigurator
     {
-        public void Connection(Action<ConnectionFactory> configurator)
-        {
+        void RegisterQueueFactoryProvider<TProvider>(Func<IServiceProvider, IQueueFactoryProvider> factory = null)
+            where TProvider : class, IQueueFactoryProvider;
 
+        void Configure(Action<IConfiguration> configure);
+
+        void UseConfiguration(string sectionName = "RabbitMq");
+
+    }
+
+    public class RabbitMqConfigurator : IRabbitMqConfigurator
+    {
+        readonly List<Action<IServiceCollection>> _queueFactoryProviderRegistrations = new List<Action<IServiceCollection>>();
+
+        public void RegisterQueueFactoryProvider<TProvider>(Func<IServiceProvider, IQueueFactoryProvider> factory = null)
+            where TProvider : class, IQueueFactoryProvider
+        {
+            if (factory == null)
+            {
+                _queueFactoryProviderRegistrations.Add(sp => sp.AddSingleton<IQueueFactoryProvider, TProvider>());
+            }
+            else
+            {
+                _queueFactoryProviderRegistrations.Add(sp => sp.AddSingleton<IQueueFactoryProvider>(factory));
+            }
         }
 
-        public void Connection(string sectionName = "RabbitMq")
-        {
+        private Action<IConfiguration> _configurationAction;
 
+        public void Configure(Action<IConfiguration> configure)
+        {
+            _configurationAction = configure ?? throw new ArgumentNullException(nameof(configure));
+        }
+
+        private string _configurationSectionName;
+
+        public void UseConfiguration(string sectionName = "RabbitMq")
+        {
+            _configurationSectionName = sectionName ?? throw new ArgumentNullException(nameof(sectionName));
+        }
+
+        public void Apply(INybusConfigurator nybus)
+        {
+            var options = new RabbitMqOptions();
+
+            if (_configurationSectionName != null && nybus.Configuration.TryGetSection(_configurationSectionName, out var configurationSection))
+            {
+                configurationSection.Bind(options);
+            }
+
+            nybus.AddServiceConfiguration(sc => sc.AddSingleton(options));
+
+            nybus.AddServiceConfiguration(sc => sc.AddTransient<IConfiguration>(sp =>
+            {
+                var factory = sp.GetRequiredService<IConfigurationFactory>();
+
+                var op = sp.GetRequiredService<RabbitMqOptions>();
+
+                var configuration = factory.Create(op);
+
+                _configurationAction?.Invoke(configuration);
+
+                return configuration;
+            }));
+
+            foreach (var registration in _queueFactoryProviderRegistrations)
+            {
+                nybus.AddServiceConfiguration(registration);
+            }
         }
     }
 }

@@ -30,6 +30,8 @@ namespace Nybus.Configuration
 
     public class TemporaryQueueFactory : IQueueFactory
     {
+        private TemporaryQueueFactory() { }
+
         public QueueDeclareOk CreateQueue(IModel model)
         {
             if (model == null)
@@ -39,6 +41,8 @@ namespace Nybus.Configuration
 
             return model.QueueDeclare(durable: true);
         }
+
+        public static readonly IQueueFactory Instance = new TemporaryQueueFactory();
     }
 
 }
