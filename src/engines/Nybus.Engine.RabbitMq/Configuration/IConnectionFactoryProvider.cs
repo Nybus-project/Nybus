@@ -26,7 +26,13 @@ namespace Nybus.Configuration
     {
         public IConnectionFactory CreateFactory(IConfigurationSection settings)
         {
-            throw new System.NotImplementedException();
+            return new ConnectionFactory
+            {
+                HostName = settings.GetValue<string>("HostName") ?? "localhost",
+                UserName = settings.GetValue<string>("UserName") ?? "guest",
+                Password = settings.GetValue<string>("Password") ?? "guest",
+                VirtualHost = settings.GetValue<string>("VirtualHost") ?? "/"
+            };
         }
     }
 }

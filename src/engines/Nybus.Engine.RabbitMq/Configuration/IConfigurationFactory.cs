@@ -80,12 +80,12 @@ namespace Nybus.Configuration
 
             IConnectionFactory GetConnectionFactory()
             {
-                if (options.ConnectionString != null)
+                if (options.ConnectionString.Exists())
                 {
                     return DefaultConnectionFactoryProviders.ConnectionString.CreateFactory(options.ConnectionString);
                 }
 
-                if (options.Connection != null)
+                if (options.Connection.Exists())
                 {
                     return DefaultConnectionFactoryProviders.ConnectionNode.CreateFactory(options.Connection);
                 }
