@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Data.Common;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 
 namespace Nybus.Configuration
@@ -8,17 +10,46 @@ namespace Nybus.Configuration
         IConnectionFactory CreateFactory(IConfigurationSection settings);
     }
 
-    public static class DefaultConnectionFactoryProviders
+    public interface IConnectionFactoryProviders
     {
-        public static readonly IConnectionFactoryProvider ConnectionString = new ConnectionStringConnectionFactoryProvider();
-        public static readonly IConnectionFactoryProvider ConnectionNode = new ConnectionNodeConnectionFactoryProvider();
+        IConnectionFactoryProvider ConnectionString { get; }
+
+        IConnectionFactoryProvider ConnectionNode { get; }
+    }
+
+    public class ConnectionFactoryProviders : IConnectionFactoryProviders
+    {
+        public IConnectionFactoryProvider ConnectionString { get; } = new ConnectionStringConnectionFactoryProvider();
+
+        public IConnectionFactoryProvider ConnectionNode { get; } = new ConnectionNodeConnectionFactoryProvider();
     }
 
     public class ConnectionStringConnectionFactoryProvider : IConnectionFactoryProvider
     {
         public IConnectionFactory CreateFactory(IConfigurationSection settings)
         {
-            throw new System.NotImplementedException();
+            var connectionStringBuilder = new DbConnectionStringBuilder
+            {
+                ConnectionString = settings.Value ?? throw new ArgumentNullException("ConnectionString", "ConnectionString value is missing")
+            };
+
+            return new ConnectionFactory
+            {
+                HostName = GetValueOrNull(connectionStringBuilder, "Hostname"),
+                UserName = GetValueOrNull(connectionStringBuilder, "Username"),
+                Password = GetValueOrNull(connectionStringBuilder, "Password"),
+                VirtualHost = GetValueOrNull(connectionStringBuilder, "VirtualHost"),
+            };
+        }
+
+        private string GetValueOrNull(DbConnectionStringBuilder connectionStringBuilder, string key)
+        {
+            if (connectionStringBuilder.ContainsKey(key))
+            {
+                return connectionStringBuilder[key] as string;
+            }
+
+            return null;
         }
     }
 

@@ -6,7 +6,10 @@ namespace Nybus.Utils
     {
         public static bool TryGetValue(this IConfiguration configuration, string key, out string value)
         {
-            value = configuration[key];
+            var section = configuration.GetSection(key);
+
+            value = section.Value;
+
             return value != null;
         }
 

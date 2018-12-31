@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -30,27 +29,51 @@ namespace Nybus.Configuration
     public class ConfigurationFactory : IConfigurationFactory
     {
         private readonly ILogger<ConfigurationFactory> _logger;
-        private readonly IReadOnlyDictionary<string, IQueueFactoryProvider> _queueFactoryProviders;
 
-        public ConfigurationFactory(IEnumerable<IQueueFactoryProvider> queueFactoryProviders, ILogger<ConfigurationFactory> logger)
+        public ConfigurationFactory(IEnumerable<IQueueFactoryProvider> queueFactoryProviders, IConnectionFactoryProviders connectionFactoryProviders, ILogger<ConfigurationFactory> logger)
         {
+            ConnectionFactoryProviders = connectionFactoryProviders ?? throw new ArgumentNullException(nameof(connectionFactoryProviders));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _queueFactoryProviders = queueFactoryProviders?.ToDictionary(k => k.ProviderName, StringComparer.OrdinalIgnoreCase) ?? throw new ArgumentNullException(nameof(queueFactoryProviders));
+            QueueFactoryProviders = CreateDictionary(queueFactoryProviders ?? throw new ArgumentNullException(nameof(queueFactoryProviders)));
         }
+
+        IReadOnlyDictionary<string, IQueueFactoryProvider> CreateDictionary(IEnumerable<IQueueFactoryProvider> providers)
+        {
+            var result = new Dictionary<string, IQueueFactoryProvider>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var provider in providers)
+            {
+                if (!result.ContainsKey(provider.ProviderName))
+                {
+                    result.Add(provider.ProviderName, provider);
+                }
+            }
+
+            return result;
+        }
+
+        public IReadOnlyDictionary<string, IQueueFactoryProvider> QueueFactoryProviders { get; }
+        public IConnectionFactoryProviders ConnectionFactoryProviders { get; }
+
 
         public IConfiguration Create(RabbitMqOptions options)
         {
+            var outboundEncoding = GetOutboundEncoding();
+            var commandQueueFactory = GetQueueFactory(options.CommandQueue);
+            var eventQueueFactory = GetQueueFactory(options.EventQueue);
+            var connectionFactory = GetConnectionFactory();
+
             return new RabbitMqConfiguration
             {
-                OutboundEncoding = GetOutboundEncoding(),
-                CommandQueueFactory = GetQueueFactory(options.CommandQueue),
-                EventQueueFactory = GetQueueFactory(options.EventQueue),
-                ConnectionFactory = GetConnectionFactory()
+                OutboundEncoding = outboundEncoding,
+                CommandQueueFactory = commandQueueFactory,
+                EventQueueFactory = eventQueueFactory,
+                ConnectionFactory = connectionFactory
             };
 
             IQueueFactory GetQueueFactory(IConfigurationSection section)
             {
-                if (section != null && section.TryGetValue("ProviderName", out var providerName) && _queueFactoryProviders.TryGetValue(providerName, out var provider))
+                if (section != null && section.TryGetValue("ProviderName", out var providerName) && QueueFactoryProviders.TryGetValue(providerName, out var provider))
                 {
                     return provider.CreateFactory(section);
                 }
@@ -80,31 +103,18 @@ namespace Nybus.Configuration
 
             IConnectionFactory GetConnectionFactory()
             {
-                if (options.ConnectionString.Exists())
+                if (options.ConnectionString != null && options.ConnectionString.Exists())
                 {
-                    return DefaultConnectionFactoryProviders.ConnectionString.CreateFactory(options.ConnectionString);
+                    return ConnectionFactoryProviders.ConnectionString.CreateFactory(options.ConnectionString);
                 }
 
-                if (options.Connection.Exists())
+                if (options.Connection != null && options.Connection.Exists())
                 {
-                    return DefaultConnectionFactoryProviders.ConnectionNode.CreateFactory(options.Connection);
+                    return ConnectionFactoryProviders.ConnectionNode.CreateFactory(options.Connection);
                 }
 
                 return new ConnectionFactory { HostName = "localhost" };
             }
-        }
-    }
-
-    public class ConfigurationException : Exception
-    {
-        public ConfigurationException(string message, Exception innerException) : base(message, innerException)
-        {
-            
-        }
-
-        public ConfigurationException(string message) : base (message)
-        {
-            
         }
     }
 }

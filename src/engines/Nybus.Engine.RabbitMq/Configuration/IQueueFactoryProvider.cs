@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Configuration;
 using Nybus.Utils;
+// ReSharper disable ClassNeverInstantiated.Global
 
 namespace Nybus.Configuration
 {
@@ -22,6 +23,7 @@ namespace Nybus.Configuration
                 return new StaticQueueFactory(queueName);
             }
 
+            // ReSharper disable once NotResolvedInText
             throw new ArgumentNullException("QueueName", "QueueName setting is required");
         }
     }
