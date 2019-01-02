@@ -9,19 +9,23 @@ namespace Nybus.Configuration
     public class NybusConfigurator : INybusConfigurator
     {
         private readonly IList<Action<IServiceCollection>> _serviceConfigurations  = new List<Action<IServiceCollection>>();
-        private readonly IList<Action<NybusHostBuilder>> _hostBuilderConfigurations  = new List<Action<NybusHostBuilder>>();
+        private readonly IList<Action<ISubscriptionBuilder>> _hostBuilderConfigurations  = new List<Action<ISubscriptionBuilder>>();
         private readonly IList<Action<IServiceProvider, NybusHostOptions>> _optionsConfigurations = new List<Action<IServiceProvider, NybusHostOptions>>();
 
         public void ConfigureServices(IServiceCollection services)
         {
             foreach (var cfg in _serviceConfigurations)
+            {
                 cfg(services);
+            }
         }
 
-        public void ConfigureBuilder(NybusHostBuilder builder)
+        public void ConfigureBuilder(ISubscriptionBuilder builder)
         {
             foreach (var cfg in _hostBuilderConfigurations)
+            {
                 cfg(builder);
+            }
         }
 
         public void ConfigureOptions(IServiceProvider serviceProvider, NybusHostOptions options)

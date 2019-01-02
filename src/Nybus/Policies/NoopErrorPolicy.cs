@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Nybus.Policies {
+namespace Nybus.Policies
+{
     public class NoopErrorPolicy : IErrorPolicy
     {
         public async Task HandleError<TCommand>(IBusEngine engine, Exception exception, CommandMessage<TCommand> message)

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Nybus.Configuration {
+namespace Nybus.Configuration
+{
     public class DelegateWrapperCommandHandler<TCommand> : ICommandHandler<TCommand>
         where TCommand : class, ICommand
     {
