@@ -1,9 +1,7 @@
-using System.Runtime.InteropServices;
+using System;
 using AutoFixture;
 using AutoFixture.AutoMoq;
-using AutoFixture.Kernel;
 using AutoFixture.NUnit3;
-using Nybus;
 
 namespace Tests
 {
@@ -23,6 +21,8 @@ namespace Tests
                 ConfigureMembers = true,
                 GenerateDelegates = true
             });
+
+            fixture.Freeze<IServiceProvider>();
 
             return fixture;
         }

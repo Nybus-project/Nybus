@@ -6,23 +6,26 @@ using Microsoft.Extensions.Logging;
 using Nybus.Utils;
 using System.Reactive;
 using System.Reactive.Threading.Tasks;
-using Nybus.Policies;
+using Microsoft.Extensions.DependencyInjection;
+using Nybus.Configuration;
 
 namespace Nybus
 {
-    public class NybusHost : IBusHost, IBus
+    public class NybusHost : IBusHost, IBus, IBusExecutionEnvironment
     {
         private readonly ILogger<NybusHost> _logger;
 
-        public NybusHost(IBusEngine busEngine, NybusHostOptions options, ILogger<NybusHost> logger)
+        public NybusHost(IBusEngine busEngine, INybusConfiguration configuration, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             Engine = busEngine ?? throw new ArgumentNullException(nameof(busEngine));
-            Options = options ?? throw new ArgumentNullException(nameof(options));
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
         public IBusEngine Engine { get; }
-        public NybusHostOptions Options { get; }
+        public INybusConfiguration Configuration { get; }
+        public IServiceProvider ServiceProvider { get; }
 
         public async Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
@@ -137,7 +140,7 @@ namespace Nybus
             async Task HandleError(Exception exception, CommandMessage<TCommand> message, ICommandContext<TCommand> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, CommandType = typeof(TCommand).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.CommandType}. {s.Exception.Message}");
-                await Options.ErrorPolicy.HandleError(Engine, exception, message).ConfigureAwait(false);
+                await Configuration.ErrorPolicy.HandleError(Engine, exception, message).ConfigureAwait(false);
             }
         }
 
@@ -179,15 +182,32 @@ namespace Nybus
             async Task HandleError(Exception exception, EventMessage<TEvent> message, IEventContext<TEvent> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, EventType = typeof(TEvent).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.EventType}. {s.Exception.Message}");
-                await Options.ErrorPolicy.HandleError(Engine, exception, message).ConfigureAwait(false);
+                await Configuration.ErrorPolicy.HandleError(Engine, exception, message).ConfigureAwait(false);
             }
         }
 
         private delegate Task MessagePipeline(Message message);
-    }
 
-    public class NybusHostOptions
-    {
-        public IErrorPolicy ErrorPolicy { get; set; } = new NoopErrorPolicy();
+        public IBusExecutionEnvironment ExecutionEnvironment => this;
+
+        public async Task ExecuteCommandHandler<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context, Type handlerType)
+            where TCommand : class, ICommand
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var handler = (ICommandHandler<TCommand>)scope.ServiceProvider.GetRequiredService(handlerType);
+                await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+            }
+        }
+
+        public async Task ExecuteEventHandler<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context, Type handlerType)
+            where TEvent : class, IEvent
+        {
+            using (var scope = ServiceProvider.CreateScope())
+            {
+                var handler = (IEventHandler<TEvent>)scope.ServiceProvider.GetRequiredService(handlerType);
+                await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+            }
+        }
     }
 }

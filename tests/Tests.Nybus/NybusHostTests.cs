@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Nybus;
+using Nybus.Configuration;
 
 namespace Tests
 { 
@@ -12,21 +14,28 @@ namespace Tests
     public class NybusHostTests
     {
         [Test, AutoMoqData]
-        public void BusEngine_is_required(NybusHostOptions options)
+        public void BusEngine_is_required(INybusConfiguration configuration, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
         {
-            Assert.Throws<ArgumentNullException>(() => new NybusHost(null, options, Mock.Of<ILogger<NybusHost>>()));
+            Assert.Throws<ArgumentNullException>(() => new NybusHost(null, configuration, serviceProvider, logger));
         }
 
         [Test, AutoMoqData]
-        public void Options_is_required(IBusEngine engine)
+        public void Options_is_required(IBusEngine engine, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
         {
-            Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, null, Mock.Of<ILogger<NybusHost>>()));
+            Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, null, serviceProvider, logger));
         }
 
         [Test, AutoMoqData]
-        public void Logger_is_required(IBusEngine engine, NybusHostOptions options)
+        public void ServiceProvider_is_required(IBusEngine engine, INybusConfiguration configuration, ILogger<NybusHost> logger)
         {
-            Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, options, null));
+            Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, configuration, null, logger));
+        }
+
+
+        [Test, AutoMoqData]
+        public void Logger_is_required(IBusEngine engine, INybusConfiguration configuration, IServiceProvider serviceProvider)
+        {
+            Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, configuration, serviceProvider, null));
         }
 
         [Test, AutoMoqData]
@@ -130,7 +139,7 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(sut.Options.ErrorPolicy).Verify(p => p.HandleError(sut.Engine, error, testMessage), Times.Once);
+            Mock.Get(sut.Configuration.ErrorPolicy).Verify(p => p.HandleError(sut.Engine, error, testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -211,7 +220,7 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(sut.Options.ErrorPolicy).Verify(p => p.HandleError(sut.Engine, error, testMessage), Times.Once);
+            Mock.Get(sut.Configuration.ErrorPolicy).Verify(p => p.HandleError(sut.Engine, error, testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -232,6 +241,68 @@ namespace Tests
             await sut.StopAsync();
 
             Mock.Get(receivedMessage).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>()), Times.Never);
+        }
+
+        [Test, AutoMoqData]
+        public void ExecutionEnvironment_returns_self(NybusHost sut)
+        {
+            Assert.That(sut.ExecutionEnvironment, Is.SameAs(sut));
+        }
+
+        [Test, AutoMoqData]
+        public async Task ExecuteCommandHandler_creates_new_scope_for_execution(NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
+        {
+            var handlerType = handler.GetType();
+
+            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+
+            await sut.ExecuteCommandHandler(dispatcher, commandContext, handlerType);
+
+            Mock.Get(scopeFactory).Verify(p => p.CreateScope(), Times.Once);
+        }
+
+        [Test, AutoMoqData]
+        public async Task ExecuteCommandHandler_executes_handler(NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
+        {
+            var handlerType = handler.GetType();
+
+            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+
+            await sut.ExecuteCommandHandler(dispatcher, commandContext, handlerType);
+
+            Mock.Get(handler).Verify(p => p.HandleAsync(dispatcher, commandContext), Times.Once);
+        }
+
+        [Test, AutoMoqData]
+        public async Task ExecuteEventHandler_creates_new_scope_for_execution(NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
+        {
+            var handlerType = handler.GetType();
+
+            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+
+            await sut.ExecuteEventHandler(dispatcher, eventContext, handlerType);
+
+            Mock.Get(scopeFactory).Verify(p => p.CreateScope(), Times.Once);
+        }
+
+        [Test, AutoMoqData]
+        public async Task ExecuteEventHandler_executes_handler(NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
+        {
+            var handlerType = handler.GetType();
+
+            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+
+            await sut.ExecuteEventHandler(dispatcher, eventContext, handlerType);
+
+            Mock.Get(handler).Verify(p => p.HandleAsync(dispatcher, eventContext), Times.Once);
         }
     }
 }

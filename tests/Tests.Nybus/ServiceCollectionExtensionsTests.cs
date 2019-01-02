@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
@@ -37,7 +38,7 @@ namespace Tests
 
         [Test]
         [InlineAutoMoqData(typeof(NybusHostBuilder))]
-        [InlineAutoMoqData(typeof(NybusHostOptions))]
+        [InlineAutoMoqData(typeof(INybusConfiguration))]
         [InlineAutoMoqData(typeof(NybusHost))]
         [InlineAutoMoqData(typeof(IBusHost))]
         [InlineAutoMoqData(typeof(IBus))]
@@ -46,6 +47,14 @@ namespace Tests
             ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);
 
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == serviceType && sd.ImplementationFactory != null)));
+        }
+
+        [Test, AutoMoqData]
+        public void AddNybus_registers_NybusHostOptions(IServiceCollection services, IConfigurationSection configuration)
+        {
+            ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(NybusHostOptions))));
         }
     }
 }

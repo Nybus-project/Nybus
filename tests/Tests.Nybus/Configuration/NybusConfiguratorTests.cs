@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
-using Nybus;
 using Nybus.Configuration;
 
 namespace Tests.Configuration
@@ -85,6 +84,18 @@ namespace Tests.Configuration
             sut.UseConfiguration(configuration);
 
             Mock.Get(configuration).Verify(p => p.GetSection("Nybus"), Times.Once);
+        }
+
+        [Test, AutoMoqData]
+        public void Configure_(NybusConfigurator sut, IServiceProvider serviceProvider, INybusConfiguration configuration)
+        {
+            var configurationDelegate = Mock.Of<Action<INybusConfiguration>>();
+
+            sut.Configure(configurationDelegate);
+
+            sut.CustomizeConfiguration(serviceProvider, configuration);
+
+            Mock.Get(configurationDelegate).Verify(p => p(configuration));
         }
     }
 }

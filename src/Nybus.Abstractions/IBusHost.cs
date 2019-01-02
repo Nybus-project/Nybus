@@ -20,6 +20,8 @@ namespace Nybus
         void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand;
 
         void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent;
+
+        IBusExecutionEnvironment ExecutionEnvironment { get; }
     }
 
     public delegate Task CommandReceived<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context) where TCommand : class, ICommand;
@@ -32,5 +34,14 @@ namespace Nybus
 
         Task RaiseEventAsync<TEvent>(TEvent @event) where TEvent : class, IEvent;
 
+    }
+
+    public interface IBusExecutionEnvironment
+    {
+        Task ExecuteCommandHandler<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context, Type handlerType)
+            where TCommand : class, ICommand;
+
+        Task ExecuteEventHandler<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context, Type handlerType)
+            where TEvent : class, IEvent;
     }
 }

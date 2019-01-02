@@ -105,6 +105,11 @@ namespace Tests
         }
 
         public Microsoft.Extensions.Configuration.IConfiguration Configuration { get; private set; }
+
+        public void Configure(Action<INybusConfiguration> configuration)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

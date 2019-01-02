@@ -11,9 +11,9 @@ namespace Tests
     public class NybusHostBuilderTests
     {
         [Test, AutoMoqData]
-        public void BuildHost_assembles_host(NybusHostBuilder sut, IBusEngine engine, NybusHostOptions options)
+        public void BuildHost_assembles_host(NybusHostBuilder sut, IBusEngine engine, IServiceProvider serviceProvider, NybusConfiguration configuration)
         {
-            var host = sut.BuildHost(engine, options);
+            var host = sut.BuildHost(engine, serviceProvider, configuration);
 
             Assert.That(host, Is.Not.Null);
         }
@@ -22,11 +22,11 @@ namespace Tests
         [InlineAutoMoqData(typeof(FirstTestCommandHandler))]
         [InlineAutoMoqData(typeof(ICommandHandler<FirstTestCommand>))]
         [InlineAutoMoqData(typeof(DelegateWrapperCommandHandler<FirstTestCommand>))]
-        public void BuildHost_assembles_host_with_subscribed_command(Type handlerType, NybusHostBuilder sut, IBusEngine engine, NybusHostOptions options)
+        public void BuildHost_assembles_host_with_subscribed_command(Type handlerType, NybusHostBuilder sut, IBusEngine engine, IServiceProvider serviceProvider, NybusConfiguration configuration)
         {
             sut.SubscribeToCommand<FirstTestCommand>(handlerType);
 
-            var host = sut.BuildHost(engine, options);
+            var host = sut.BuildHost(engine, serviceProvider, configuration);
 
             Assert.That(host, Is.Not.Null);
         }
@@ -35,11 +35,11 @@ namespace Tests
         [InlineAutoMoqData(typeof(FirstTestEventHandler))]
         [InlineAutoMoqData(typeof(IEventHandler<FirstTestEvent>))]
         [InlineAutoMoqData(typeof(DelegateWrapperEventHandler<FirstTestEvent>))]
-        public void BuildHost_assembles_host_with_subscribed_event(Type handlerType, NybusHostBuilder sut, IBusEngine engine, NybusHostOptions options)
+        public void BuildHost_assembles_host_with_subscribed_event(Type handlerType, NybusHostBuilder sut, IBusEngine engine, IServiceProvider serviceProvider, NybusConfiguration configuration)
         {
             sut.SubscribeToEvent<FirstTestEvent>(handlerType);
 
-            var host = sut.BuildHost(engine, options);
+            var host = sut.BuildHost(engine, serviceProvider, configuration);
 
             Assert.That(host, Is.Not.Null);
         }

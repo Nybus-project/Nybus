@@ -1,8 +1,18 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Nybus.Policies
 {
+    public class NoopErrorPolicyProvider : IErrorPolicyProvider
+    {
+        public string ProviderName => "noop";
+        public IErrorPolicy CreatePolicy(IConfigurationSection configuration)
+        {
+            return new NoopErrorPolicy();
+        }
+    }
+
     public class NoopErrorPolicy : IErrorPolicy
     {
         public async Task HandleError<TCommand>(IBusEngine engine, Exception exception, CommandMessage<TCommand> message)

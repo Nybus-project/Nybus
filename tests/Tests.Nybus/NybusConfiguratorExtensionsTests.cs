@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
+using Nybus.Policies;
 using NybusConfiguratorExtensions = Nybus.NybusConfiguratorExtensions;
 
 // ReSharper disable InvokeAsExtensionMethod
@@ -170,6 +173,36 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == handler.GetType())));
         }
 
+        [Test, AutoMoqData]
+        public void RegisterErrorPolicyProvider_adds_provider_with_default_setup(TestNybusConfigurator nybus, IServiceCollection services)
+        {
+            NybusConfiguratorExtensions.RegisterErrorPolicyProvider<TestErrorPolicyProvider>(nybus);
+
+            nybus.ApplyServiceConfigurations(services);
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IErrorPolicyProvider) && sd.ImplementationType == typeof(TestErrorPolicyProvider))));
+        }
+
+        [Test, AutoMoqData]
+        public void RegisterErrorPolicyProvider_adds_provider_with_custom_setup(TestNybusConfigurator nybus, IServiceCollection services)
+        {
+            var providerFactory = Mock.Of<Func<IServiceProvider, IErrorPolicyProvider>>();
+
+            NybusConfiguratorExtensions.RegisterErrorPolicyProvider<TestErrorPolicyProvider>(nybus, providerFactory);
+
+            nybus.ApplyServiceConfigurations(services);
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IErrorPolicyProvider) && sd.ImplementationFactory == providerFactory)));
+        }
+
     }
 
+    public class TestErrorPolicyProvider : IErrorPolicyProvider
+    {
+        public string ProviderName { get; }
+        public IErrorPolicy CreatePolicy(IConfigurationSection configuration)
+        {
+            throw new System.NotImplementedException();
+        }
+    }
 }

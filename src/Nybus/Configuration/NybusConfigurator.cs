@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
-using Nybus.Policies;
 
 namespace Nybus.Configuration
 {
@@ -10,31 +9,30 @@ namespace Nybus.Configuration
     {
         private readonly IList<Action<IServiceCollection>> _serviceConfigurations  = new List<Action<IServiceCollection>>();
         private readonly IList<Action<ISubscriptionBuilder>> _hostBuilderConfigurations  = new List<Action<ISubscriptionBuilder>>();
-        private readonly IList<Action<IServiceProvider, NybusHostOptions>> _optionsConfigurations = new List<Action<IServiceProvider, NybusHostOptions>>();
+        private readonly IList<Action<IServiceProvider, INybusConfiguration>> _configurationCustomizations = new List<Action<IServiceProvider, INybusConfiguration>>();
 
         public void ConfigureServices(IServiceCollection services)
         {
-            foreach (var cfg in _serviceConfigurations)
+            foreach (var serviceConfiguration in _serviceConfigurations)
             {
-                cfg(services);
+                serviceConfiguration(services);
             }
         }
 
         public void ConfigureBuilder(ISubscriptionBuilder builder)
         {
-            foreach (var cfg in _hostBuilderConfigurations)
+            foreach (var subscriptionConfiguration in _hostBuilderConfigurations)
             {
-                cfg(builder);
+                subscriptionConfiguration(builder);
             }
         }
 
-        public void ConfigureOptions(IServiceProvider serviceProvider, NybusHostOptions options)
-        {
-            foreach (var cfg in _optionsConfigurations)
-                cfg(serviceProvider, options);
-        }
-
         public IConfiguration Configuration { get; private set; }
+
+        public void Configure(Action<INybusConfiguration> configuration)
+        {
+            _configurationCustomizations.Add((provider, config) => configuration(config));
+        }
 
         public void UseConfiguration(IConfiguration configuration, string sectionName = "Nybus")
         {
@@ -71,14 +69,12 @@ namespace Nybus.Configuration
             _hostBuilderConfigurations.Add(configurator);
         }
 
-        public void SetErrorPolicy(Func<IServiceProvider, IErrorPolicy> policyGenerator)
+        public void CustomizeConfiguration(IServiceProvider serviceProvider, INybusConfiguration configuration)
         {
-            if (policyGenerator == null)
+            foreach (var customization in _configurationCustomizations)
             {
-                throw new ArgumentNullException(nameof(policyGenerator));
+                customization(serviceProvider, configuration);
             }
-
-            _optionsConfigurations.Add((sp, o) => o.ErrorPolicy = policyGenerator(sp));
         }
     }
 }

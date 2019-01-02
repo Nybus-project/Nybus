@@ -13,9 +13,14 @@ namespace Nybus.Configuration
 
         void AddSubscription(Action<ISubscriptionBuilder> configurator);
 
-        void SetErrorPolicy(Func<IServiceProvider, IErrorPolicy> policyGenerator);
-
         IConfiguration Configuration { get; }
+
+        void Configure(Action<INybusConfiguration> configuration);
+    }
+
+    public interface INybusConfiguration
+    {
+        IErrorPolicy ErrorPolicy { get; set; }
     }
 
     public static class NybusConfiguratorExtensions

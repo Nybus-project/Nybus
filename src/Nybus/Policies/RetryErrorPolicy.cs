@@ -2,18 +2,40 @@
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Nybus.Policies
 {
+    public class RetryErrorPolicyProvider : IErrorPolicyProvider
+    {
+        private readonly ILoggerFactory _loggerFactory;
+
+        public RetryErrorPolicyProvider(ILoggerFactory loggerFactory)
+        {
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
+        }
+
+        public string ProviderName => "retry";
+
+        public IErrorPolicy CreatePolicy(IConfigurationSection configuration)
+        {
+            var options = new RetryErrorPolicyOptions();
+            configuration.Bind(options);
+
+            var logger = _loggerFactory.CreateLogger<RetryErrorPolicy>();
+            return new RetryErrorPolicy(options, logger);
+        }
+    }
+
+
     public class RetryErrorPolicy : IErrorPolicy
     {
         private readonly ILogger<RetryErrorPolicy> _logger;
         private readonly RetryErrorPolicyOptions _options;
 
-        public RetryErrorPolicy(IOptions<RetryErrorPolicyOptions> options, ILogger<RetryErrorPolicy> logger)
+        public RetryErrorPolicy(RetryErrorPolicyOptions options, ILogger<RetryErrorPolicy> logger)
         {
-            if (options == null) throw new ArgumentNullException(nameof(options));
-            _options = options.Value;
+            _options = options ?? throw new ArgumentNullException(nameof(options));
 
             if (_options.MaxRetries < 0) throw new ArgumentOutOfRangeException(nameof(_options.MaxRetries), "maxRetries must be greater or equal than 0");
 
@@ -23,7 +45,7 @@ namespace Nybus.Policies
         public async Task HandleError<TCommand>(IBusEngine engine, Exception exception, CommandMessage<TCommand> message)
             where TCommand : class, ICommand
         {
-            var retryCount = message.Headers.TryGetValue(Headers.RetryCount, out string str) && int.TryParse(str, out int i) ? i : 0;
+            var retryCount = message.Headers.TryGetValue(Headers.RetryCount, out var str) && int.TryParse(str, out var i) ? i : 0;
 
             retryCount++;
 
@@ -62,6 +84,8 @@ namespace Nybus.Policies
                 await engine.NotifyFail(message).ConfigureAwait(false);
             }
         }
+
+        public int MaxRetries => _options.MaxRetries;
     }
 
     public class RetryErrorPolicyOptions

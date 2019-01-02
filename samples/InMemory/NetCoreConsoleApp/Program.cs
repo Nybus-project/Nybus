@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
 using System.Threading;
+using Nybus.Policies;
 using Nybus.Utils;
 
 namespace NetCoreConsoleApp
@@ -19,7 +20,8 @@ namespace NetCoreConsoleApp
             IConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
             configurationBuilder.AddInMemoryCollection(new Dictionary<string, string>
             {
-                ["Nybus:RetryPolicy:MaxRetries"] = "5",
+                ["Nybus:ErrorPolicy:ProviderName"] = "retry",
+                ["Nybus:ErrorPolicy:MaxRetries"] = "5",
             });
 
             IConfiguration configuration = configurationBuilder.Build();
@@ -28,15 +30,15 @@ namespace NetCoreConsoleApp
             services.AddLogging();
             services.AddOptions();
 
-            services.AddNybus(cfg =>
+            services.AddNybus(nybus =>
             {
-                cfg.UseConfiguration(configuration);
+                nybus.UseConfiguration(configuration);
 
-                cfg.UseInMemoryBusEngine();
+                nybus.UseInMemoryBusEngine();
 
-                cfg.SubscribeToEvent<TestEvent, TestEventHandler>();
+                nybus.SubscribeToEvent<TestEvent, TestEventHandler>();
 
-                cfg.SubscribeToCommand<TestCommand>(async (b, ctx) =>
+                nybus.SubscribeToCommand<TestCommand>(async (b, ctx) =>
                 {
                     Interlocked.Increment(ref _counter);
 
@@ -50,8 +52,6 @@ namespace NetCoreConsoleApp
                         Message = $@"Received ""{ctx.Command.Message}"""
                     });
                 });
-
-                cfg.UseRetryErrorPolicy();
             });
 
             var serviceProvider = services.BuildServiceProvider();

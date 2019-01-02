@@ -1,31 +1,51 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
 using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Nybus.Policies;
 
 namespace Nybus
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddNybus(this IServiceCollection services, Action<INybusConfigurator> configuration)
+        public static IServiceCollection AddNybus(this IServiceCollection services, Action<INybusConfigurator> configure)
         {
             var configurator = new NybusConfigurator();
 
-            configuration(configurator);
+            configurator.RegisterErrorPolicyProvider<RetryErrorPolicyProvider>();
+            configurator.RegisterErrorPolicyProvider<NoopErrorPolicyProvider>();
+            
+            configure(configurator);
 
             services.AddSingleton(sp =>
             {
                 var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-                var builder = new NybusHostBuilder(sp, loggerFactory);
+                var builder = new NybusHostBuilder(loggerFactory);
 
                 return builder;
+            });
+
+            services.AddSingleton<INybusHostConfigurationFactory, NybusHostConfigurationFactory>();
+
+            services.AddSingleton(sp =>
+            {
+                var factory = sp.GetRequiredService<INybusHostConfigurationFactory>();
+                var options = sp.GetRequiredService<NybusHostOptions>();
+
+                var configuration = factory.CreateConfiguration(options);
+
+                configurator.CustomizeConfiguration(sp, configuration);
+
+                return configuration;
             });
 
             services.AddSingleton(sp =>
             {
                 var options = new NybusHostOptions();
-                configurator.ConfigureOptions(sp, options);
 
+                configurator.Configuration?.Bind(options);
+                
                 return options;
             });
 
@@ -35,11 +55,11 @@ namespace Nybus
             {
                 var engine = sp.GetRequiredService<IBusEngine>();
                 var builder = sp.GetRequiredService<NybusHostBuilder>();
-                var options = sp.GetRequiredService<NybusHostOptions>();
+                var configuration = sp.GetRequiredService<NybusConfiguration>();
 
                 configurator.ConfigureBuilder(builder);
 
-                return builder.BuildHost(engine, options);
+                return builder.BuildHost(engine, sp, configuration);
             });
 
             services.AddSingleton<IBusHost>(sp => sp.GetRequiredService<NybusHost>());

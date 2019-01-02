@@ -12,29 +12,6 @@ namespace Nybus
             configurator.UseBusEngine<InMemoryBusEngine>();
         }
 
-        public static void UseErrorPolicy<TErrorPolicy>(this INybusConfigurator configurator, Action<IServiceCollection> configureServices = null)
-            where TErrorPolicy : class, IErrorPolicy
-        {
-            configurator.SetErrorPolicy(sp => sp.GetRequiredService<TErrorPolicy>());
-
-            configurator.AddServiceConfiguration(services => services.AddSingleton<TErrorPolicy>());
-
-            if (configureServices != null)
-            {
-                configurator.AddServiceConfiguration(configureServices);
-            }
-        }
-
-        public static void UseRetryErrorPolicy(this INybusConfigurator configurator, string sectionName = "RetryPolicy")
-        {
-            if (sectionName == null)
-            {
-                throw new ArgumentNullException(nameof(sectionName));
-            }
-
-            UseErrorPolicy<RetryErrorPolicy>(configurator, services => services.Configure<RetryErrorPolicyOptions>(configurator.Configuration.GetSection(sectionName)));
-        }
-
         #region Subscribe to Command
 
         public static void SubscribeToCommand<TCommand, TCommandHandler>(this INybusConfigurator configurator)
@@ -103,6 +80,19 @@ namespace Nybus
             configurator.AddServiceConfiguration(services => services.AddSingleton(handler));
         }
 
+        public static void RegisterErrorPolicyProvider<TProvider>(this INybusConfigurator configurator, Func<IServiceProvider, IErrorPolicyProvider> factory = null)
+            where TProvider: class, IErrorPolicyProvider
+        {
+            if (factory == null)
+            {
+                configurator.AddServiceConfiguration(sc => sc.AddSingleton<IErrorPolicyProvider, TProvider>());
+            }
+            else
+            {
+                configurator.AddServiceConfiguration(sc => sc.AddSingleton(factory));
+            }
+        }
+        
         #endregion
     }
 }

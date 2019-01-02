@@ -153,13 +153,11 @@ namespace Tests.Configuration
                 sb(builder);
         }
 
-        private Func<IServiceProvider, IErrorPolicy> _policyGenerator;
-
-        public void SetErrorPolicy(Func<IServiceProvider, IErrorPolicy> policyGenerator)
-        {
-            _policyGenerator = policyGenerator;
-        }
-
         public Microsoft.Extensions.Configuration.IConfiguration Configuration { get; private set; }
+
+        public void Configure(Action<INybusConfiguration> configuration)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
