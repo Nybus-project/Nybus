@@ -1,16 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Nybus.Utils
 {
     public static class Clock
     {
-        static Clock()
+        public static IClock Default { get; private set; } = SystemClock.Instance;
+
+        public static void Reset()
         {
-            Default = new SystemClock();
+            Default = SystemClock.Instance;
         }
-        public static IClock Default { get; set; }
+
+        public static void SetTo(IClock clock)
+        {
+            Default = clock ?? throw new NotImplementedException(nameof(clock));
+        }
     }
 
     public interface IClock
@@ -20,6 +24,10 @@ namespace Nybus.Utils
 
     public class SystemClock : IClock
     {
+        private SystemClock() { }
+
         public DateTimeOffset Now => DateTimeOffset.UtcNow;
+
+        public static readonly IClock Instance = new SystemClock(); 
     }
 }

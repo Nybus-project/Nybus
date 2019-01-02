@@ -9,56 +9,71 @@ namespace Nybus
 {
     public class InMemoryBusEngine : IBusEngine
     {
-        private readonly HashSet<Type> _acceptedTypes = new HashSet<Type>();
         private ISubject<Message> _sequenceOfMessages;
+        private bool _isStarted;
 
         public IObservable<Message> Start()
         {
             _sequenceOfMessages = new Subject<Message>();
 
             var commands = _sequenceOfMessages
+                                .Where(m => m != null)
                                 .Where(m => m.MessageType == MessageType.Command)
                                 .Cast<CommandMessage>()
-                                .Where(m => _acceptedTypes.Contains(m.Type))
+                                .Where(m => AcceptedTypes.Contains(m.Type))
                                 .Cast<Message>();
 
             var events = _sequenceOfMessages
+                                .Where(m => m != null)
                                 .Where(m => m.MessageType == MessageType.Event)
                                 .Cast<EventMessage>()
-                                .Where(m => _acceptedTypes.Contains(m.Type))
+                                .Where(m => AcceptedTypes.Contains(m.Type))
                                 .Cast<Message>();
+
+            _isStarted = true;
 
             return Observable.Merge(commands, events);
         }
 
+        public ISet<Type> AcceptedTypes { get; } = new HashSet<Type>();
+        
         public void Stop()
         {
-            _sequenceOfMessages.OnCompleted();
-            _sequenceOfMessages = null;
+            if (_isStarted)
+            {
+                _sequenceOfMessages.OnCompleted();
+                _sequenceOfMessages = null;
+            }
         }
 
         public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
         {
-            _sequenceOfMessages.OnNext(message);
+            if (_isStarted)
+            {
+                _sequenceOfMessages.OnNext(message);
+            }
 
             return Task.CompletedTask;
         }
 
         public Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
         {
-            _sequenceOfMessages.OnNext(message);
+            if (_isStarted)
+            {
+                _sequenceOfMessages.OnNext(message);
+            }
 
             return Task.CompletedTask;
         }
 
         public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
         {
-            _acceptedTypes.Add(typeof(TCommand));
+            AcceptedTypes.Add(typeof(TCommand));
         }
 
         public void SubscribeToEvent<TEvent>() where TEvent : class, IEvent
         {
-            _acceptedTypes.Add(typeof(TEvent));
+            AcceptedTypes.Add(typeof(TEvent));
         }
 
         public Task NotifySuccess(Message message)

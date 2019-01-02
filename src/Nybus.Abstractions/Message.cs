@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Nybus.Utils;
 
 namespace Nybus
 {
@@ -19,7 +20,20 @@ namespace Nybus
         Command, Event
     }
 
-    public class HeaderBag : Dictionary<string, string> { }
+    public class HeaderBag : Dictionary<string, string>
+    {
+        public DateTimeOffset SentOn
+        {
+            get => DateTimeOffset.Parse(this[Headers.SentOn]);
+            set => this[Headers.SentOn] = value.Stringfy();
+        }
+
+        public Guid CorrelationId
+        {
+            get => Guid.Parse(this[Headers.CorrelationId]);
+            set => this[Headers.CorrelationId] = value.Stringfy();
+        }
+    }
 
     public static class Headers
     {

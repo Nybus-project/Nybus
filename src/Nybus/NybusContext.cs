@@ -9,42 +9,44 @@ namespace Nybus
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            SentOn = DateTimeOffset.Parse(message.Headers[Headers.SentOn]);
-            CorrelationId = Guid.Parse(message.Headers[Headers.CorrelationId]);
+            SentOn = message.Headers.SentOn;
+            CorrelationId = message.Headers.CorrelationId;
             ReceivedOn = Clock.Default.Now;
 
             Message = message;
         }
 
-        public DateTimeOffset SentOn { get; private set; }
+        public DateTimeOffset SentOn { get; }
 
-        public DateTimeOffset ReceivedOn { get; private set; }
+        public DateTimeOffset ReceivedOn { get; }
 
-        public Guid CorrelationId { get; private set; }
+        public Guid CorrelationId { get; }
 
-        protected Message Message { get; private set; }
+        protected Message Message { get; }
     }
 
     public class NybusCommandContext<TCommand> : NybusContext, ICommandContext<TCommand> where TCommand : class, ICommand
     {
         public NybusCommandContext(CommandMessage<TCommand> commandMessage) : base(commandMessage)
         {
-            if (commandMessage == null) throw new ArgumentNullException(nameof(commandMessage));
             Command = commandMessage.Command;
         }
 
-        public TCommand Command { get; private set; }
+        public TCommand Command { get; }
+
+        public CommandMessage<TCommand> CommandMessage => Message as CommandMessage<TCommand>;
     }
 
     public class NybusEventContext<TEvent> : NybusContext, IEventContext<TEvent> where TEvent : class, IEvent
     {
         public NybusEventContext(EventMessage<TEvent> eventMessage) : base(eventMessage)
         {
-            if (eventMessage == null) throw new ArgumentNullException(nameof(eventMessage));
             Event = eventMessage.Event;
         }
 
-        public TEvent Event { get; private set; }
+        public TEvent Event { get; }
+
+        public EventMessage<TEvent> EventMessage => Message as EventMessage<TEvent>;
     }
 
 }

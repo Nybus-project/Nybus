@@ -21,14 +21,14 @@ namespace Nybus
 
         public NybusHost BuildHost(IBusEngine engine, NybusHostOptions options)
         {
-            var bus = new NybusHost(engine, options, _loggerFactory.CreateLogger<NybusHost>());
+            var host = new NybusHost(engine, options, _loggerFactory.CreateLogger<NybusHost>());
 
             foreach (var subscription in _subscriptions)
             {
-                subscription(bus);
+                subscription(host);
             }
 
-            return bus;
+            return host;
         }
 
         public void SubscribeToCommand<TCommand>(Type commandHandlerType)
@@ -36,15 +36,20 @@ namespace Nybus
         {
             if (!typeof(ICommandHandler<TCommand>).GetTypeInfo().IsAssignableFrom(commandHandlerType.GetTypeInfo()))
             {
-                throw new ArgumentNullException(nameof(commandHandlerType));
+                throw new ArgumentException($"{commandHandlerType.FullName} does not implement the ICommandHandler<{typeof(TCommand).FullName}> interface", nameof(commandHandlerType));
             }
 
-            _subscriptions.Add(host => host.SubscribeToCommand<TCommand>(async (b, ctx) =>
+            _subscriptions.Add(host =>
             {
-                var handler = (ICommandHandler<TCommand>)_serviceProvider.GetRequiredService(commandHandlerType);
-
-                await handler.HandleAsync(b, ctx).ConfigureAwait(false);
-            }));
+                host.SubscribeToCommand<TCommand>(async (b, ctx) =>
+                {
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        var handler = (ICommandHandler<TCommand>)scope.ServiceProvider.GetRequiredService(commandHandlerType);
+                        await handler.HandleAsync(b, ctx).ConfigureAwait(false);
+                    }
+                });
+            });
         }
 
         public void SubscribeToEvent<TEvent>(Type eventHandlerType)
@@ -52,15 +57,20 @@ namespace Nybus
         {
             if (!typeof(IEventHandler<TEvent>).GetTypeInfo().IsAssignableFrom(eventHandlerType.GetTypeInfo()))
             {
-                throw new ArgumentNullException(nameof(eventHandlerType));
+                throw new ArgumentException($"{eventHandlerType.FullName} does not implement the IEventHandler<{typeof(TEvent).FullName}> interface", nameof(eventHandlerType));
             }
 
-            _subscriptions.Add(host => host.SubscribeToEvent<TEvent>(async (b, ctx) =>
+            _subscriptions.Add(host =>
             {
-                var handler = (IEventHandler<TEvent>)_serviceProvider.GetRequiredService(eventHandlerType);
-
-                await handler.HandleAsync(b, ctx).ConfigureAwait(false);
-            }));
+                host.SubscribeToEvent<TEvent>(async (b, ctx) =>
+                {
+                    using (var scope = _serviceProvider.CreateScope())
+                    {
+                        var handler = (IEventHandler<TEvent>)scope.ServiceProvider.GetRequiredService(eventHandlerType);
+                        await handler.HandleAsync(b, ctx).ConfigureAwait(false);
+                    }
+                });
+            });
         }
     }
 }
