@@ -3,7 +3,7 @@ using RabbitMQ.Client;
 
 namespace Nybus.Configuration
 {
-    public interface IConfiguration
+    public interface IRabbitMqConfiguration
     {
         IConnectionFactory ConnectionFactory { get; set; }
 
@@ -16,7 +16,7 @@ namespace Nybus.Configuration
         ISerializer Serializer { get; set; }
     }
 
-    public class RabbitMqConfiguration : IConfiguration
+    public class RabbitMqConfiguration : IRabbitMqConfiguration
     {
         public IConnectionFactory ConnectionFactory { get; set; }
 

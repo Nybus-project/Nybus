@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoFixture.NUnit3;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -26,7 +27,7 @@ namespace Tests
         [Test]
         public void Logger_is_required()
         {
-            Assert.Throws<ArgumentNullException>(() => new RabbitMqBusEngine(Mock.Of<IConfiguration>(), null));
+            Assert.Throws<ArgumentNullException>(() => new RabbitMqBusEngine(Mock.Of<IRabbitMqConfiguration>(), null));
         }
 
         [Test, AutoMoqData]
@@ -134,77 +135,65 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void QueueFactory_is_invoked_when_a_event_is_registered(RabbitMqBusEngine sut)
+        public void QueueFactory_is_invoked_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
-            var mockFactory = Mock.Get(sut.Configuration.EventQueueFactory);
-
             sut.SubscribeToEvent<FirstTestEvent>();
 
             var sequence = sut.Start();
 
-            mockFactory.Verify(p => p.CreateQueue(It.IsAny<IModel>()));
+            Mock.Get(configuration.EventQueueFactory).Verify(p => p.CreateQueue(It.IsAny<IModel>()));
 
         }
 
         [Test, AutoMoqData]
-        public void QueueFactory_is_invoked_when_a_command_is_registered(RabbitMqBusEngine sut)
+        public void QueueFactory_is_invoked_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
-            var mockFactory = Mock.Get(sut.Configuration.CommandQueueFactory);
-
             sut.SubscribeToCommand<FirstTestCommand>();
 
             var sequence = sut.Start();
 
-            mockFactory.Verify(p => p.CreateQueue(It.IsAny<IModel>()));
+            Mock.Get(configuration.CommandQueueFactory).Verify(p => p.CreateQueue(It.IsAny<IModel>()));
 
         }
 
         [Test, AutoMoqData]
-        public void Exchange_is_declared_when_a_event_is_registered(RabbitMqBusEngine sut)
+        public void Exchange_is_declared_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
-            var mockModel = Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel());
-
             sut.SubscribeToEvent<FirstTestEvent>();
 
             var sequence = sut.Start();
 
-            mockModel.Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
 
         [Test, AutoMoqData]
-        public void Exchange_is_declared_when_a_command_is_registered(RabbitMqBusEngine sut)
+        public void Exchange_is_declared_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
-            var mockModel = Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel());
-
             sut.SubscribeToCommand<FirstTestCommand>();
 
             var sequence = sut.Start();
 
-            mockModel.Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
 
         [Test, AutoMoqData]
-        public void Queue_is_bound_to_exchange_when_a_event_is_registered(RabbitMqBusEngine sut)
+        public void Queue_is_bound_to_exchange_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
-            var mockModel = Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel());
-
             sut.SubscribeToEvent<FirstTestEvent>();
 
             var sequence = sut.Start();
 
-            mockModel.Verify(p => p.QueueBind(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, object>>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.QueueBind(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, object>>()));
         }
 
         [Test, AutoMoqData]
-        public void Queue_is_bound_to_exchange_when_a_command_is_registered(RabbitMqBusEngine sut)
+        public void Queue_is_bound_to_exchange_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
-            var mockModel = Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel());
-
             sut.SubscribeToCommand<FirstTestCommand>();
 
             var sequence = sut.Start();
 
-            mockModel.Verify(p => p.QueueBind(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, object>>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.QueueBind(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, object>>()));
         }
 
 
@@ -233,7 +222,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void Events_can_be_received(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
+        public void Events_can_be_received([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
@@ -253,7 +242,7 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(@event, encoding);
+            var body = configuration.Serializer.SerializeObject(@event, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
@@ -271,7 +260,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void Commands_can_be_received(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
+        public void Commands_can_be_received([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
@@ -291,7 +280,7 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(command, encoding);
+            var body = configuration.Serializer.SerializeObject(command, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
@@ -309,7 +298,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void Invalid_events_are_discarded(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
+        public void Invalid_events_are_discarded([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
         {
             // At least one subscription is needed to inject invalid messages
             sut.SubscribeToEvent<SecondTestEvent>();
@@ -330,7 +319,7 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(@event, encoding);
+            var body = configuration.Serializer.SerializeObject(@event, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
@@ -338,11 +327,11 @@ namespace Tests
 
             Assert.That(incomingMessages, Is.Empty);
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
         }
 
         [Test, AutoMoqData]
-        public void Invalid_commands_are_discarded(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
+        public void Invalid_commands_are_discarded([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
         {
             // At least one subscription is needed to inject invalid messages
             sut.SubscribeToCommand<SecondTestCommand>();
@@ -363,7 +352,7 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(command, encoding);
+            var body = configuration.Serializer.SerializeObject(command, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
@@ -371,32 +360,32 @@ namespace Tests
 
             Assert.That(incomingMessages, Is.Empty);
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
         }
 
         [Test, AutoMoqData]
-        public void Engine_can_be_stopped(RabbitMqBusEngine sut)
+        public void Engine_can_be_stopped([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
             sut.Start();
 
             sut.Stop();
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection()).Verify(p => p.Dispose());
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.Dispose());
+            Mock.Get(configuration.ConnectionFactory.CreateConnection()).Verify(p => p.Dispose());
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.Dispose());
         }
 
         [Test, AutoMoqData]
-        public async Task Commands_can_be_sent(RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message)
+        public async Task Commands_can_be_sent([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message)
         {
             sut.Start();
 
             await sut.SendCommandAsync(message);
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()));
         }
 
         [Test, AutoMoqData]
-        public async Task Arbitrary_headers_are_forwarded_when_sending_commands(RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message, string headerKey, string headerValue)
+        public async Task Arbitrary_headers_are_forwarded_when_sending_commands([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message, string headerKey, string headerValue)
         {
             message.Headers.Add(headerKey, headerValue);
 
@@ -404,22 +393,22 @@ namespace Tests
 
             await sut.SendCommandAsync(message);
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Nybus:{headerKey}")), It.IsAny<byte[]>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Nybus:{headerKey}")), It.IsAny<byte[]>()));
         }
 
         [Test, AutoMoqData]
-        public async Task Events_can_be_sent(RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message)
+        public async Task Events_can_be_sent([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message)
         {
             sut.Start();
             
             await sut.SendEventAsync(message);
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()));
 
         }
 
         [Test, AutoMoqData]
-        public async Task Arbitrary_headers_are_forwarded_when_sending_events(RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message, string headerKey, string headerValue)
+        public async Task Arbitrary_headers_are_forwarded_when_sending_events([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message, string headerKey, string headerValue)
         {
             message.Headers.Add(headerKey, headerValue);
 
@@ -427,11 +416,11 @@ namespace Tests
 
             await sut.SendEventAsync(message);
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Nybus:{headerKey}")), It.IsAny<byte[]>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Nybus:{headerKey}")), It.IsAny<byte[]>()));
         }
 
         [Test, AutoMoqData]
-        public async Task NotifySuccess_acks_command_messages(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
+        public async Task NotifySuccess_acks_command_messages([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
@@ -451,7 +440,7 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(command, encoding);
+            var body = configuration.Serializer.SerializeObject(command, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
@@ -459,11 +448,11 @@ namespace Tests
 
             await sut.NotifySuccess(incomingMessages.First());
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
         }
 
         [Test, AutoMoqData]
-        public async Task NotifySuccess_acks_event_messages(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
+        public async Task NotifySuccess_acks_event_messages([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
@@ -483,7 +472,7 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(@event, encoding);
+            var body = configuration.Serializer.SerializeObject(@event, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
@@ -491,11 +480,11 @@ namespace Tests
 
             await sut.NotifySuccess(incomingMessages.First());
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
         }
 
         [Test, AutoMoqData]
-        public async Task NotifySuccess_can_handle_closed_connections(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command, ShutdownEventArgs shutdownEventArgs)
+        public async Task NotifySuccess_can_handle_closed_connections([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command, ShutdownEventArgs shutdownEventArgs)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
@@ -515,21 +504,21 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(command, encoding);
+            var body = configuration.Serializer.SerializeObject(command, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
             sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Setup(p => p.BasicAck(It.IsAny<ulong>(), It.IsAny<bool>())).Throws(new AlreadyClosedException(shutdownEventArgs));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Setup(p => p.BasicAck(It.IsAny<ulong>(), It.IsAny<bool>())).Throws(new AlreadyClosedException(shutdownEventArgs));
 
             await sut.NotifySuccess(incomingMessages.First());
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
         }
 
         [Test, AutoMoqData]
-        public async Task NotifyFail_nacks_command_messages(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
+        public async Task NotifyFail_nacks_command_messages([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
@@ -549,7 +538,7 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(command, encoding);
+            var body = configuration.Serializer.SerializeObject(command, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
@@ -557,11 +546,11 @@ namespace Tests
 
             await sut.NotifyFail(incomingMessages.First());
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), true));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), true));
         }
 
         [Test, AutoMoqData]
-        public async Task NotifyFail_can_handle_closed_connections(RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command, ShutdownEventArgs shutdownEventArgs)
+        public async Task NotifyFail_can_handle_closed_connections([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command, ShutdownEventArgs shutdownEventArgs)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
@@ -581,17 +570,17 @@ namespace Tests
                 }
             };
 
-            var body = sut.Configuration.Serializer.SerializeObject(command, encoding);
+            var body = configuration.Serializer.SerializeObject(command, encoding);
 
             var incomingMessages = sequence.DumpInList();
 
             sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Setup(p => p.BasicNack(It.IsAny<ulong>(), It.IsAny<bool>(), It.IsAny<bool>())).Throws(new AlreadyClosedException(shutdownEventArgs));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Setup(p => p.BasicNack(It.IsAny<ulong>(), It.IsAny<bool>(), It.IsAny<bool>())).Throws(new AlreadyClosedException(shutdownEventArgs));
 
             await sut.NotifyFail(incomingMessages.First());
 
-            Mock.Get(sut.Configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
         }
     }
 

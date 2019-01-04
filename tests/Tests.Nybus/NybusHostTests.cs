@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using AutoFixture.NUnit3;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -39,54 +40,54 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task InvokeCommandAsync_forwards_message_to_engine(NybusHost sut, FirstTestCommand testCommand, Guid correlationId)
+        public async Task InvokeCommandAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestCommand testCommand, Guid correlationId)
         {
             await sut.InvokeCommandAsync(testCommand, correlationId);
 
-            Mock.Get(sut.Engine).Verify(p => p.SendCommandAsync(It.Is<CommandMessage<FirstTestCommand>>(m => ReferenceEquals(m.Command, testCommand) && m.Headers.CorrelationId == correlationId)), Times.Once);
+            Mock.Get(engine).Verify(p => p.SendCommandAsync(It.Is<CommandMessage<FirstTestCommand>>(m => ReferenceEquals(m.Command, testCommand) && m.Headers.CorrelationId == correlationId)), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task RaiseEventAsync_forwards_message_to_engine(NybusHost sut, FirstTestEvent testEvent, Guid correlationId)
+        public async Task RaiseEventAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestEvent testEvent, Guid correlationId)
         {
             await sut.RaiseEventAsync(testEvent, correlationId);
 
-            Mock.Get(sut.Engine).Verify(p => p.SendEventAsync(It.Is<EventMessage<FirstTestEvent>>(m => ReferenceEquals(m.Event, testEvent) && m.Headers.CorrelationId == correlationId)), Times.Once);
+            Mock.Get(engine).Verify(p => p.SendEventAsync(It.Is<EventMessage<FirstTestEvent>>(m => ReferenceEquals(m.Event, testEvent) && m.Headers.CorrelationId == correlationId)), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task StartAsync_starts_the_engine(NybusHost sut)
+        public async Task StartAsync_starts_the_engine([Frozen] IBusEngine engine, NybusHost sut)
         {
             await sut.StartAsync();
 
-            Mock.Get(sut.Engine).Verify(p => p.Start(), Times.Once);
+            Mock.Get(engine).Verify(p => p.Start(), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task StopAsync_is_ignored_if_not_started(NybusHost sut)
+        public async Task StopAsync_is_ignored_if_not_started([Frozen] IBusEngine engine, NybusHost sut)
         {
             await sut.StopAsync();
 
-            Mock.Get(sut.Engine).Verify(p => p.Stop(), Times.Never);
+            Mock.Get(engine).Verify(p => p.Stop(), Times.Never);
 
         }
 
         [Test, AutoMoqData]
-        public async Task StopAsync_stops_the_engine_if_started(NybusHost sut)
+        public async Task StopAsync_stops_the_engine_if_started([Frozen] IBusEngine engine, NybusHost sut)
         {
             await sut.StartAsync();
 
             await sut.StopAsync();
 
-            Mock.Get(sut.Engine).Verify(p => p.Stop(), Times.Once);
+            Mock.Get(engine).Verify(p => p.Stop(), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task Handler_is_executed_when_commandMessages_are_processed(NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
+        public async Task Handler_is_executed_when_commandMessages_are_processed([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(sut.Engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
 
             var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
 
@@ -102,11 +103,11 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Engine_is_notified_when_commandMessages_are_successfully_processed(NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
+        public async Task Engine_is_notified_when_commandMessages_are_successfully_processed([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(sut.Engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
 
             var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
 
@@ -118,15 +119,15 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(sut.Engine).Verify(p => p.NotifySuccess(testMessage), Times.Once);
+            Mock.Get(engine).Verify(p => p.NotifySuccess(testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task Error_policy_is_executed_when_commandMessages_are_processed_with_errors(NybusHost sut, CommandMessage<FirstTestCommand> testMessage, Exception error)
+        public async Task Error_policy_is_executed_when_commandMessages_are_processed_with_errors([Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, CommandMessage<FirstTestCommand> testMessage, Exception error)
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(sut.Engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
 
             var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
             Mock.Get(receivedMessage).Setup(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>())).Throws(error);
@@ -139,15 +140,15 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(sut.Configuration.ErrorPolicy).Verify(p => p.HandleError(sut.Engine, error, testMessage), Times.Once);
+            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleError(engine, error, testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task Null_messages_delivered_from_engine_are_discarded(NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
+        public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(sut.Engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
 
             var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
 
@@ -163,11 +164,11 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Handler_is_executed_when_eventMessages_are_processed(NybusHost sut, EventMessage<FirstTestEvent> testMessage)
+        public async Task Handler_is_executed_when_eventMessages_are_processed([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(sut.Engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
 
             var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
 
@@ -183,11 +184,11 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Engine_is_notified_when_eventMessages_are_successfully_processed(NybusHost sut, EventMessage<FirstTestEvent> testMessage)
+        public async Task Engine_is_notified_when_eventMessages_are_successfully_processed([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(sut.Engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
 
             var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
 
@@ -199,15 +200,15 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(sut.Engine).Verify(p => p.NotifySuccess(testMessage), Times.Once);
+            Mock.Get(engine).Verify(p => p.NotifySuccess(testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task Error_policy_is_executed_when_eventMessages_are_processed_with_errors(NybusHost sut, EventMessage<FirstTestEvent> testMessage, Exception error)
+        public async Task Error_policy_is_executed_when_eventMessages_are_processed_with_errors([Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, EventMessage<FirstTestEvent> testMessage, Exception error)
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(sut.Engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
 
             var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
             Mock.Get(receivedMessage).Setup(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>())).Throws(error);
@@ -220,15 +221,15 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(sut.Configuration.ErrorPolicy).Verify(p => p.HandleError(sut.Engine, error, testMessage), Times.Once);
+            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleError(engine, error, testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task Null_messages_delivered_from_engine_are_discarded(NybusHost sut, EventMessage<FirstTestEvent> testMessage)
+        public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(sut.Engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
 
             var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
 
@@ -250,13 +251,13 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task ExecuteCommandHandler_creates_new_scope_for_execution(NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
+        public async Task ExecuteCommandHandler_creates_new_scope_for_execution([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
         {
             var handlerType = handler.GetType();
 
-            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
 
-            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
 
             await sut.ExecuteCommandHandler(dispatcher, commandContext, handlerType);
 
@@ -264,13 +265,13 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task ExecuteCommandHandler_executes_handler(NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
+        public async Task ExecuteCommandHandler_executes_handler([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
         {
             var handlerType = handler.GetType();
 
-            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
 
-            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
 
             await sut.ExecuteCommandHandler(dispatcher, commandContext, handlerType);
 
@@ -278,13 +279,13 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task ExecuteEventHandler_creates_new_scope_for_execution(NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
+        public async Task ExecuteEventHandler_creates_new_scope_for_execution([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
         {
             var handlerType = handler.GetType();
 
-            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
 
-            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
 
             await sut.ExecuteEventHandler(dispatcher, eventContext, handlerType);
 
@@ -292,13 +293,13 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task ExecuteEventHandler_executes_handler(NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
+        public async Task ExecuteEventHandler_executes_handler([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
         {
             var handlerType = handler.GetType();
 
-            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
 
-            Mock.Get(sut.ServiceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
 
             await sut.ExecuteEventHandler(dispatcher, eventContext, handlerType);
 

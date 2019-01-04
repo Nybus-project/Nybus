@@ -5,26 +5,25 @@ namespace Nybus
 {
     public class NybusDispatcher : IDispatcher
     {
+        private readonly IBus _bus;
+        private readonly Guid _correlationId;
+
         public NybusDispatcher(IBus innerBus, Guid correlationId)
         {
-            Bus = innerBus ?? throw new ArgumentNullException(nameof(innerBus));
-            CorrelationId = correlationId;
+            _bus = innerBus ?? throw new ArgumentNullException(nameof(innerBus));
+            _correlationId = correlationId;
         }
-
-        public IBus Bus { get; }
-        public Guid CorrelationId { get; }
-
 
         public Task InvokeCommandAsync<TCommand>(TCommand command)
             where TCommand : class, ICommand
         {
-            return Bus.InvokeCommandAsync(command, CorrelationId);
+            return _bus.InvokeCommandAsync(command, _correlationId);
         }
 
         public Task RaiseEventAsync<TEvent>(TEvent @event)
             where TEvent : class, IEvent
         {
-            return Bus.RaiseEventAsync(@event, CorrelationId);
+            return _bus.RaiseEventAsync(@event, _correlationId);
         }
     }
 }

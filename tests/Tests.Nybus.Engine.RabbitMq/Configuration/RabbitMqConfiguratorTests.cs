@@ -8,7 +8,6 @@ using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
 using Nybus.Policies;
-using IConfiguration = Nybus.Configuration.IConfiguration;
 
 namespace Tests.Configuration
 {
@@ -58,8 +57,8 @@ namespace Tests.Configuration
         [Test, AutoMoqData]
         public void Configure_sets_action_to_be_used(RabbitMqConfigurator sut, TestNybusConfigurator configurator, IConfigurationFactory configurationFactory, RabbitMqOptions options)
         {
-            var configurationSetup = new Mock<Action<IConfiguration>>();
-            configurationSetup.Setup(p => p(It.IsAny<IConfiguration>()));
+            var configurationSetup = new Mock<Action<IRabbitMqConfiguration>>();
+            configurationSetup.Setup(p => p(It.IsAny<IRabbitMqConfiguration>()));
 
             sut.Configure(configurationSetup.Object);
 
@@ -73,7 +72,7 @@ namespace Tests.Configuration
 
             var serviceProvider = services.BuildServiceProvider();
 
-            var configuration = serviceProvider.GetService<IConfiguration>();
+            var configuration = serviceProvider.GetService<IRabbitMqConfiguration>();
 
             configurationSetup.Verify(p => p(configuration), Times.Once);
         }
@@ -104,7 +103,7 @@ namespace Tests.Configuration
 
             var serviceProvider = services.BuildServiceProvider();
 
-            var configuration = serviceProvider.GetService<IConfiguration>();
+            var configuration = serviceProvider.GetService<IRabbitMqConfiguration>();
 
             Assert.That(configuration.OutboundEncoding, Is.SameAs(Encoding.UTF8));
         }

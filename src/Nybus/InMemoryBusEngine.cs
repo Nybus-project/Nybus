@@ -11,6 +11,7 @@ namespace Nybus
     {
         private ISubject<Message> _sequenceOfMessages;
         private bool _isStarted;
+        private readonly ISet<Type> _acceptedTypes = new HashSet<Type>();
 
         public IObservable<Message> Start()
         {
@@ -20,14 +21,14 @@ namespace Nybus
                                 .Where(m => m != null)
                                 .Where(m => m.MessageType == MessageType.Command)
                                 .Cast<CommandMessage>()
-                                .Where(m => AcceptedTypes.Contains(m.Type))
+                                .Where(m => _acceptedTypes.Contains(m.Type))
                                 .Cast<Message>();
 
             var events = _sequenceOfMessages
                                 .Where(m => m != null)
                                 .Where(m => m.MessageType == MessageType.Event)
                                 .Cast<EventMessage>()
-                                .Where(m => AcceptedTypes.Contains(m.Type))
+                                .Where(m => _acceptedTypes.Contains(m.Type))
                                 .Cast<Message>();
 
             _isStarted = true;
@@ -35,8 +36,6 @@ namespace Nybus
             return Observable.Merge(commands, events);
         }
 
-        public ISet<Type> AcceptedTypes { get; } = new HashSet<Type>();
-        
         public void Stop()
         {
             if (_isStarted)
@@ -68,12 +67,12 @@ namespace Nybus
 
         public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
         {
-            AcceptedTypes.Add(typeof(TCommand));
+            _acceptedTypes.Add(typeof(TCommand));
         }
 
         public void SubscribeToEvent<TEvent>() where TEvent : class, IEvent
         {
-            AcceptedTypes.Add(typeof(TEvent));
+            _acceptedTypes.Add(typeof(TEvent));
         }
 
         public Task NotifySuccess(Message message)
@@ -85,5 +84,7 @@ namespace Nybus
         {
             return Task.CompletedTask;
         }
+
+        public bool IsTypeAccepted(Type type) => _acceptedTypes.Contains(type);
     }
 }

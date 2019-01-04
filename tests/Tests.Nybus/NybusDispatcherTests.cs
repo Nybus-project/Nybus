@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
+using AutoFixture.NUnit3;
 using Moq;
 using NUnit.Framework;
 using Nybus;
@@ -18,19 +17,19 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Command_is_invoked_with_given_correlationId(NybusDispatcher sut, FirstTestCommand testCommand)
+        public async Task Command_is_invoked_with_given_correlationId([Frozen] IBus bus, [Frozen] Guid correlationId, NybusDispatcher sut, FirstTestCommand testCommand)
         {
             await sut.InvokeCommandAsync(testCommand);
 
-            Mock.Get(sut.Bus).Verify(p => p.InvokeCommandAsync(testCommand, sut.CorrelationId), Times.Once);
+            Mock.Get(bus).Verify(p => p.InvokeCommandAsync(testCommand, correlationId), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public async Task Event_is_raised_with_given_correlationId(NybusDispatcher sut, FirstTestEvent testEvent)
+        public async Task Event_is_raised_with_given_correlationId([Frozen] IBus bus, [Frozen] Guid correlationId, NybusDispatcher sut, FirstTestEvent testEvent)
         {
             await sut.RaiseEventAsync(testEvent);
 
-            Mock.Get(sut.Bus).Verify(p => p.RaiseEventAsync(testEvent, sut.CorrelationId), Times.Once);
+            Mock.Get(bus).Verify(p => p.RaiseEventAsync(testEvent, correlationId), Times.Once);
         }
     }
 }

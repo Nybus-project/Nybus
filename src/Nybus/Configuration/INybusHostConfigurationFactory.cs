@@ -18,9 +18,11 @@ namespace Nybus.Configuration
 
     public class NybusHostConfigurationFactory : INybusHostConfigurationFactory
     {
+        private readonly IReadOnlyDictionary<string, IErrorPolicyProvider> _errorPolicyProviders;
+
         public NybusHostConfigurationFactory(IEnumerable<IErrorPolicyProvider> errorPolicyProviders)
         {
-            ErrorPolicyProviders = CreateDictionary(errorPolicyProviders ?? throw new ArgumentNullException(nameof(errorPolicyProviders)));
+            _errorPolicyProviders = CreateDictionary(errorPolicyProviders ?? throw new ArgumentNullException(nameof(errorPolicyProviders)));
         }
 
         private IReadOnlyDictionary<string, IErrorPolicyProvider> CreateDictionary(IEnumerable<IErrorPolicyProvider> providers)
@@ -38,8 +40,6 @@ namespace Nybus.Configuration
             return result;
         }
 
-        public IReadOnlyDictionary<string, IErrorPolicyProvider> ErrorPolicyProviders { get; }
-
         public INybusConfiguration CreateConfiguration(NybusHostOptions options)
         {
             var errorPolicy = GetErrorPolicy(options.ErrorPolicy);
@@ -51,7 +51,7 @@ namespace Nybus.Configuration
 
             IErrorPolicy GetErrorPolicy(IConfigurationSection section)
             {
-                if (section != null && section.TryGetValue("ProviderName", out var providerName) && ErrorPolicyProviders.TryGetValue(providerName, out var provider))
+                if (section != null && section.TryGetValue("ProviderName", out var providerName) && _errorPolicyProviders.TryGetValue(providerName, out var provider))
                 {
                     return provider.CreatePolicy(section);
                 }

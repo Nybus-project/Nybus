@@ -18,18 +18,17 @@ namespace Nybus
         private const string FanOutExchangeType = "fanout";
         private readonly ConcurrentList<ulong> _processingMessages = new ConcurrentList<ulong>();
         private readonly ILogger<RabbitMqBusEngine> _logger;
+        private readonly Dictionary<string, ObservableConsumer> _consumers = new Dictionary<string, ObservableConsumer>(StringComparer.OrdinalIgnoreCase);
+        private readonly IRabbitMqConfiguration _configuration;
 
-        public RabbitMqBusEngine(IConfiguration configuration, ILogger<RabbitMqBusEngine> logger)
+        public RabbitMqBusEngine(IRabbitMqConfiguration configuration, ILogger<RabbitMqBusEngine> logger)
         {
-            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         private IConnection _connection;
         private IModel _channel;
-        private readonly Dictionary<string, ObservableConsumer> _consumers = new Dictionary<string, ObservableConsumer>(StringComparer.OrdinalIgnoreCase);
-
-        public IConfiguration Configuration { get; }
 
         public ISet<Type> AcceptedEventTypes { get; } = new HashSet<Type>();
         public ISet<Type> AcceptedCommandTypes { get; } = new HashSet<Type>();
@@ -38,7 +37,7 @@ namespace Nybus
 
         public IObservable<Message> Start()
         {
-            _connection = Configuration.ConnectionFactory.CreateConnection();
+            _connection = _configuration.ConnectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
 
             var hasEvents = AcceptedEventTypes.Any();
@@ -53,7 +52,7 @@ namespace Nybus
 
             if (hasEvents)
             {
-                var eventQueue = Configuration.EventQueueFactory.CreateQueue(_channel);
+                var eventQueue = _configuration.EventQueueFactory.CreateQueue(_channel);
 
                 foreach (var type in AcceptedEventTypes)
                 {
@@ -69,7 +68,7 @@ namespace Nybus
 
             if (hasCommands)
             {
-                var commandQueue = Configuration.CommandQueueFactory.CreateQueue(_channel);
+                var commandQueue = _configuration.CommandQueueFactory.CreateQueue(_channel);
 
                 foreach (var type in AcceptedCommandTypes)
                 {
@@ -113,12 +112,12 @@ namespace Nybus
 
                 if (TryFindCommandByName(messageTypeName, out var commandType))
                 {
-                    var command = Configuration.Serializer.DeserializeObject(args.Body, commandType, encoding) as ICommand;
+                    var command = _configuration.Serializer.DeserializeObject(args.Body, commandType, encoding) as ICommand;
                     message = CreateCommandMessage(command);
                 }
                 else if (TryFindEventByName(messageTypeName, out var eventType))
                 {
-                    var @event = Configuration.Serializer.DeserializeObject(args.Body, eventType, encoding) as IEvent;
+                    var @event = _configuration.Serializer.DeserializeObject(args.Body, eventType, encoding) as IEvent;
                     message = CreateEventMessage(@event);
                 }
                 else
@@ -202,10 +201,10 @@ namespace Nybus
         {
             var type = typeof(T);
 
-            var body = Configuration.Serializer.SerializeObject(item, Configuration.OutboundEncoding);
+            var body = _configuration.Serializer.SerializeObject(item, _configuration.OutboundEncoding);
 
             var properties = _channel.CreateBasicProperties();
-            properties.ContentEncoding = Configuration.OutboundEncoding.WebName;
+            properties.ContentEncoding = _configuration.OutboundEncoding.WebName;
 
             properties.Headers = new Dictionary<string, object>
             {

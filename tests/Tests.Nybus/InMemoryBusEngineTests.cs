@@ -15,7 +15,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            Assert.That(sut.AcceptedTypes.Contains(typeof(FirstTestCommand)));
+            Assert.That(sut.IsTypeAccepted(typeof(FirstTestCommand)));
         }
 
         [Test, AutoMoqData]
@@ -23,7 +23,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            Assert.That(sut.AcceptedTypes.Contains(typeof(FirstTestEvent)));
+            Assert.That(sut.IsTypeAccepted(typeof(FirstTestEvent)));
         }
 
         [Test, AutoMoqData]

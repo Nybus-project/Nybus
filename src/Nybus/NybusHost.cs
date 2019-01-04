@@ -13,19 +13,18 @@ namespace Nybus
 {
     public class NybusHost : IBusHost, IBus, IBusExecutionEnvironment
     {
+        private readonly IBusEngine _engine;
+        private readonly IServiceProvider _serviceProvider;
+        private readonly INybusConfiguration _configuration;
         private readonly ILogger<NybusHost> _logger;
 
         public NybusHost(IBusEngine busEngine, INybusConfiguration configuration, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            Engine = busEngine ?? throw new ArgumentNullException(nameof(busEngine));
-            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _engine = busEngine ?? throw new ArgumentNullException(nameof(busEngine));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
-
-        public IBusEngine Engine { get; }
-        public INybusConfiguration Configuration { get; }
-        public IServiceProvider ServiceProvider { get; }
 
         public async Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
@@ -41,7 +40,7 @@ namespace Nybus
             };
 
             _logger.LogTrace(new { type = typeof(TCommand).FullName, correlationId = correlationId, command }, arg => $"Invoking command of type {arg.type} with correlationId {arg.correlationId}. Command: {arg.command.ToString()}");
-            await Engine.SendCommandAsync(message).ConfigureAwait(false);
+            await _engine.SendCommandAsync(message).ConfigureAwait(false);
         }
 
         public async Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
@@ -58,7 +57,7 @@ namespace Nybus
             };
 
             _logger.LogTrace(new { type = typeof(TEvent).FullName, correlationId = correlationId, @event }, arg => $"Raising event of type {arg.type} with correlationId {arg.correlationId}. Event: {arg.@event.ToString()}");
-            await Engine.SendEventAsync(message).ConfigureAwait(false);
+            await _engine.SendEventAsync(message).ConfigureAwait(false);
         }
 
         private bool _isStarted;
@@ -68,7 +67,7 @@ namespace Nybus
         {
             _logger.LogTrace("Bus starting");
 
-            var incomingMessages = Engine.Start();
+            var incomingMessages = _engine.Start();
 
             var observable = from message in incomingMessages
                              where message != null
@@ -91,7 +90,7 @@ namespace Nybus
             {
                 _logger.LogTrace("Bus stopping");
 
-                Engine.Stop();
+                _engine.Stop();
                 _disposable.Dispose();
 
                 _logger.LogTrace("Bus stopped");
@@ -104,7 +103,7 @@ namespace Nybus
 
         public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
         {
-            Engine.SubscribeToCommand<TCommand>();
+            _engine.SubscribeToCommand<TCommand>();
 
             _messagePipelines.Add(ProcessMessage);
 
@@ -134,19 +133,19 @@ namespace Nybus
 
             async Task NotifySuccess(CommandMessage<TCommand> message)
             {
-                await Engine.NotifySuccess(message).ConfigureAwait(false);
+                await _engine.NotifySuccess(message).ConfigureAwait(false);
             }
 
             async Task HandleError(Exception exception, CommandMessage<TCommand> message, ICommandContext<TCommand> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, CommandType = typeof(TCommand).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.CommandType}. {s.Exception.Message}");
-                await Configuration.ErrorPolicy.HandleError(Engine, exception, message).ConfigureAwait(false);
+                await _configuration.ErrorPolicy.HandleError(_engine, exception, message).ConfigureAwait(false);
             }
         }
 
         public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
         {
-            Engine.SubscribeToEvent<TEvent>();
+            _engine.SubscribeToEvent<TEvent>();
 
             _messagePipelines.Add(ProcessMessage);
 
@@ -176,13 +175,13 @@ namespace Nybus
 
             async Task NotifySuccess(EventMessage<TEvent> message)
             {
-                await Engine.NotifySuccess(message).ConfigureAwait(false);
+                await _engine.NotifySuccess(message).ConfigureAwait(false);
             }
 
             async Task HandleError(Exception exception, EventMessage<TEvent> message, IEventContext<TEvent> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, EventType = typeof(TEvent).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.EventType}. {s.Exception.Message}");
-                await Configuration.ErrorPolicy.HandleError(Engine, exception, message).ConfigureAwait(false);
+                await _configuration.ErrorPolicy.HandleError(_engine, exception, message).ConfigureAwait(false);
             }
         }
 
@@ -193,7 +192,7 @@ namespace Nybus
         public async Task ExecuteCommandHandler<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context, Type handlerType)
             where TCommand : class, ICommand
         {
-            using (var scope = ServiceProvider.CreateScope())
+            using (var scope = _serviceProvider.CreateScope())
             {
                 var handler = (ICommandHandler<TCommand>)scope.ServiceProvider.GetRequiredService(handlerType);
                 await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
@@ -203,7 +202,7 @@ namespace Nybus
         public async Task ExecuteEventHandler<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context, Type handlerType)
             where TEvent : class, IEvent
         {
-            using (var scope = ServiceProvider.CreateScope())
+            using (var scope = _serviceProvider.CreateScope())
             {
                 var handler = (IEventHandler<TEvent>)scope.ServiceProvider.GetRequiredService(handlerType);
                 await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);

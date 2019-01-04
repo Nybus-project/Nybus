@@ -11,7 +11,7 @@ namespace Nybus.Configuration
         void RegisterQueueFactoryProvider<TProvider>(Func<IServiceProvider, IQueueFactoryProvider> factory = null)
             where TProvider : class, IQueueFactoryProvider;
 
-        void Configure(Action<IConfiguration> configure);
+        void Configure(Action<IRabbitMqConfiguration> configure);
 
         void UseConfiguration(string sectionName = "RabbitMq");
 
@@ -34,9 +34,9 @@ namespace Nybus.Configuration
             }
         }
 
-        private Action<IConfiguration> _configurationAction;
+        private Action<IRabbitMqConfiguration> _configurationAction;
 
-        public void Configure(Action<IConfiguration> configure)
+        public void Configure(Action<IRabbitMqConfiguration> configure)
         {
             _configurationAction = configure ?? throw new ArgumentNullException(nameof(configure));
         }
@@ -59,7 +59,7 @@ namespace Nybus.Configuration
 
             nybus.AddServiceConfiguration(sc => sc.AddSingleton(options));
 
-            nybus.AddServiceConfiguration(sc => sc.AddTransient<IConfiguration>(sp =>
+            nybus.AddServiceConfiguration(sc => sc.AddTransient<IRabbitMqConfiguration>(sp =>
             {
                 var factory = sp.GetRequiredService<IConfigurationFactory>();
 

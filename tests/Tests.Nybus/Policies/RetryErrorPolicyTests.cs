@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AutoFixture.NUnit3;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
@@ -33,9 +34,9 @@ namespace Tests.Policies
         }
 
         [Test, AutoMoqData]
-        public async Task HandleError_notifies_engine_if_retry_count_equal_or_greater_than_maxRetries(RetryErrorPolicy sut, IBusEngine engine, Exception error, CommandMessage<FirstTestCommand> message)
+        public async Task HandleError_notifies_engine_if_retry_count_equal_or_greater_than_maxRetries([Frozen] RetryErrorPolicyOptions options, RetryErrorPolicy sut, IBusEngine engine, Exception error, CommandMessage<FirstTestCommand> message)
         {
-            message.Headers[Headers.RetryCount] = sut.MaxRetries.Stringfy();
+            message.Headers[Headers.RetryCount] = options.MaxRetries.Stringfy();
 
             await sut.HandleError(engine, error, message);
 
@@ -43,9 +44,9 @@ namespace Tests.Policies
         }
 
         [Test, AutoMoqData]
-        public async Task HandleError_retries_if_retry_count_less_than_maxRetries(RetryErrorPolicy sut, IBusEngine engine, Exception error, CommandMessage<FirstTestCommand> message)
+        public async Task HandleError_retries_if_retry_count_less_than_maxRetries([Frozen] RetryErrorPolicyOptions options, RetryErrorPolicy sut, IBusEngine engine, Exception error, CommandMessage<FirstTestCommand> message)
         {
-            message.Headers[Headers.RetryCount] = (sut.MaxRetries - 2).Stringfy();
+            message.Headers[Headers.RetryCount] = (options.MaxRetries - 2).Stringfy();
 
             await sut.HandleError(engine, error, message);
 
@@ -53,14 +54,14 @@ namespace Tests.Policies
         }
 
         [Test, AutoMoqData]
-        public async Task HandleError_increments_retry_count_if_retry_count_present(RetryErrorPolicy sut, IBusEngine engine, Exception error, CommandMessage<FirstTestCommand> message)
+        public async Task HandleError_increments_retry_count_if_retry_count_present([Frozen] RetryErrorPolicyOptions options, RetryErrorPolicy sut, IBusEngine engine, Exception error, CommandMessage<FirstTestCommand> message)
         {
-            message.Headers[Headers.RetryCount] = (sut.MaxRetries - 2).Stringfy();
+            message.Headers[Headers.RetryCount] = (options.MaxRetries - 2).Stringfy();
 
             await sut.HandleError(engine, error, message);
 
             Assert.That(message.Headers.ContainsKey(Headers.RetryCount));
-            Assert.That(message.Headers[Headers.RetryCount], Is.EqualTo((sut.MaxRetries - 1).Stringfy()));
+            Assert.That(message.Headers[Headers.RetryCount], Is.EqualTo((options.MaxRetries - 1).Stringfy()));
         }
 
         [Test, AutoMoqData]
@@ -80,9 +81,9 @@ namespace Tests.Policies
         }
 
         [Test, AutoMoqData]
-        public async Task HandleError_notifies_engine_if_retry_count_equal_or_greater_than_maxRetries(RetryErrorPolicy sut, IBusEngine engine, Exception error, EventMessage<FirstTestEvent> message)
+        public async Task HandleError_notifies_engine_if_retry_count_equal_or_greater_than_maxRetries([Frozen] RetryErrorPolicyOptions options, RetryErrorPolicy sut, IBusEngine engine, Exception error, EventMessage<FirstTestEvent> message)
         {
-            message.Headers[Headers.RetryCount] = sut.MaxRetries.Stringfy();
+            message.Headers[Headers.RetryCount] = options.MaxRetries.Stringfy();
 
             await sut.HandleError(engine, error, message);
 
@@ -90,9 +91,9 @@ namespace Tests.Policies
         }
 
         [Test, AutoMoqData]
-        public async Task HandleError_retries_if_retry_count_less_than_maxRetries(RetryErrorPolicy sut, IBusEngine engine, Exception error, EventMessage<FirstTestEvent> message)
+        public async Task HandleError_retries_if_retry_count_less_than_maxRetries([Frozen] RetryErrorPolicyOptions options, RetryErrorPolicy sut, IBusEngine engine, Exception error, EventMessage<FirstTestEvent> message)
         {
-            message.Headers[Headers.RetryCount] = (sut.MaxRetries - 2).Stringfy();
+            message.Headers[Headers.RetryCount] = (options.MaxRetries - 2).Stringfy();
 
             await sut.HandleError(engine, error, message);
 
@@ -116,14 +117,14 @@ namespace Tests.Policies
         }
 
         [Test, AutoMoqData]
-        public async Task HandleError_increments_retry_count_if_retry_count_present(RetryErrorPolicy sut, IBusEngine engine, Exception error, EventMessage<FirstTestEvent> message)
+        public async Task HandleError_increments_retry_count_if_retry_count_present([Frozen] RetryErrorPolicyOptions options, RetryErrorPolicy sut, IBusEngine engine, Exception error, EventMessage<FirstTestEvent> message)
         {
-            message.Headers[Headers.RetryCount] = (sut.MaxRetries - 2).Stringfy();
+            message.Headers[Headers.RetryCount] = (options.MaxRetries - 2).Stringfy();
 
             await sut.HandleError(engine, error, message);
 
             Assert.That(message.Headers.ContainsKey(Headers.RetryCount));
-            Assert.That(message.Headers[Headers.RetryCount], Is.EqualTo((sut.MaxRetries - 1).Stringfy()));
+            Assert.That(message.Headers[Headers.RetryCount], Is.EqualTo((options.MaxRetries - 1).Stringfy()));
         }
     }
 }

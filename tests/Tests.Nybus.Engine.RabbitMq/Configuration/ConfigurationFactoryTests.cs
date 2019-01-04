@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AutoFixture.NUnit3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -33,8 +35,6 @@ namespace Tests.Configuration
             }
 
             var factory = new ConfigurationFactory(providers, connectionFactoryProviders, logger);
-
-            Assert.That(factory.QueueFactoryProviders[providerName], Is.SameAs(providers[0]));
         }
 
         [Test, AutoMoqData]
@@ -64,10 +64,10 @@ namespace Tests.Configuration
         }
 
         [Test, AutoMoqData]
-        public void Create_uses_valid_commandQueue(ConfigurationFactory sut, RabbitMqOptions options, IQueueFactory queueFactory)
+        public void Create_uses_valid_commandQueue([Frozen] IEnumerable<IQueueFactoryProvider> providers, ConfigurationFactory sut, RabbitMqOptions options, IQueueFactory queueFactory)
         {
-            Mock.Get(sut.QueueFactoryProviders.First().Value).Setup(p => p.CreateFactory(It.IsAny<IConfigurationSection>())).Returns(queueFactory);
-            Mock.Get(options.CommandQueue.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(sut.QueueFactoryProviders.First().Value.ProviderName);
+            Mock.Get(providers.First()).Setup(p => p.CreateFactory(It.IsAny<IConfigurationSection>())).Returns(queueFactory);
+            Mock.Get(options.CommandQueue.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(providers.First().ProviderName);
 
             options.ConnectionString = null;
             options.Connection = null;
@@ -91,10 +91,10 @@ namespace Tests.Configuration
         }
 
         [Test, AutoMoqData]
-        public void Create_uses_valid_eventQueue(ConfigurationFactory sut, RabbitMqOptions options, IQueueFactory queueFactory)
+        public void Create_uses_valid_eventQueue([Frozen] IEnumerable<IQueueFactoryProvider> providers, ConfigurationFactory sut, RabbitMqOptions options, IQueueFactory queueFactory)
         {
-            Mock.Get(sut.QueueFactoryProviders.First().Value).Setup(p => p.CreateFactory(It.IsAny<IConfigurationSection>())).Returns(queueFactory);
-            Mock.Get(options.EventQueue.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(sut.QueueFactoryProviders.First().Value.ProviderName);
+            Mock.Get(providers.First()).Setup(p => p.CreateFactory(It.IsAny<IConfigurationSection>())).Returns(queueFactory);
+            Mock.Get(options.EventQueue.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(providers.First().ProviderName);
 
             options.ConnectionString = null;
             options.Connection = null;
@@ -118,7 +118,7 @@ namespace Tests.Configuration
         }
 
         [Test, AutoMoqData]
-        public void Create_uses_ConnectionStringConnectionFactory_when_connectionString_is_provided(ConfigurationFactory sut, RabbitMqOptions options, string connectionString)
+        public void Create_uses_ConnectionStringConnectionFactory_when_connectionString_is_provided([Frozen] IConnectionFactoryProviders providers, ConfigurationFactory sut, RabbitMqOptions options, string connectionString)
         {
             Mock.Get(options.ConnectionString).SetupGet(p => p.Value).Returns(connectionString);
 
@@ -126,17 +126,17 @@ namespace Tests.Configuration
 
             var configuration = sut.Create(options);
 
-            Mock.Get(sut.ConnectionFactoryProviders.ConnectionString).Verify(p => p.CreateFactory(options.ConnectionString), Times.Once);
+            Mock.Get(providers.ConnectionString).Verify(p => p.CreateFactory(options.ConnectionString), Times.Once);
         }
 
         [Test, AutoMoqData]
-        public void Create_uses_ConnectionNodeConnectionFactory_when_connection_settings_are_provided(ConfigurationFactory sut, RabbitMqOptions options, string connectionString)
+        public void Create_uses_ConnectionNodeConnectionFactory_when_connection_settings_are_provided([Frozen] IConnectionFactoryProviders providers, ConfigurationFactory sut, RabbitMqOptions options, string connectionString)
         {
             options.ConnectionString = null;
 
             var configuration = sut.Create(options);
 
-            Mock.Get(sut.ConnectionFactoryProviders.ConnectionNode).Verify(p => p.CreateFactory(options.Connection), Times.Once);
+            Mock.Get(providers.ConnectionNode).Verify(p => p.CreateFactory(options.Connection), Times.Once);
         }
     }
 }

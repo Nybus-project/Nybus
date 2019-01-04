@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AutoFixture.NUnit3;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
@@ -28,14 +29,14 @@ namespace Tests.Configuration
         }
 
         [Test, AutoMoqData]
-        public void CreateConfiguration_uses_selected_provider(NybusHostConfigurationFactory sut, NybusHostOptions options)
+        public void CreateConfiguration_uses_selected_provider([Frozen] IEnumerable<IErrorPolicyProvider> errorPolicyProviders, NybusHostConfigurationFactory sut, NybusHostOptions options)
         {
-            Mock.Get(options.ErrorPolicy.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(sut.ErrorPolicyProviders.First().Value.ProviderName);
+            Mock.Get(options.ErrorPolicy.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(errorPolicyProviders.First().ProviderName);
 
             var configuration = sut.CreateConfiguration(options);
 
-            Mock.Get(sut.ErrorPolicyProviders.First().Value).Verify(p => p.CreatePolicy(options.ErrorPolicy), Times.Once);
-            Assert.That(configuration.ErrorPolicy, Is.SameAs(sut.ErrorPolicyProviders.First().Value.CreatePolicy(options.ErrorPolicy)));
+            Mock.Get(errorPolicyProviders.First()).Verify(p => p.CreatePolicy(options.ErrorPolicy), Times.Once);
+            Assert.That(configuration.ErrorPolicy, Is.SameAs(errorPolicyProviders.First().CreatePolicy(options.ErrorPolicy)));
         }
     }
 }

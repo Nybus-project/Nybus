@@ -10,7 +10,7 @@ namespace Nybus.Configuration
 {
     public interface IConfigurationFactory
     {
-        IConfiguration Create(RabbitMqOptions options);
+        IRabbitMqConfiguration Create(RabbitMqOptions options);
     }
 
     public class RabbitMqOptions
@@ -29,12 +29,14 @@ namespace Nybus.Configuration
     public class ConfigurationFactory : IConfigurationFactory
     {
         private readonly ILogger<ConfigurationFactory> _logger;
+        private readonly IReadOnlyDictionary<string, IQueueFactoryProvider> _queueFactoryProviders;
+        private readonly IConnectionFactoryProviders _connectionFactoryProviders;
 
         public ConfigurationFactory(IEnumerable<IQueueFactoryProvider> queueFactoryProviders, IConnectionFactoryProviders connectionFactoryProviders, ILogger<ConfigurationFactory> logger)
         {
-            ConnectionFactoryProviders = connectionFactoryProviders ?? throw new ArgumentNullException(nameof(connectionFactoryProviders));
+            _connectionFactoryProviders = connectionFactoryProviders ?? throw new ArgumentNullException(nameof(connectionFactoryProviders));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            QueueFactoryProviders = CreateDictionary(queueFactoryProviders ?? throw new ArgumentNullException(nameof(queueFactoryProviders)));
+            _queueFactoryProviders = CreateDictionary(queueFactoryProviders ?? throw new ArgumentNullException(nameof(queueFactoryProviders)));
         }
 
         IReadOnlyDictionary<string, IQueueFactoryProvider> CreateDictionary(IEnumerable<IQueueFactoryProvider> providers)
@@ -52,11 +54,7 @@ namespace Nybus.Configuration
             return result;
         }
 
-        public IReadOnlyDictionary<string, IQueueFactoryProvider> QueueFactoryProviders { get; }
-        public IConnectionFactoryProviders ConnectionFactoryProviders { get; }
-
-
-        public IConfiguration Create(RabbitMqOptions options)
+        public IRabbitMqConfiguration Create(RabbitMqOptions options)
         {
             var outboundEncoding = GetOutboundEncoding();
             var commandQueueFactory = GetQueueFactory(options.CommandQueue);
@@ -73,7 +71,7 @@ namespace Nybus.Configuration
 
             IQueueFactory GetQueueFactory(IConfigurationSection section)
             {
-                if (section != null && section.TryGetValue("ProviderName", out var providerName) && QueueFactoryProviders.TryGetValue(providerName, out var provider))
+                if (section != null && section.TryGetValue("ProviderName", out var providerName) && _queueFactoryProviders.TryGetValue(providerName, out var provider))
                 {
                     return provider.CreateFactory(section);
                 }
@@ -105,12 +103,12 @@ namespace Nybus.Configuration
             {
                 if (options.ConnectionString != null && options.ConnectionString.Exists())
                 {
-                    return ConnectionFactoryProviders.ConnectionString.CreateFactory(options.ConnectionString);
+                    return _connectionFactoryProviders.ConnectionString.CreateFactory(options.ConnectionString);
                 }
 
                 if (options.Connection != null && options.Connection.Exists())
                 {
-                    return ConnectionFactoryProviders.ConnectionNode.CreateFactory(options.Connection);
+                    return _connectionFactoryProviders.ConnectionNode.CreateFactory(options.Connection);
                 }
 
                 return new ConnectionFactory { HostName = "localhost" };
