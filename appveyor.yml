@@ -1,33 +1,47 @@
-version: 0.6.0.{build}
+version: 1.0.{build}
+
 branches:
   only:
-  - master
-configuration: Release
-platform: Any CPU
-assembly_info:
-  patch: true
-  file: '**\AssemblyInfo.*'
-  assembly_version: '{version}'
-  assembly_file_version: '{version}'
-  assembly_informational_version: '{version}'
-before_build:
-- nuget restore NyBus.sln
-- nuget restore packages.config
-build:
-  project: NyBus.sln
-  publish_nuget: true
-  include_nuget_references: true
-  verbosity: minimal
+    - master
+
+only_commits:
+  files:
+    - src/
+  
+max_jobs: 1
+
+image: Visual Studio 2017
+
+clone_folder: c:\projects\nybus
+
 environment:
   COVERALLS_REPO_TOKEN:
     secure: FLG2WTxc1Gvrikrvj/UXnb9IAklUhPKGYV5pxOzlwsOWGQBiiEigRnyWCvCc2Zga  
-test:
-  assemblies: '**\Tests.*.dll'
-artifacts:
-- path: report.zip
-after_test: 
-    - packages\OpenCover.4.6.166\tools\OpenCover.Console.exe -register:user -filter:"+[Nybus.*]*" -target:".\packages\NUnit.Runners.2.6.4\tools\nunit-console.exe" -targetargs:"/process:multiple /noshadow /domain:multiple Nybus.nunit" -output:coverage.xml
-    - packages\coveralls.io.1.3.4\tools\coveralls.net.exe --opencover coverage.xml
-    - packages\ReportGenerator.2.3.1.0\tools\ReportGenerator.exe -reports:coverage.xml -targetdir:Reports
-    - 7z a report.zip Reports
 
+cache:
+  - '%LocalAppData%\NuGet\v3-cache'
+
+install:
+
+nuget:
+  account_feed: false
+  project_feed: false
+  disable_publish_on_pr: true
+
+before_build:
+  - cmd: dotnet tool install -g Cake.Tool --version 0.30.0
+  - cmd: dotnet tool install coveralls.net --tool-path tools
+
+build_script:
+  - cmd: dotnet cake --target=Full
+
+after_build:
+  - ps: .\tools\csmacnz.coveralls.exe --reportgenerator -i .\outputs\tests\report --repoToken $env:COVERALLS_REPO_TOKEN --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR --commitEmail $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_JOB_ID
+
+artifacts:
+  - path: outputs\*.nupkg
+    name: packages
+  - path: outputs\tests\coverage.xml
+    name: dotCover coverage summary
+  - path: outputs\tests\*.trx
+    name: test results
