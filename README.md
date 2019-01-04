@@ -126,7 +126,7 @@ You can do it by running the Powershell bootstrapper in the root of the reposito
 ```
 Alternatively, you can install the .NET tool created by CAKE authors and use it to execute the build script.
 ```powershell
-dotnet install -g Cake.Tool
+dotnet tool install -g Cake.Tool
 dotnet cake
 ```
 
