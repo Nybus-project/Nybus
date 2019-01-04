@@ -27,6 +27,8 @@ public class BuildPaths
 
     public FilePath DotCoverOutputFile => TestOutputFolder.CombineWithFilePath("coverage.dcvr");
 
+    public FilePath DotCoverOutputFileXml => TestOutputFolder.CombineWithFilePath("coverage.xml");
+
     public FilePath OpenCoverResultFile => OutputFolder.CombineWithFilePath("OpenCover.xml");
 }
 

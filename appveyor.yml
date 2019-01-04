@@ -1,5 +1,3 @@
-version: 1.0.{build}
-
 branches:
   only:
     - master
@@ -21,8 +19,6 @@ environment:
 cache:
   - '%LocalAppData%\NuGet\v3-cache'
 
-install:
-
 nuget:
   account_feed: false
   project_feed: false
@@ -37,11 +33,3 @@ build_script:
 
 after_build:
   - ps: .\tools\csmacnz.coveralls.exe --reportgenerator -i .\outputs\tests\report --repoToken $env:COVERALLS_REPO_TOKEN --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR --commitEmail $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_JOB_ID
-
-artifacts:
-  - path: outputs\*.nupkg
-    name: packages
-  - path: outputs\tests\coverage.xml
-    name: dotCover coverage summary
-  - path: outputs\tests\*.trx
-    name: test results

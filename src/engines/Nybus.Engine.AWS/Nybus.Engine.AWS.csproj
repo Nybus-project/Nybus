@@ -5,6 +5,10 @@
     <RootNamespace>Nybus</RootNamespace>
     <AssemblyName>Nybus.Engine.AWS</AssemblyName>
     <Description />
+
+    <!-- Disable the generation of a package until it's ready -->
+    <IsPackable>false</IsPackable>
+
   </PropertyGroup>
   
   <ItemGroup>
