@@ -103,16 +103,27 @@ Task("Test")
     DeleteFiles(coverageFiles);
 
     Information("Generating dotCover XML report");
-    var xmlFilePath = state.Paths.TestOutputFolder.CombineWithFilePath("coverage.xml");
-    DotCoverReport(state.Paths.DotCoverOutputFile, xmlFilePath, new DotCoverReportSettings 
+    DotCoverReport(state.Paths.DotCoverOutputFile, state.Paths.DotCoverOutputFileXml, new DotCoverReportSettings 
     {
         ReportType = DotCoverReportType.DetailedXML
     });
 
     Information("Executing ReportGenerator to generate HTML report");
-    ReportGenerator(xmlFilePath, state.Paths.ReportFolder, new ReportGeneratorSettings {
+    ReportGenerator(state.Paths.DotCoverOutputFileXml, state.Paths.ReportFolder, new ReportGeneratorSettings {
             ReportTypes = new[]{ReportGeneratorReportType.Html, ReportGeneratorReportType.Xml}
     });
+
+    if (BuildSystem.IsRunningOnAppVeyor)
+    {
+        Information("Uploading test result files to AppVeyor");
+        var testResultFiles = GetFiles($"{state.Paths.TestOutputFolder}/*.trx");
+
+        foreach (var file in testResultFiles)
+        {
+            Information($"\tUploading {file.GetFilename()}");
+            AppVeyor.UploadTestResults(file, AppVeyorTestResultsType.MSTest);
+        }
+    }
 });
 
 Task("Pack")
@@ -127,6 +138,20 @@ Task("Pack")
     };
 
     DotNetCorePack(state.Paths.SolutionFile.ToString(), settings);
+
+    if (BuildSystem.IsRunningOnAppVeyor)
+    {
+        Information("Uploading packages");
+        var files = GetFiles($"{state.Paths.OutputFolder}/*.nukpg");
+
+        foreach (var file in files)
+        {
+            AppVeyor.UploadArtifact(file, new AppVeyorUploadArtifactsSettings{
+                ArtifactType = AppVeyorUploadArtifactType.NuGetPackage,
+                DeploymentName = "NuGet"
+            });
+        }
+    }
 });
 
 Task("Full")
