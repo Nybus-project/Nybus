@@ -86,5 +86,73 @@ namespace Tests
 
             Assert.Throws<ArgumentNullException>(() => sut.ConsumeFrom(null));
         }
+
+        [Test, AutoMoqData]
+        public void IsRunning_returns_true_if_consumer_registered(ObservableConsumer sut, string consumerTag)
+        {
+            sut.HandleBasicConsumeOk(consumerTag);
+
+            Assert.That(sut.IsRunning, Is.True);
+        }
+
+        [Test, AutoMoqData]
+        public void HandleBasicConsumeOk_accepts_incoming_consumerTag(ObservableConsumer sut, string consumerTag)
+        {
+            sut.HandleBasicConsumeOk(consumerTag);
+        }
+
+        [Test, AutoMoqData]
+        public void HandleBasicCancel_accepts_departing_consumerTag(ObservableConsumer sut, string consumerTag)
+        {
+            sut.HandleBasicConsumeOk(consumerTag);
+
+            sut.HandleBasicCancel(consumerTag);
+        }
+
+        [Test, AutoMoqData]
+        public void HandleBasicCancel_raise_ConsumerCancelled_event(ObservableConsumer sut, string consumerTag)
+        {
+            var eventHandler = Mock.Of<EventHandler<ConsumerEventArgs>>();
+
+            sut.HandleBasicConsumeOk(consumerTag);
+
+            sut.ConsumerCancelled += eventHandler;
+
+            sut.HandleBasicCancel(consumerTag);
+
+            sut.ConsumerCancelled -= eventHandler;
+
+            Mock.Get(eventHandler).Verify(p => p(sut, It.Is<ConsumerEventArgs>(c => c.ConsumerTag == consumerTag)));
+        }
+
+        [Test, AutoMoqData]
+        public void HandleBasicCancelOk_accepts_departing_consumerTag(ObservableConsumer sut, string consumerTag)
+        {
+            sut.HandleBasicConsumeOk(consumerTag);
+
+            sut.HandleBasicCancelOk(consumerTag);
+        }
+
+        [Test, AutoMoqData]
+        public void HandleBasicCancelOk_raise_ConsumerCancelled_event(ObservableConsumer sut, string consumerTag)
+        {
+            var eventHandler = Mock.Of<EventHandler<ConsumerEventArgs>>();
+
+            sut.HandleBasicConsumeOk(consumerTag);
+
+            sut.ConsumerCancelled += eventHandler;
+
+            sut.HandleBasicCancelOk(consumerTag);
+
+            sut.ConsumerCancelled -= eventHandler;
+
+            Mock.Get(eventHandler).Verify(p => p(sut, It.Is<ConsumerEventArgs>(c => c.ConsumerTag == consumerTag)));
+        }
+
+        [Test, AutoMoqData]
+        public void Handle_([Frozen] IModel model, ObservableConsumer sut, ShutdownEventArgs shutdownEventArgs)
+        {
+            sut.HandleModelShutdown(model, shutdownEventArgs);
+        }
     }
 }

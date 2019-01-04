@@ -45,6 +45,8 @@ namespace Nybus
                 {
                     _consumerTags.Remove(consumerTag);
                 }
+
+                ConsumerCancelled?.Invoke(this, new ConsumerEventArgs(consumerTag));
             }
         }
 
@@ -69,8 +71,6 @@ namespace Nybus
                 {
                     _consumerTags.Add(consumerTag);
                 }
-
-                ConsumerCancelled?.Invoke(this, new ConsumerEventArgs(consumerTag));
             }
         }
 
