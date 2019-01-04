@@ -1,12 +1,11 @@
-//#tool "nuget:https://www.myget.org/F/opencover/api/v3/index.json?package=OpenCover&version=4.6.831-rc"
 #tool "nuget:?package=ReportGenerator&version=4.0.5"
 #tool "nuget:?package=JetBrains.dotCover.CommandLineTools&version=2018.3.1"
 
 #load "./build/types.cake"
 
-var target = Argument("Target", "Test");
+var target = Argument("Target", "Full");
 
-Setup<BuildState>(context => 
+Setup<BuildState>(_ => 
 {
     var state = new BuildState
     {
@@ -48,9 +47,9 @@ Task("Build")
     DotNetCoreBuild(state.Paths.SolutionFile.ToString(), settings);
 });
 
-Task("Test")
+Task("RunTests")
     .IsDependentOn("Build")
-    .Does<BuildState>(state =>
+    .Does<BuildState>(state => 
 {
     var projectFiles = GetFiles($"{state.Paths.TestFolder}/**/*.csproj");
 
@@ -69,7 +68,7 @@ Task("Test")
 
             var dotCoverSettings = new DotCoverCoverSettings()
                                     .WithFilter("+:Nybus*")
-                                    .WithFilter("-:Tests.*");
+                                    .WithFilter("-:Tests*");
 
             var settings = new DotNetCoreTestSettings
             {
@@ -78,10 +77,7 @@ Task("Test")
                 Logger = $"trx;LogFileName={testResultFile.FullPath}"
             };
 
-            DotCoverCover(context => 
-            {
-                context.DotNetCoreTest(projectFile, settings);
-            }, coverageResultFile, dotCoverSettings);
+            DotCoverCover(c => c.DotNetCoreTest(projectFile, settings), coverageResultFile, dotCoverSettings);
         }
         catch (Exception ex)
         {
@@ -96,35 +92,61 @@ Task("Test")
     {
         throw new CakeException("There was an error while executing the tests");
     }
+});
 
+Task("MergeCoverageResults")
+    .IsDependentOn("RunTests")
+    .Does<BuildState>(state =>
+{
     Information("Merging coverage files");
     var coverageFiles = GetFiles($"{state.Paths.TestOutputFolder}/*.dvcr");
     DotCoverMerge(coverageFiles, state.Paths.DotCoverOutputFile);
     DeleteFiles(coverageFiles);
+});
 
+Task("GenerateXmlReport")
+    .IsDependentOn("MergeCoverageResults")
+    .Does<BuildState>(state =>
+{
     Information("Generating dotCover XML report");
     DotCoverReport(state.Paths.DotCoverOutputFile, state.Paths.DotCoverOutputFileXml, new DotCoverReportSettings 
     {
         ReportType = DotCoverReportType.DetailedXML
     });
+});
 
+Task("GenerateHtmlReport")
+    .IsDependentOn("GenerateXmlReport")
+    .Does<BuildState>(state =>
+{
     Information("Executing ReportGenerator to generate HTML report");
     ReportGenerator(state.Paths.DotCoverOutputFileXml, state.Paths.ReportFolder, new ReportGeneratorSettings {
             ReportTypes = new[]{ReportGeneratorReportType.Html, ReportGeneratorReportType.Xml}
     });
+});
 
-    if (BuildSystem.IsRunningOnAppVeyor)
+Task("UploadTestsToAppVeyor")
+    .IsDependentOn("RunTests")
+    .WithCriteria(BuildSystem.IsRunningOnAppVeyor)
+    .Does<BuildState>(state =>
+{
+    Information("Uploading test result files to AppVeyor");
+    var testResultFiles = GetFiles($"{state.Paths.TestOutputFolder}/*.trx");
+
+    foreach (var file in testResultFiles)
     {
-        Information("Uploading test result files to AppVeyor");
-        var testResultFiles = GetFiles($"{state.Paths.TestOutputFolder}/*.trx");
-
-        foreach (var file in testResultFiles)
-        {
-            Information($"\tUploading {file.GetFilename()}");
-            AppVeyor.UploadTestResults(file, AppVeyorTestResultsType.MSTest);
-        }
+        Information($"\tUploading {file.GetFilename()}");
+        AppVeyor.UploadTestResults(file, AppVeyorTestResultsType.MSTest);
     }
 });
+
+Task("Test")
+    .IsDependentOn("Build")
+    .IsDependentOn("RunTests")
+    .IsDependentOn("MergeCoverageResults")
+    .IsDependentOn("GenerateXmlReport")
+    .IsDependentOn("GenerateHtmlReport")
+    .IsDependentOn("UploadTestsToAppVeyor");
 
 Task("Pack")
     .IsDependentOn("Test")
@@ -138,27 +160,33 @@ Task("Pack")
     };
 
     DotNetCorePack(state.Paths.SolutionFile.ToString(), settings);
+});
 
-    if (BuildSystem.IsRunningOnAppVeyor)
+Task("UploadPackagesToAppVeyor")
+    .IsDependentOn("Pack")
+    .WithCriteria(BuildSystem.IsRunningOnAppVeyor)
+    .Does<BuildState>(state => 
+{
+    Information("Uploading packages");
+    var files = GetFiles($"{state.Paths.OutputFolder}/*.nukpg");
+
+    foreach (var file in files)
     {
-        Information("Uploading packages");
-        var files = GetFiles($"{state.Paths.OutputFolder}/*.nukpg");
-
-        foreach (var file in files)
-        {
-            AppVeyor.UploadArtifact(file, new AppVeyorUploadArtifactsSettings{
-                ArtifactType = AppVeyorUploadArtifactType.NuGetPackage,
-                DeploymentName = "NuGet"
-            });
-        }
+        AppVeyor.UploadArtifact(file, new AppVeyorUploadArtifactsSettings{
+            ArtifactType = AppVeyorUploadArtifactType.NuGetPackage,
+            DeploymentName = "NuGet"
+        });
     }
 });
 
+Task("Push")
+    .IsDependentOn("UploadPackagesToAppVeyor");
+
 Task("Full")
-    .IsDependentOn("Pack")
-    .IsDependentOn("Test")
+    .IsDependentOn("Restore")
     .IsDependentOn("Build")
-    .IsDependentOn("Restore");
+    .IsDependentOn("Test")
+    .IsDependentOn("Pack")
+    .IsDependentOn("Push");
 
 RunTarget(target);
-
