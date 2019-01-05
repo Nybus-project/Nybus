@@ -173,7 +173,8 @@ Task("UploadPackagesToAppVeyor")
 
     foreach (var file in files)
     {
-        AppVeyor.UploadArtifact(file, new AppVeyorUploadArtifactsSettings{
+        Information($"\tUploading {file.GetFilename()}");
+        AppVeyor.UploadArtifact(file, new AppVeyorUploadArtifactsSettings {
             ArtifactType = AppVeyorUploadArtifactType.NuGetPackage,
             DeploymentName = "NuGet"
         });
