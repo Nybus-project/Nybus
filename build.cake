@@ -51,7 +51,7 @@ Task("RunTests")
     .IsDependentOn("Build")
     .Does<BuildState>(state => 
 {
-    var projectFiles = GetFiles($"{state.Paths.TestFolder}/**/*.csproj");
+    var projectFiles = GetFiles($"{state.Paths.TestFolder}/**/Tests.*.csproj");
 
     bool success = true;
 
@@ -68,7 +68,8 @@ Task("RunTests")
 
             var dotCoverSettings = new DotCoverCoverSettings()
                                     .WithFilter("+:Nybus*")
-                                    .WithFilter("-:Tests*");
+                                    .WithFilter("-:Tests*")
+                                    .WithFilter("-:TestUtils");
 
             var settings = new DotNetCoreTestSettings
             {
