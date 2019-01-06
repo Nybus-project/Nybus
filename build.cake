@@ -143,7 +143,6 @@ Task("UploadTestsToAppVeyor")
 });
 
 Task("Test")
-    .IsDependentOn("Build")
     .IsDependentOn("RunTests")
     .IsDependentOn("MergeCoverageResults")
     .IsDependentOn("GenerateXmlReport")
@@ -151,7 +150,7 @@ Task("Test")
     .IsDependentOn("UploadTestsToAppVeyor");
 
 Task("Pack")
-    .IsDependentOn("Test")
+    .IsDependentOn("Restore")
     .Does<BuildState>(state =>
 {
     var settings = new DotNetCorePackSettings
