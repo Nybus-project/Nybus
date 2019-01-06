@@ -157,7 +157,9 @@ Task("Pack")
     {
         Configuration = "Release",
         NoRestore = true,
-        OutputDirectory = state.Paths.OutputFolder
+        OutputDirectory = state.Paths.OutputFolder,
+        IncludeSymbols = true,
+        ArgumentCustomization = args => args.Append("-p:SymbolPackageFormat=snupkg")
     };
 
     DotNetCorePack(state.Paths.SolutionFile.ToString(), settings);
