@@ -79,14 +79,30 @@ namespace Nybus
 
         public Task NotifySuccessAsync(Message message)
         {
+            OnMessageNotifySuccess?.Invoke(this, new MessageEventArgs(message));
             return Task.CompletedTask;
         }
 
         public Task NotifyFailAsync(Message message)
         {
+            OnMessageNotifyFail?.Invoke(this, new MessageEventArgs(message));
             return Task.CompletedTask;
         }
 
         public bool IsTypeAccepted(Type type) => _acceptedTypes.Contains(type);
+
+        public event EventHandler<MessageEventArgs> OnMessageNotifySuccess;
+
+        public event EventHandler<MessageEventArgs> OnMessageNotifyFail;
+    }
+
+    public class MessageEventArgs : EventArgs
+    {
+        public MessageEventArgs(Message message)
+        {
+            Message = message ?? throw new ArgumentNullException(nameof(message));
+        }
+
+        public Message  Message { get; }
     }
 }
