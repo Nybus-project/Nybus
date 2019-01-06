@@ -583,16 +583,4 @@ namespace Tests
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
         }
     }
-
-    public static class ObservableTestExtensions
-    {
-        public static IReadOnlyList<T> DumpInList<T>(this IObservable<T> sequence)
-        {
-            var incomingItems = new List<T>();
-
-            sequence.Subscribe(incomingItems.Add);
-
-            return incomingItems;
-        }
-    }
 }

@@ -11,13 +11,28 @@ namespace Tests
         public string Message { get; set; }
     }
 
-    public class SecondTestCommand : ICommand { }
-
     public class FirstTestCommandHandler : ICommandHandler<FirstTestCommand>
     {
-        public Task HandleAsync(IDispatcher dispatcher, ICommandContext<FirstTestCommand> incomingCommand)
+        public virtual Task HandleAsync(IDispatcher dispatcher, ICommandContext<FirstTestCommand> incomingCommand)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    public class SecondTestCommand : ICommand { }
+
+    public class SecondTestCommandHandler : ICommandHandler<SecondTestCommand>
+    {
+        private readonly CommandReceived<SecondTestCommand> _commandReceived;
+
+        public SecondTestCommandHandler(CommandReceived<SecondTestCommand> commandReceived)
+        {
+            _commandReceived = commandReceived ?? throw new ArgumentNullException(nameof(commandReceived));
+        }
+
+        public virtual Task HandleAsync(IDispatcher dispatcher, ICommandContext<SecondTestCommand> incomingCommand)
+        {
+            return _commandReceived(dispatcher, incomingCommand);
         }
     }
 }

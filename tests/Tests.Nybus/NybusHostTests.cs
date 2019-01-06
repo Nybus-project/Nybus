@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using AutoFixture;
 using AutoFixture.NUnit3;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -279,6 +280,18 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
+        public void ExecuteCommandHandler_throws_if_handler_is_not_registered([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory)
+        {
+            var handlerType = typeof(FirstTestCommandHandler);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Throws<InvalidOperationException>();
+
+            Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteCommandHandler(dispatcher, commandContext, handlerType));
+        }
+
+        [Test, AutoMoqData]
         public async Task ExecuteEventHandler_creates_new_scope_for_execution([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
         {
             var handlerType = handler.GetType();
@@ -304,6 +317,18 @@ namespace Tests
             await sut.ExecuteEventHandler(dispatcher, eventContext, handlerType);
 
             Mock.Get(handler).Verify(p => p.HandleAsync(dispatcher, eventContext), Times.Once);
+        }
+
+        [Test, AutoMoqData]
+        public void ExecuteEventHandler_throws_if_handler_is_not_registered([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory)
+        {
+            var handlerType = typeof(FirstTestEventHandler);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Throws<InvalidOperationException>();
+
+            Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteEventHandler(dispatcher, eventContext, handlerType));
         }
     }
 }

@@ -194,8 +194,16 @@ namespace Nybus
         {
             using (var scope = _serviceProvider.CreateScope())
             {
-                var handler = (ICommandHandler<TCommand>)scope.ServiceProvider.GetRequiredService(handlerType);
-                await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+                try
+                {
+                    var handler = (ICommandHandler<TCommand>)scope.ServiceProvider.GetRequiredService(handlerType);
+                    await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.LogError(new { commandType = typeof(TCommand), handlerType}, s => $"No valid registration for {s.handlerType.FullName}");
+                    throw new ConfigurationException($"No valid registration for {handlerType.FullName}", ex);
+                }
             }
         }
 
@@ -204,8 +212,17 @@ namespace Nybus
         {
             using (var scope = _serviceProvider.CreateScope())
             {
-                var handler = (IEventHandler<TEvent>)scope.ServiceProvider.GetRequiredService(handlerType);
-                await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+                try
+                {
+                    var handler = (IEventHandler<TEvent>)scope.ServiceProvider.GetRequiredService(handlerType);
+                    await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+
+                }
+                catch (InvalidOperationException ex)
+                {
+                    _logger.LogError(new { eventType = typeof(TEvent), handlerType }, s => $"No valid registration for {s.handlerType.FullName}");
+                    throw new ConfigurationException($"No valid registration for {handlerType.FullName}", ex);
+                }
             }
         }
     }

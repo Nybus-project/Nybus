@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Nybus;
@@ -7,60 +8,14 @@ using Nybus;
 namespace Tests
 {
     [TestFixture]
-    public class BusSetupTests
+    public class DelegateHandlerBareSetupTests
     {
         [Test, AutoMoqData]
-        public async Task Bus_can_invoke_command(ServiceCollection services, FirstTestCommand testCommand)
-        {
-            services.AddLogging();
-
-            services.AddNybus(nybus =>
-            {
-                nybus.UseInMemoryBusEngine();
-            });
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            var host = serviceProvider.GetRequiredService<IBusHost>();
-
-            var bus = serviceProvider.GetRequiredService<IBus>();
-
-            await host.StartAsync();
-
-            await bus.InvokeCommandAsync(testCommand);
-
-            await host.StopAsync();
-        }
-
-        [Test, AutoMoqData]
-        public async Task Bus_can_raise_events(ServiceCollection services, FirstTestEvent testEvent)
-        {
-            services.AddLogging();
-
-            services.AddNybus(nybus =>
-            {
-                nybus.UseInMemoryBusEngine();
-            });
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            var host = serviceProvider.GetRequiredService<IBusHost>();
-
-            var bus = serviceProvider.GetRequiredService<IBus>();
-
-            await host.StartAsync();
-
-            await bus.RaiseEventAsync(testEvent);
-
-            await host.StopAsync();
-        }
-
-        [Test, AutoMoqData]
-        public async Task Host_can_receive_commands(ServiceCollection services, FirstTestCommand testCommand)
+        public async Task Host_can_loopback_commands(ServiceCollection services, FirstTestCommand testCommand)
         {
             var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
 
-            services.AddLogging();
+            services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
             {
@@ -85,11 +40,11 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_receive_events(ServiceCollection services, FirstTestEvent testEvent)
+        public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent)
         {
             var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
 
-            services.AddLogging();
+            services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
             {
