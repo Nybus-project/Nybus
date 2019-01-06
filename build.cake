@@ -24,6 +24,15 @@ Setup<BuildState>(_ =>
 
     return state;
 });
+
+Task("CalculateVersion")
+    .Does<BuildState>(state =>
+{
+    var version = GitVersion();
+
+    Information(version.SemVer);
+});
+
 Task("Restore")
     .Does<BuildState>(state =>
 {
