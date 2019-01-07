@@ -9,17 +9,17 @@ namespace Nybus
 
         Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent;
 
-        IObservable<Message> Start();
+        Task<IObservable<Message>> StartAsync();
 
-        void Stop();
+        Task StopAsync();
 
         void SubscribeToCommand<TCommand>() where TCommand : class, ICommand;
 
         void SubscribeToEvent<TEvent>() where TEvent : class, IEvent;
 
-        Task NotifySuccess(Message message);
+        Task NotifySuccessAsync(Message message);
 
-        Task NotifyFail(Message message);
+        Task NotifyFailAsync(Message message);
     }
 
     public delegate Task MessageReceived(Message message);

@@ -38,9 +38,9 @@ namespace Tests.Policies
         {
             message.Headers[Headers.RetryCount] = options.MaxRetries.Stringfy();
 
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
-            Mock.Get(engine).Verify(p => p.NotifyFail(message));
+            Mock.Get(engine).Verify(p => p.NotifyFailAsync(message));
         }
 
         [Test, AutoMoqData]
@@ -48,7 +48,7 @@ namespace Tests.Policies
         {
             message.Headers[Headers.RetryCount] = (options.MaxRetries - 2).Stringfy();
 
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
             Mock.Get(engine).Verify(p => p.SendCommandAsync(message));
         }
@@ -58,7 +58,7 @@ namespace Tests.Policies
         {
             message.Headers[Headers.RetryCount] = (options.MaxRetries - 2).Stringfy();
 
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
             Assert.That(message.Headers.ContainsKey(Headers.RetryCount));
             Assert.That(message.Headers[Headers.RetryCount], Is.EqualTo((options.MaxRetries - 1).Stringfy()));
@@ -67,7 +67,7 @@ namespace Tests.Policies
         [Test, AutoMoqData]
         public async Task HandleError_retries_if_retry_count_not_present(RetryErrorPolicy sut, IBusEngine engine, Exception error, CommandMessage<FirstTestCommand> message)
         {
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
             Mock.Get(engine).Verify(p => p.SendCommandAsync(message));
         }
@@ -75,7 +75,7 @@ namespace Tests.Policies
         [Test, AutoMoqData]
         public async Task HandleError_adds_retry_count_if_retry_count_not_present(RetryErrorPolicy sut, IBusEngine engine, Exception error, CommandMessage<FirstTestCommand> message)
         {
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
             Assert.That(message.Headers.ContainsKey(Headers.RetryCount));
         }
@@ -85,9 +85,9 @@ namespace Tests.Policies
         {
             message.Headers[Headers.RetryCount] = options.MaxRetries.Stringfy();
 
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
-            Mock.Get(engine).Verify(p => p.NotifyFail(message));
+            Mock.Get(engine).Verify(p => p.NotifyFailAsync(message));
         }
 
         [Test, AutoMoqData]
@@ -95,7 +95,7 @@ namespace Tests.Policies
         {
             message.Headers[Headers.RetryCount] = (options.MaxRetries - 2).Stringfy();
 
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
             Mock.Get(engine).Verify(p => p.SendEventAsync(message));
         }
@@ -103,7 +103,7 @@ namespace Tests.Policies
         [Test, AutoMoqData]
         public async Task HandleError_retries_if_retry_count_not_present(RetryErrorPolicy sut, IBusEngine engine, Exception error, EventMessage<FirstTestEvent> message)
         {
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
             Mock.Get(engine).Verify(p => p.SendEventAsync(message));
         }
@@ -111,7 +111,7 @@ namespace Tests.Policies
         [Test, AutoMoqData]
         public async Task HandleError_adds_retry_count_if_retry_count_not_present(RetryErrorPolicy sut, IBusEngine engine, Exception error, EventMessage<FirstTestEvent> message)
         {
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
             Assert.That(message.Headers.ContainsKey(Headers.RetryCount));
         }
@@ -121,7 +121,7 @@ namespace Tests.Policies
         {
             message.Headers[Headers.RetryCount] = (options.MaxRetries - 2).Stringfy();
 
-            await sut.HandleError(engine, error, message);
+            await sut.HandleErrorAsync(engine, error, message);
 
             Assert.That(message.Headers.ContainsKey(Headers.RetryCount));
             Assert.That(message.Headers[Headers.RetryCount], Is.EqualTo((options.MaxRetries - 1).Stringfy()));

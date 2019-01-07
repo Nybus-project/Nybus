@@ -35,7 +35,7 @@ namespace Nybus
 
         public IReadOnlyDictionary<string, ObservableConsumer> Consumers => _consumers;
 
-        public IObservable<Message> Start()
+        public Task<IObservable<Message>> StartAsync()
         {
             _connection = _configuration.ConnectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
@@ -45,7 +45,7 @@ namespace Nybus
 
             if (!hasEvents && !hasCommands)
             {
-                return Observable.Never<Message>();
+                return Task.FromResult(Observable.Never<Message>());
             }
 
             var queueToConsume = new List<string>();
@@ -83,11 +83,13 @@ namespace Nybus
             }
 
 
-            return Observable.Defer(() => from queue in queueToConsume.ToObservable()
-                                          from args in SubscribeMessages(_channel, queue)
-                                          let message = GetMessage(args)
-                                          where message != null
-                                          select message);
+            var sequence = Observable.Defer(() => from queue in queueToConsume.ToObservable()
+                                                  from args in SubscribeMessages(_channel, queue)
+                                                  let message = GetMessage(args)
+                                                  where message != null
+                                                  select message);
+
+            return Task.FromResult(sequence);
 
             IObservable<BasicDeliverEventArgs> SubscribeMessages(IModel channel, string queueName)
             {
@@ -185,10 +187,12 @@ namespace Nybus
             }
         }
 
-        public void Stop()
+        public Task StopAsync()
         {
             _channel.Dispose();
             _connection.Dispose();
+
+            return Task.CompletedTask;
         }
 
         public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand 
@@ -239,7 +243,7 @@ namespace Nybus
             AcceptedEventTypes.Add(typeof(TEvent));
         }
 
-        public Task NotifySuccess(Message message)
+        public Task NotifySuccessAsync(Message message)
         {
             if (message.Headers.TryGetValue(RabbitMqHeaders.DeliveryTag, out var headerValue) && ulong.TryParse(headerValue, out var deliveryTag))
             {
@@ -263,7 +267,7 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
-        public Task NotifyFail(Message message)
+        public Task NotifyFailAsync(Message message)
         {
             if (message.Headers.TryGetValue(RabbitMqHeaders.DeliveryTag, out var headerValue) && ulong.TryParse(headerValue, out var deliveryTag))
             {

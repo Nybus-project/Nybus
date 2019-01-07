@@ -31,7 +31,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
 
             var items = sequence.DumpInList();
 
@@ -45,7 +45,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
 
             var items = sequence.DumpInList();
 
@@ -57,7 +57,7 @@ namespace Tests
         [Test, AutoMoqData]
         public void Stop_completes_the_sequence_if_started(InMemoryBusEngine sut)
         {
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var isCompleted = false;
 
@@ -67,7 +67,7 @@ namespace Tests
                 onCompleted: () => isCompleted = true
             );
 
-            sut.Stop();
+            sut.StopAsync().Wait();
 
             Assert.That(isCompleted, Is.True);
         }
@@ -75,31 +75,31 @@ namespace Tests
         [Test, AutoMoqData]
         public void Stop_is_ignored_if_not_started(InMemoryBusEngine sut)
         {
-            sut.Stop();
+            sut.StopAsync().Wait();
         }
 
         [Test, AutoMoqData]
         public void NotifySuccess_returns_completed_task(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
         {
-            Assert.That(sut.NotifySuccess(testMessage), Is.SameAs(Task.CompletedTask));
+            Assert.That(sut.NotifySuccessAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
 
         [Test, AutoMoqData]
         public void NotifySuccess_returns_completed_task(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
-            Assert.That(sut.NotifySuccess(testMessage), Is.SameAs(Task.CompletedTask));
+            Assert.That(sut.NotifySuccessAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
 
         [Test, AutoMoqData]
         public void NotifyFail_returns_completed_task(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
         {
-            Assert.That(sut.NotifyFail(testMessage), Is.SameAs(Task.CompletedTask));
+            Assert.That(sut.NotifyFailAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
 
         [Test, AutoMoqData]
         public void NotifyFail_returns_completed_task(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
-            Assert.That(sut.NotifyFail(testMessage), Is.SameAs(Task.CompletedTask));
+            Assert.That(sut.NotifyFailAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
     }
 

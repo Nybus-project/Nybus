@@ -42,7 +42,7 @@ namespace Nybus.Policies
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task HandleError<TCommand>(IBusEngine engine, Exception exception, CommandMessage<TCommand> message)
+        public async Task HandleErrorAsync<TCommand>(IBusEngine engine, Exception exception, CommandMessage<TCommand> message)
             where TCommand : class, ICommand
         {
             var retryCount = message.Headers.TryGetValue(Headers.RetryCount, out var str) && int.TryParse(str, out var i) ? i : 0;
@@ -61,12 +61,12 @@ namespace Nybus.Policies
             {
                 _logger.LogTrace($"Error {retryCount}/{_options.MaxRetries}: will not retry");
 
-                await engine.NotifyFail(message).ConfigureAwait(false);
+                await engine.NotifyFailAsync(message).ConfigureAwait(false);
             }
 
         }
 
-        public async Task HandleError<TEvent>(IBusEngine engine, Exception exception, EventMessage<TEvent> message)
+        public async Task HandleErrorAsync<TEvent>(IBusEngine engine, Exception exception, EventMessage<TEvent> message)
             where TEvent : class, IEvent
         {
             var retryCount = message.Headers.TryGetValue(Headers.RetryCount, out string str) && int.TryParse(str, out int i) ? i : 0;
@@ -81,7 +81,7 @@ namespace Nybus.Policies
             }
             else
             {
-                await engine.NotifyFail(message).ConfigureAwait(false);
+                await engine.NotifyFailAsync(message).ConfigureAwait(false);
             }
         }
 

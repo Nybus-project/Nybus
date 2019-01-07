@@ -89,7 +89,7 @@ namespace Tests
         [Test, AutoMoqData]
         public void Empty_sequence_is_returned_if_no_subscription(RabbitMqBusEngine sut)
         {
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var incomingMessages = sequence.DumpInList();
 
@@ -101,7 +101,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var incomingMessages = sequence.DumpInList();
 
@@ -113,7 +113,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var incomingMessages = sequence.DumpInList();
 
@@ -127,7 +127,7 @@ namespace Tests
 
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var incomingMessages = sequence.DumpInList();
 
@@ -139,7 +139,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             Mock.Get(configuration.EventQueueFactory).Verify(p => p.CreateQueue(It.IsAny<IModel>()));
 
@@ -150,7 +150,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             Mock.Get(configuration.CommandQueueFactory).Verify(p => p.CreateQueue(It.IsAny<IModel>()));
 
@@ -161,7 +161,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
@@ -171,7 +171,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
@@ -181,7 +181,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.QueueBind(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, object>>()));
         }
@@ -191,7 +191,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.QueueBind(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, object>>()));
         }
@@ -202,7 +202,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             sequence.Subscribe(_ => { }); // subscribes to the sequence but takes no action when items are published
 
@@ -214,7 +214,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             sequence.Subscribe(_ => { }); // subscribes to the sequence but takes no action when items are published
 
@@ -226,7 +226,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var encoding = Encoding.UTF8;
 
@@ -264,7 +264,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var encoding = Encoding.UTF8;
 
@@ -303,7 +303,7 @@ namespace Tests
             // At least one subscription is needed to inject invalid messages
             sut.SubscribeToEvent<SecondTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var encoding = Encoding.UTF8;
 
@@ -336,7 +336,7 @@ namespace Tests
             // At least one subscription is needed to inject invalid messages
             sut.SubscribeToCommand<SecondTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = sut.StartAsync().Result;
 
             var encoding = Encoding.UTF8;
 
@@ -364,11 +364,11 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void Engine_can_be_stopped([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        public async Task Engine_can_be_stopped([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
-            sut.Start();
+            await sut.StartAsync();
 
-            sut.Stop();
+            await sut.StopAsync();
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection()).Verify(p => p.Dispose());
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.Dispose());
@@ -377,7 +377,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Commands_can_be_sent([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message)
         {
-            sut.Start();
+            await sut.StartAsync().ConfigureAwait(false);
 
             await sut.SendCommandAsync(message);
 
@@ -389,7 +389,7 @@ namespace Tests
         {
             message.Headers.Add(headerKey, headerValue);
 
-            sut.Start();
+            await sut.StartAsync().ConfigureAwait(false);
 
             await sut.SendCommandAsync(message);
 
@@ -399,7 +399,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Events_can_be_sent([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message)
         {
-            sut.Start();
+            await sut.StartAsync().ConfigureAwait(false);
             
             await sut.SendEventAsync(message);
 
@@ -412,7 +412,7 @@ namespace Tests
         {
             message.Headers.Add(headerKey, headerValue);
 
-            sut.Start();
+            await sut.StartAsync().ConfigureAwait(false);
 
             await sut.SendEventAsync(message);
 
@@ -424,7 +424,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
 
             var encoding = Encoding.UTF8;
 
@@ -446,7 +446,7 @@ namespace Tests
 
             sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
 
-            await sut.NotifySuccess(incomingMessages.First());
+            await sut.NotifySuccessAsync(incomingMessages.First());
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
         }
@@ -456,7 +456,7 @@ namespace Tests
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.Start();
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
 
             var encoding = Encoding.UTF8;
 
@@ -478,7 +478,7 @@ namespace Tests
 
             sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
 
-            await sut.NotifySuccess(incomingMessages.First());
+            await sut.NotifySuccessAsync(incomingMessages.First());
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
         }
@@ -488,7 +488,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
 
             var encoding = Encoding.UTF8;
 
@@ -512,7 +512,7 @@ namespace Tests
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Setup(p => p.BasicAck(It.IsAny<ulong>(), It.IsAny<bool>())).Throws(new AlreadyClosedException(shutdownEventArgs));
 
-            await sut.NotifySuccess(incomingMessages.First());
+            await sut.NotifySuccessAsync(incomingMessages.First());
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicAck(deliveryTag, It.IsAny<bool>()));
         }
@@ -522,7 +522,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
 
             var encoding = Encoding.UTF8;
 
@@ -544,7 +544,7 @@ namespace Tests
 
             sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
 
-            await sut.NotifyFail(incomingMessages.First());
+            await sut.NotifyFailAsync(incomingMessages.First());
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), true));
         }
@@ -554,7 +554,7 @@ namespace Tests
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.Start();
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
 
             var encoding = Encoding.UTF8;
 
@@ -578,7 +578,7 @@ namespace Tests
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Setup(p => p.BasicNack(It.IsAny<ulong>(), It.IsAny<bool>(), It.IsAny<bool>())).Throws(new AlreadyClosedException(shutdownEventArgs));
 
-            await sut.NotifyFail(incomingMessages.First());
+            await sut.NotifyFailAsync(incomingMessages.First());
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
         }

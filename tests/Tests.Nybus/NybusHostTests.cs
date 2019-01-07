@@ -60,7 +60,7 @@ namespace Tests
         {
             await sut.StartAsync();
 
-            Mock.Get(engine).Verify(p => p.Start(), Times.Once);
+            Mock.Get(engine).Verify(p => p.StartAsync(), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -68,7 +68,7 @@ namespace Tests
         {
             await sut.StopAsync();
 
-            Mock.Get(engine).Verify(p => p.Stop(), Times.Never);
+            Mock.Get(engine).Verify(p => p.StopAsync(), Times.Never);
 
         }
 
@@ -79,7 +79,7 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(engine).Verify(p => p.Stop(), Times.Once);
+            Mock.Get(engine).Verify(p => p.StopAsync(), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -87,7 +87,7 @@ namespace Tests
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
             var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
 
@@ -107,7 +107,7 @@ namespace Tests
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
             var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
 
@@ -119,7 +119,7 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(engine).Verify(p => p.NotifySuccess(testMessage), Times.Once);
+            Mock.Get(engine).Verify(p => p.NotifySuccessAsync(testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -127,7 +127,7 @@ namespace Tests
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
             var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
             Mock.Get(receivedMessage).Setup(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>())).Throws(error);
@@ -140,7 +140,7 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleError(engine, error, testMessage), Times.Once);
+            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleErrorAsync(engine, error, testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -148,7 +148,7 @@ namespace Tests
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
             var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
 
@@ -168,7 +168,7 @@ namespace Tests
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
             var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
 
@@ -188,7 +188,7 @@ namespace Tests
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
             var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
 
@@ -200,7 +200,7 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(engine).Verify(p => p.NotifySuccess(testMessage), Times.Once);
+            Mock.Get(engine).Verify(p => p.NotifySuccessAsync(testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -208,7 +208,7 @@ namespace Tests
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
             var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
             Mock.Get(receivedMessage).Setup(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>())).Throws(error);
@@ -221,7 +221,7 @@ namespace Tests
 
             await sut.StopAsync();
 
-            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleError(engine, error, testMessage), Times.Once);
+            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleErrorAsync(engine, error, testMessage), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -229,7 +229,7 @@ namespace Tests
         {
             var subject = new Subject<Message>();
 
-            Mock.Get(engine).Setup(p => p.Start()).Returns(subject);
+            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
             var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
 
@@ -259,7 +259,7 @@ namespace Tests
 
             Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
 
-            await sut.ExecuteCommandHandler(dispatcher, commandContext, handlerType);
+            await sut.ExecuteCommandHandlerAsync(dispatcher, commandContext, handlerType);
 
             Mock.Get(scopeFactory).Verify(p => p.CreateScope(), Times.Once);
         }
@@ -273,7 +273,7 @@ namespace Tests
 
             Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
 
-            await sut.ExecuteCommandHandler(dispatcher, commandContext, handlerType);
+            await sut.ExecuteCommandHandlerAsync(dispatcher, commandContext, handlerType);
 
             Mock.Get(handler).Verify(p => p.HandleAsync(dispatcher, commandContext), Times.Once);
         }
@@ -287,7 +287,7 @@ namespace Tests
 
             Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
 
-            await sut.ExecuteEventHandler(dispatcher, eventContext, handlerType);
+            await sut.ExecuteEventHandlerAsync(dispatcher, eventContext, handlerType);
 
             Mock.Get(scopeFactory).Verify(p => p.CreateScope(), Times.Once);
         }
@@ -301,7 +301,7 @@ namespace Tests
 
             Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
 
-            await sut.ExecuteEventHandler(dispatcher, eventContext, handlerType);
+            await sut.ExecuteEventHandlerAsync(dispatcher, eventContext, handlerType);
 
             Mock.Get(handler).Verify(p => p.HandleAsync(dispatcher, eventContext), Times.Once);
         }
