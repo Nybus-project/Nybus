@@ -112,6 +112,32 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
+        public void NotifySuccess_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
+        {
+            var handler = Mock.Of <EventHandler<MessageEventArgs>>();
+            sut.OnMessageNotifySuccess += handler;
+
+            sut.NotifySuccess(testMessage);
+
+            sut.OnMessageNotifySuccess -= handler;
+
+            Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
+        }
+
+        [Test, AutoMoqData]
+        public void NotifySuccess_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
+        {
+            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
+            sut.OnMessageNotifySuccess += handler;
+
+            sut.NotifySuccess(testMessage);
+
+            sut.OnMessageNotifySuccess -= handler;
+
+            Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
+        }
+
+        [Test, AutoMoqData]
         public void NotifySuccess_returns_completed_task(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
             Assert.That(sut.NotifySuccessAsync(testMessage), Is.SameAs(Task.CompletedTask));
@@ -127,6 +153,32 @@ namespace Tests
         public void NotifyFail_returns_completed_task(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
             Assert.That(sut.NotifyFailAsync(testMessage), Is.SameAs(Task.CompletedTask));
+        }
+
+        [Test, AutoMoqData]
+        public void NotifyFail_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
+        {
+            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
+            sut.OnMessageNotifyFail += handler;
+
+            sut.NotifyFail(testMessage);
+
+            sut.OnMessageNotifyFail -= handler;
+
+            Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
+        }
+
+        [Test, AutoMoqData]
+        public void NotifyFail_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
+        {
+            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
+            sut.OnMessageNotifyFail += handler;
+
+            sut.NotifyFail(testMessage);
+
+            sut.OnMessageNotifyFail -= handler;
+
+            Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
         }
 
         [Test, AutoMoqData]
