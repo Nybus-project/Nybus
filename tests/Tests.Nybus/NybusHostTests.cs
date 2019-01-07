@@ -280,7 +280,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void ExecuteCommandHandler_throws_if_handler_is_not_registered([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory)
+        public void ExecuteCommandHandlerAsync_throws_if_handler_is_not_registered([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory)
         {
             var handlerType = typeof(FirstTestCommandHandler);
 
@@ -288,7 +288,7 @@ namespace Tests
 
             Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Throws<InvalidOperationException>();
 
-            Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteCommandHandler(dispatcher, commandContext, handlerType));
+            Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteCommandHandlerAsync(dispatcher, commandContext, handlerType));
         }
 
         [Test, AutoMoqData]
@@ -320,7 +320,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void ExecuteEventHandler_throws_if_handler_is_not_registered([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory)
+        public void ExecuteEventHandlerAsync_throws_if_handler_is_not_registered([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory)
         {
             var handlerType = typeof(FirstTestEventHandler);
 
@@ -328,7 +328,7 @@ namespace Tests
 
             Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Throws<InvalidOperationException>();
 
-            Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteEventHandler(dispatcher, eventContext, handlerType));
+            Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteEventHandlerAsync(dispatcher, eventContext, handlerType));
         }
     }
 }
