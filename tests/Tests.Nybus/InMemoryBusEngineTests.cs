@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoFixture.NUnit3;
+using Moq;
 using NUnit.Framework;
 using Nybus;
 
@@ -85,6 +86,32 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
+        public void NotifySuccess_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
+        {
+            var handler = Mock.Of <EventHandler<MessageEventArgs>>();
+            sut.OnMessageNotifySuccess += handler;
+
+            sut.NotifySuccessAsync(testMessage);
+
+            sut.OnMessageNotifySuccess -= handler;
+
+            Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
+        }
+
+        [Test, AutoMoqData]
+        public void NotifySuccess_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
+        {
+            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
+            sut.OnMessageNotifySuccess += handler;
+
+            sut.NotifySuccessAsync(testMessage);
+
+            sut.OnMessageNotifySuccess -= handler;
+
+            Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
+        }
+
+        [Test, AutoMoqData]
         public void NotifySuccess_returns_completed_task(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
             Assert.That(sut.NotifySuccessAsync(testMessage), Is.SameAs(Task.CompletedTask));
@@ -101,17 +128,47 @@ namespace Tests
         {
             Assert.That(sut.NotifyFailAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
+
+        [Test, AutoMoqData]
+        public void NotifyFail_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
+        {
+            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
+            sut.OnMessageNotifyFail += handler;
+
+            sut.NotifyFailAsync(testMessage);
+
+            sut.OnMessageNotifyFail -= handler;
+
+            Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
+        }
+
+        [Test, AutoMoqData]
+        public void NotifyFail_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
+        {
+            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
+            sut.OnMessageNotifyFail += handler;
+
+            sut.NotifyFailAsync(testMessage);
+
+            sut.OnMessageNotifyFail -= handler;
+
+            Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
+        }
     }
 
-    public static class ObservableTestExtensions
+    [TestFixture]
+    public class MessageEventArgsTests
     {
-        public static IReadOnlyList<T> DumpInList<T>(this IObservable<T> sequence)
+        [Test]
+        public void Message_is_required()
         {
-            var incomingItems = new List<T>();
+            Assert.Throws<ArgumentNullException>(() => new MessageEventArgs(null));
+        }
 
-            sequence.Subscribe(incomingItems.Add);
-
-            return incomingItems;
+        [Test, AutoMoqData]
+        public void Message_is_attached([Frozen] Message message, MessageEventArgs sut)
+        {
+            Assert.That(sut.Message, Is.SameAs(message));
         }
     }
 }
