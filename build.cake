@@ -10,10 +10,6 @@ Setup<BuildState>(_ =>
 {
     var state = new BuildState
     {
-        Parameters = new BuildParameters
-        {
-            CoverageTools = CoverageTool.OpenCover | CoverageTool.DotCover
-        },
         Paths = new BuildPaths
         {
             SolutionFile = MakeAbsolute(File("./Nybus.sln"))
@@ -25,10 +21,20 @@ Setup<BuildState>(_ =>
     return state;
 });
 
-Task("CalculateVersion")
+Task("Version")
     .Does<BuildState>(state =>
 {
     var version = GitVersion();
+
+    state.Version = new VersionInfo
+    {
+        SemVer = version.SemVer
+    };
+
+    if (BuildSystem.IsRunningOnAppVeyor)
+    {
+        AppVeyor.UpdateBuildVersion(state.Version.SemVer);
+    }
 
     Information(version.SemVer);
 });
@@ -159,6 +165,7 @@ Task("Test")
     .IsDependentOn("UploadTestsToAppVeyor");
 
 Task("Pack")
+    .IsDependentOn("Version")
     .IsDependentOn("Restore")
     .Does<BuildState>(state =>
 {
@@ -168,7 +175,7 @@ Task("Pack")
         NoRestore = true,
         OutputDirectory = state.Paths.OutputFolder,
         IncludeSymbols = true,
-        ArgumentCustomization = args => args.Append("-p:SymbolPackageFormat=snupkg")
+        ArgumentCustomization = args => args.Append($"-p:SymbolPackageFormat=snupkg -p:Version={state.Version.SemVer}")
     };
 
     DotNetCorePack(state.Paths.SolutionFile.ToString(), settings);
