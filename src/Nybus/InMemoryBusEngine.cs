@@ -13,7 +13,7 @@ namespace Nybus
         private bool _isStarted;
         private readonly ISet<Type> _acceptedTypes = new HashSet<Type>();
 
-        public IObservable<Message> Start()
+        public Task<IObservable<Message>> StartAsync()
         {
             _sequenceOfMessages = new Subject<Message>();
 
@@ -33,16 +33,18 @@ namespace Nybus
 
             _isStarted = true;
 
-            return Observable.Merge(commands, events);
+            return Task.FromResult(Observable.Merge(commands, events));
         }
 
-        public void Stop()
+        public Task StopAsync()
         {
             if (_isStarted)
             {
                 _sequenceOfMessages.OnCompleted();
                 _sequenceOfMessages = null;
             }
+
+            return Task.CompletedTask;
         }
 
         public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
@@ -75,12 +77,12 @@ namespace Nybus
             _acceptedTypes.Add(typeof(TEvent));
         }
 
-        public Task NotifySuccess(Message message)
+        public Task NotifySuccessAsync(Message message)
         {
             return Task.CompletedTask;
         }
 
-        public Task NotifyFail(Message message)
+        public Task NotifyFailAsync(Message message)
         {
             return Task.CompletedTask;
         }

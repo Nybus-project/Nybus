@@ -20,12 +20,12 @@ namespace Tests
             throw new NotImplementedException();
         }
 
-        public IObservable<Message> Start()
+        public Task<IObservable<Message>> StartAsync()
         {
             throw new NotImplementedException();
         }
 
-        public void Stop()
+        public Task StopAsync()
         {
             throw new NotImplementedException();
         }
@@ -42,12 +42,12 @@ namespace Tests
             throw new NotImplementedException();
         }
 
-        public Task NotifySuccess(Message message)
+        public Task NotifySuccessAsync(Message message)
         {
             throw new NotImplementedException();
         }
 
-        public Task NotifyFail(Message message)
+        public Task NotifyFailAsync(Message message)
         {
             throw new NotImplementedException();
         }

@@ -38,7 +38,7 @@ namespace Nybus
 
             _subscriptions.Add(host =>
             {
-                host.SubscribeToCommand<TCommand>((dispatcher, context) => host.ExecutionEnvironment.ExecuteCommandHandler(dispatcher,context,commandHandlerType));
+                host.SubscribeToCommand<TCommand>((dispatcher, context) => host.ExecutionEnvironment.ExecuteCommandHandlerAsync(dispatcher,context,commandHandlerType));
             });
         }
 
@@ -52,7 +52,7 @@ namespace Nybus
 
             _subscriptions.Add(host =>
             {
-                host.SubscribeToEvent<TEvent>((dispatcher, context) => host.ExecutionEnvironment.ExecuteEventHandler(dispatcher, context, eventHandlerType));
+                host.SubscribeToEvent<TEvent>((dispatcher, context) => host.ExecutionEnvironment.ExecuteEventHandlerAsync(dispatcher, context, eventHandlerType));
             });
         }
     }

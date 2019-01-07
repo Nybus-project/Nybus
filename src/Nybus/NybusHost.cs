@@ -26,7 +26,7 @@ namespace Nybus
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        public async Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
+        public Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
             var message = new CommandMessage<TCommand>
             {
@@ -40,10 +40,10 @@ namespace Nybus
             };
 
             _logger.LogTrace(new { type = typeof(TCommand).FullName, correlationId = correlationId, command }, arg => $"Invoking command of type {arg.type} with correlationId {arg.correlationId}. Command: {arg.command.ToString()}");
-            await _engine.SendCommandAsync(message).ConfigureAwait(false);
+            return _engine.SendCommandAsync(message);
         }
 
-        public async Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
+        public Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
         {
             var message = new EventMessage<TEvent>
             {
@@ -57,7 +57,7 @@ namespace Nybus
             };
 
             _logger.LogTrace(new { type = typeof(TEvent).FullName, correlationId = correlationId, @event }, arg => $"Raising event of type {arg.type} with correlationId {arg.correlationId}. Event: {arg.@event.ToString()}");
-            await _engine.SendEventAsync(message).ConfigureAwait(false);
+            return _engine.SendEventAsync(message);
         }
 
         private bool _isStarted;
@@ -67,7 +67,7 @@ namespace Nybus
         {
             _logger.LogTrace("Bus starting");
 
-            var incomingMessages = _engine.Start();
+            var incomingMessages = _engine.StartAsync().Result;
 
             var observable = from message in incomingMessages
                              where message != null
@@ -90,7 +90,7 @@ namespace Nybus
             {
                 _logger.LogTrace("Bus stopping");
 
-                _engine.Stop();
+                _engine.StopAsync().Wait();
                 _disposable.Dispose();
 
                 _logger.LogTrace("Bus stopped");
@@ -133,13 +133,13 @@ namespace Nybus
 
             async Task NotifySuccess(CommandMessage<TCommand> message)
             {
-                await _engine.NotifySuccess(message).ConfigureAwait(false);
+                await _engine.NotifySuccessAsync(message).ConfigureAwait(false);
             }
 
-            async Task HandleError(Exception exception, CommandMessage<TCommand> message, ICommandContext<TCommand> context)
+            Task HandleError(Exception exception, CommandMessage<TCommand> message, ICommandContext<TCommand> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, CommandType = typeof(TCommand).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.CommandType}. {s.Exception.Message}");
-                await _configuration.ErrorPolicy.HandleError(_engine, exception, message).ConfigureAwait(false);
+                return _configuration.ErrorPolicy.HandleErrorAsync(_engine, exception, message);
             }
         }
 
@@ -175,13 +175,13 @@ namespace Nybus
 
             async Task NotifySuccess(EventMessage<TEvent> message)
             {
-                await _engine.NotifySuccess(message).ConfigureAwait(false);
+                await _engine.NotifySuccessAsync(message).ConfigureAwait(false);
             }
 
-            async Task HandleError(Exception exception, EventMessage<TEvent> message, IEventContext<TEvent> context)
+            Task HandleError(Exception exception, EventMessage<TEvent> message, IEventContext<TEvent> context)
             {
                 _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, EventType = typeof(TEvent).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.EventType}. {s.Exception.Message}");
-                await _configuration.ErrorPolicy.HandleError(_engine, exception, message).ConfigureAwait(false);
+                return _configuration.ErrorPolicy.HandleErrorAsync(_engine, exception, message);
             }
         }
 
@@ -189,7 +189,7 @@ namespace Nybus
 
         public IBusExecutionEnvironment ExecutionEnvironment => this;
 
-        public async Task ExecuteCommandHandler<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context, Type handlerType)
+        public async Task ExecuteCommandHandlerAsync<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context, Type handlerType)
             where TCommand : class, ICommand
         {
             using (var scope = _serviceProvider.CreateScope())
@@ -199,7 +199,7 @@ namespace Nybus
             }
         }
 
-        public async Task ExecuteEventHandler<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context, Type handlerType)
+        public async Task ExecuteEventHandlerAsync<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context, Type handlerType)
             where TEvent : class, IEvent
         {
             using (var scope = _serviceProvider.CreateScope())

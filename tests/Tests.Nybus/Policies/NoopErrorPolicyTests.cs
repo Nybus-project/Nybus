@@ -13,17 +13,17 @@ namespace Tests.Policies
         [Test, AutoMoqData]
         public async Task HandleError_notifies_engine(NoopErrorPolicy sut, IBusEngine engine, Exception exception, CommandMessage<FirstTestCommand> message)
         {
-            await sut.HandleError(engine, exception, message);
+            await sut.HandleErrorAsync(engine, exception, message);
 
-            Mock.Get(engine).Verify(p => p.NotifyFail(message));
+            Mock.Get(engine).Verify(p => p.NotifyFailAsync(message));
         }
 
         [Test, AutoMoqData]
         public async Task HandleError_notifies_engine(NoopErrorPolicy sut, IBusEngine engine, Exception exception, EventMessage<FirstTestEvent> message)
         {
-            await sut.HandleError(engine, exception, message);
+            await sut.HandleErrorAsync(engine, exception, message);
 
-            Mock.Get(engine).Verify(p => p.NotifyFail(message));
+            Mock.Get(engine).Verify(p => p.NotifyFailAsync(message));
         }
     }
 }
