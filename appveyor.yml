@@ -15,7 +15,9 @@ clone_folder: c:\projects\nybus
 
 environment:
   COVERALLS_REPO_TOKEN:
-    secure: FLG2WTxc1Gvrikrvj/UXnb9IAklUhPKGYV5pxOzlwsOWGQBiiEigRnyWCvCc2Zga  
+    secure: FLG2WTxc1Gvrikrvj/UXnb9IAklUhPKGYV5pxOzlwsOWGQBiiEigRnyWCvCc2Zga
+  MYGET_TOKEN:
+    secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
 
 cache:
   - '%LocalAppData%\NuGet\v3-cache'
@@ -25,7 +27,7 @@ nuget:
   project_feed: false
   disable_publish_on_pr: true
 
-before_build:
+install:
   - cmd: dotnet tool install -g Cake.Tool --version 0.30.0
   - cmd: dotnet tool install coveralls.net --tool-path tools
 
