@@ -3,6 +3,7 @@ branches:
     - master
 
 only_commits:
+  message: /build/    
   files:
     - src/
   
