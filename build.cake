@@ -62,7 +62,7 @@ Task("RunTests")
             Information($"Testing {file.GetFilenameWithoutExtension()}");
 
             var testResultFile = state.Paths.TestOutputFolder.CombineWithFilePath(file.GetFilenameWithoutExtension() + ".trx");
-            var coverageResultFile = state.Paths.TestOutputFolder.CombineWithFilePath(file.GetFilenameWithoutExtension() + ".dvcr");
+            var coverageResultFile = state.Paths.TestOutputFolder.CombineWithFilePath(file.GetFilenameWithoutExtension() + ".dcvr");
 
             var projectFile = MakeAbsolute(file).ToString();
 
@@ -100,7 +100,7 @@ Task("MergeCoverageResults")
     .Does<BuildState>(state =>
 {
     Information("Merging coverage files");
-    var coverageFiles = GetFiles($"{state.Paths.TestOutputFolder}/*.dvcr");
+    var coverageFiles = GetFiles($"{state.Paths.TestOutputFolder}/*.dcvr");
     DotCoverMerge(coverageFiles, state.Paths.DotCoverOutputFile);
     DeleteFiles(coverageFiles);
 });
