@@ -1,6 +1,6 @@
 next-version: 1.0.0
-# mode: Mainline
+mode: ContinuousDeployment
 
 branches:
   master:
-    tag: beta-1
+    tag: beta
