@@ -28,15 +28,17 @@ Task("Version")
 
     state.Version = new VersionInfo
     {
-        SemVer = version.SemVer
+        SemVer = version.SemVer,
+        FullSemVer = version.FullSemVer
     };
+
+    Information($"Package version: {version.SemVer}");
+    Information($"Build version: {version.FullSemVer}");
 
     if (BuildSystem.IsRunningOnAppVeyor)
     {
-        AppVeyor.UpdateBuildVersion(state.Version.SemVer);
+        AppVeyor.UpdateBuildVersion(state.Version.FullSemVer);
     }
-
-    Information(version.SemVer);
 });
 
 Task("Restore")
@@ -203,6 +205,7 @@ Task("Push")
     .IsDependentOn("UploadPackagesToAppVeyor");
 
 Task("Full")
+    .IsDependentOn("Version")
     .IsDependentOn("Restore")
     .IsDependentOn("Build")
     .IsDependentOn("Test")
