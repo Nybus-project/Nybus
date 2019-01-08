@@ -40,12 +40,12 @@ deploy:
     secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
   artifact: packages
 
-for:
-  -
-    branches:
-      only:
-        - master
-    only_commits:
-      message: /build/    
-      files:
-        - src/
+# for:
+#   -
+#     branches:
+#       only:
+#         - master
+#     only_commits:
+#       message: /build/    
+#       files:
+#         - src/
