@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using Nybus;
+using Nybus.InMemory;
 
 // ReSharper disable InvokeAsExtensionMethod
 

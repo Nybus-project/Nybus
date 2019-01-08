@@ -11,7 +11,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 
-namespace Nybus
+namespace Nybus.RabbitMq
 {
     public class RabbitMqBusEngine : IBusEngine
     {

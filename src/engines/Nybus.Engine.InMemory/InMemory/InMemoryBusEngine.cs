@@ -7,28 +7,29 @@ using Nybus.Utils;
 
 // ReSharper disable InvokeAsExtensionMethod
 
-namespace Nybus
+namespace Nybus.InMemory
 {
     public class InMemoryBusEngine : IBusEngine
     {
         private readonly IMessageDescriptorStore _messageDescriptorStore;
-        private ISubject<Message> _sequenceOfMessages;
+        private readonly IEnvelopeService _envelopeService;
+        private ISubject<Envelope> _sequenceOfMessages;
         private bool _isStarted;
         private readonly ISet<Type> _acceptedTypes = new HashSet<Type>();
 
-        public InMemoryBusEngine(IMessageDescriptorStore messageDescriptorStore)
+        public InMemoryBusEngine(IMessageDescriptorStore messageDescriptorStore, IEnvelopeService envelopeService)
         {
             _messageDescriptorStore = messageDescriptorStore ?? throw new ArgumentNullException(nameof(messageDescriptorStore));
+            _envelopeService = envelopeService ?? throw new ArgumentNullException(nameof(envelopeService));
         }
 
         public Task<IObservable<Message>> StartAsync()
         {
-            _sequenceOfMessages = new Subject<Message>();
+            _sequenceOfMessages = new Subject<Envelope>();
 
             var commands = _sequenceOfMessages
                                 .Where(m => m != null)
                                 .Where(m => m.MessageType == MessageType.Command)
-                                .Cast<CommandMessage>()
                                 .Select(GetCommandMessage)
                                 .Where(m => m != null)
                                 .Cast<Message>();
@@ -36,7 +37,6 @@ namespace Nybus
             var events = _sequenceOfMessages
                                 .Where(m => m != null)
                                 .Where(m => m.MessageType == MessageType.Event)
-                                .Cast<EventMessage>()
                                 .Select(GetEventMessage)
                                 .Where(m => m != null)
                                 .Cast<Message>();
@@ -45,53 +45,35 @@ namespace Nybus
 
             return Task.FromResult(Observable.Merge(commands, events));
 
-            CommandMessage GetCommandMessage<TMessage>(TMessage incoming) where TMessage : CommandMessage
+            CommandMessage GetCommandMessage(Envelope incoming)
             {
                 var incomingType = incoming.Type;
 
                 if (_acceptedTypes.Contains(incomingType))
                 {
-                    return incoming;
+                    return _envelopeService.CreateCommandMessage(incoming, incomingType);
                 }
 
                 if (_messageDescriptorStore.TryGetTypeForDescriptor(incoming.Descriptor, out var outgoingType))
                 {
-                    var outgoingCommand = Activator.CreateInstance(outgoingType) as ICommand;
-
-                    var outgoingMessageType = incoming.GetType().GetGenericTypeDefinition().MakeGenericType(outgoingType);
-                    var outgoing = (CommandMessage) Activator.CreateInstance(outgoingMessageType);
-
-                    outgoing.SetCommand(outgoingCommand);
-                    outgoing.Headers = incoming.Headers;
-                    outgoing.MessageId = incoming.MessageId;
-
-                    return outgoing;
+                    return _envelopeService.CreateCommandMessage(incoming, outgoingType);
                 }
 
                 return null;
             }
 
-            EventMessage GetEventMessage<TMessage>(TMessage incoming) where TMessage : EventMessage
+            EventMessage GetEventMessage(Envelope incoming)
             {
                 var incomingType = incoming.Type;
 
                 if (_acceptedTypes.Contains(incomingType))
                 {
-                    return incoming;
+                    return _envelopeService.CreateEventMessage(incoming, incomingType);
                 }
 
                 if (_messageDescriptorStore.TryGetTypeForDescriptor(incoming.Descriptor, out var outgoingType))
                 {
-                    var outgoingEvent = Activator.CreateInstance(outgoingType) as IEvent;
-
-                    var outgoingMessageType = incoming.GetType().GetGenericTypeDefinition().MakeGenericType(outgoingType);
-                    var outgoing = (EventMessage)Activator.CreateInstance(outgoingMessageType);
-
-                    outgoing.SetEvent(outgoingEvent);
-                    outgoing.Headers = incoming.Headers;
-                    outgoing.MessageId = incoming.MessageId;
-
-                    return outgoing;
+                    return _envelopeService.CreateEventMessage(incoming, outgoingType);
                 }
 
                 return null;
@@ -113,7 +95,8 @@ namespace Nybus
         {
             if (_isStarted)
             {
-                _sequenceOfMessages.OnNext(message);
+                var envelope = _envelopeService.CreateEnvelope(message);
+                _sequenceOfMessages.OnNext(envelope);
             }
 
             return Task.CompletedTask;
@@ -123,7 +106,8 @@ namespace Nybus
         {
             if (_isStarted)
             {
-                _sequenceOfMessages.OnNext(message);
+                var envelope = _envelopeService.CreateEnvelope(message);
+                _sequenceOfMessages.OnNext(envelope);
             }
 
             return Task.CompletedTask;

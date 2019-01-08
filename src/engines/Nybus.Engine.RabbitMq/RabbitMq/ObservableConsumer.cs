@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Nybus
+namespace Nybus.RabbitMq
 {
     public class ObservableConsumer : IBasicConsumer, IObservable<BasicDeliverEventArgs>
     {
