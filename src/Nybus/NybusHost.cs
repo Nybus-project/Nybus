@@ -63,11 +63,11 @@ namespace Nybus
         private bool _isStarted;
         private IDisposable _disposable;
 
-        public Task StartAsync()
+        public async Task StartAsync()
         {
             _logger.LogTrace("Bus starting");
 
-            var incomingMessages = _engine.StartAsync().Result;
+            var incomingMessages = await _engine.StartAsync().ConfigureAwait(false);
 
             var observable = from message in incomingMessages
                              where message != null
@@ -80,23 +80,19 @@ namespace Nybus
             _logger.LogTrace("Bus started");
 
             _isStarted = true;
-
-            return Task.CompletedTask;
         }
 
-        public Task StopAsync()
+        public async Task StopAsync()
         {
             if (_isStarted)
             {
                 _logger.LogTrace("Bus stopping");
 
-                _engine.StopAsync().Wait();
+                await _engine.StopAsync().ConfigureAwait(false);
                 _disposable.Dispose();
 
                 _logger.LogTrace("Bus stopped");
             }
-
-            return Task.CompletedTask;
         }
 
         private readonly List<MessagePipeline> _messagePipelines = new List<MessagePipeline>();

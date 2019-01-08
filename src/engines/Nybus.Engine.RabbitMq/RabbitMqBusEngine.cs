@@ -144,26 +144,22 @@ namespace Nybus
 
             CommandMessage CreateCommandMessage(ICommand command)
             {
-                const string propertyName = "Command";
-
                 var messageType = typeof(CommandMessage<>).MakeGenericType(command.GetType());
-                var message = Activator.CreateInstance(messageType);
+                var message = Activator.CreateInstance(messageType) as CommandMessage;
 
-                messageType.GetProperty(propertyName).SetValue(message, command);
+                message?.SetCommand(command);
 
-                return message as CommandMessage;
+                return message;
             }
 
             EventMessage CreateEventMessage(IEvent @event)
             {
-                const string propertyName = "Event";
-
                 var messageType = typeof(EventMessage<>).MakeGenericType(@event.GetType());
-                var message = Activator.CreateInstance(messageType);
+                var message = Activator.CreateInstance(messageType) as EventMessage;
 
-                messageType.GetProperty(propertyName).SetValue(message, @event);
+                message?.SetEvent(@event);
 
-                return message as EventMessage;
+                return message;
             }
 
             bool TryFindCommandByName(string commandTypeName, out Type type) => TryFindTypeByName(AcceptedCommandTypes, commandTypeName, out type);

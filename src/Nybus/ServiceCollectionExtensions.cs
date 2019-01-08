@@ -4,6 +4,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Nybus.Policies;
+using Nybus.Utils;
 
 namespace Nybus
 {
@@ -48,6 +49,8 @@ namespace Nybus
                 
                 return options;
             });
+
+            services.AddSingleton<IMessageDescriptorStore, MessageDescriptorStore>();
 
             configurator.ConfigureServices(services);
 

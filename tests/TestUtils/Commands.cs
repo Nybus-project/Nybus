@@ -35,4 +35,19 @@ namespace Tests
             return _commandReceived(dispatcher, incomingCommand);
         }
     }
+
+    
+    public class ThirdTestCommand : ICommand
+    {
+        public string Message { get; set; }
+    }
+}
+
+namespace Samples
+{
+    [Message("ThirdTestCommand", "Tests")]
+    public class AttributeTestCommand : ICommand
+    {
+        public string Message { get; set; }
+    }
 }

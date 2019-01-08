@@ -33,4 +33,18 @@ namespace Tests
             return _eventReceived(dispatcher, incomingEvent);
         }
     }
+
+    public class ThirdTestEvent : IEvent
+    {
+        public string Message { get; set; }
+    }
+}
+
+namespace Samples
+{
+    [Message("ThirdTestEvent", "Tests")]
+    public class AttributeTestEvent : IEvent
+    {
+        public string Message { get; set; }
+    }
 }

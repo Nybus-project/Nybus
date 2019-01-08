@@ -13,6 +13,10 @@ namespace Nybus
         public abstract MessageType MessageType { get; }
 
         public abstract Type Type { get; }
+
+        public MessageDescriptor Descriptor => MessageDescriptor.CreateFromType(Type);
+
+        protected object Item { get; set; }
     }
 
     public enum MessageType
@@ -47,11 +51,17 @@ namespace Nybus
     public abstract class CommandMessage : Message
     {
         public override MessageType MessageType => MessageType.Command;
+
+        public void SetCommand(ICommand command) => Item = command ?? throw new ArgumentNullException(nameof(command));
     }
 
-    public class CommandMessage<TCommand> : CommandMessage where TCommand: class, ICommand
+    public sealed class CommandMessage<TCommand> : CommandMessage where TCommand: class, ICommand
     {
-        public TCommand Command { get; set; }
+        public TCommand Command
+        {
+            get => Item as TCommand;
+            set => Item = value;
+        }
 
         public override Type Type => typeof(TCommand);
     }
@@ -59,12 +69,32 @@ namespace Nybus
     public abstract class EventMessage : Message
     {
         public override MessageType MessageType => MessageType.Event;
+
+        public void SetEvent(IEvent @event) => Item = @event ?? throw new ArgumentNullException(nameof(@event));
     }
 
-    public class EventMessage<TEvent> : EventMessage where TEvent : class, IEvent
+    public sealed class EventMessage<TEvent> : EventMessage where TEvent : class, IEvent
     {
-        public TEvent Event { get; set; }
+        public TEvent Event
+        {
+            get => Item as TEvent;
+            set => Item = value;
+        }
 
         public override Type Type => typeof(TEvent);
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public class MessageAttribute : Attribute
+    {
+        public MessageAttribute(string name, string @namespace)
+        {
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Namespace = @namespace ?? throw new ArgumentNullException(nameof(@namespace));
+        }
+
+        public string Name { get; }
+
+        public string Namespace { get; }
     }
 }

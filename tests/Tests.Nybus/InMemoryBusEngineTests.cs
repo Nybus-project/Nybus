@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoFixture.Idioms;
 using AutoFixture.NUnit3;
 using Moq;
 using NUnit.Framework;
@@ -11,6 +12,12 @@ namespace Tests
     [TestFixture]
     public class InMemoryBusEngineTests
     {
+        [Test, AutoMoqData]
+        public void Constructor_is_guarded(GuardClauseAssertion assertion)
+        {
+            assertion.Verify(typeof(InMemoryBusEngine).GetConstructors());
+        }
+
         [Test, AutoMoqData]
         public void SubscribeToCommand_adds_type_to_AcceptedTypes_list(InMemoryBusEngine sut)
         {
