@@ -1,17 +1,6 @@
-branches:
-  only:
-    - master
-
-only_commits:
-  message: /build/    
-  files:
-    - src/
-  
 max_jobs: 1
 
 image: Visual Studio 2017
-
-clone_folder: c:\projects\nybus
 
 environment:
   COVERALLS_REPO_TOKEN:
@@ -50,3 +39,13 @@ deploy:
   api_key:
     secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
   artifact: packages
+
+for:
+  -
+    branches:
+      only:
+        - master
+    only_commits:
+      message: /build/    
+      files:
+        - src/
