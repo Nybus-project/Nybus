@@ -1,5 +1,6 @@
 #tool "nuget:?package=ReportGenerator&version=4.0.5"
 #tool "nuget:?package=JetBrains.dotCover.CommandLineTools&version=2018.3.1"
+#tool "nuget:?package=GitVersion.CommandLine&version=4.0.0"
 
 #load "./build/types.cake"
 
@@ -9,10 +10,6 @@ Setup<BuildState>(_ =>
 {
     var state = new BuildState
     {
-        Parameters = new BuildParameters
-        {
-            CoverageTools = CoverageTool.OpenCover | CoverageTool.DotCover
-        },
         Paths = new BuildPaths
         {
             SolutionFile = MakeAbsolute(File("./Nybus.sln"))
@@ -23,6 +20,25 @@ Setup<BuildState>(_ =>
 
     return state;
 });
+
+Task("Version")
+    .Does<BuildState>(state =>
+{
+    var version = GitVersion();
+
+    state.Version = new VersionInfo
+    {
+        SemVer = version.SemVer
+    };
+
+    if (BuildSystem.IsRunningOnAppVeyor)
+    {
+        AppVeyor.UpdateBuildVersion(state.Version.SemVer);
+    }
+
+    Information(version.SemVer);
+});
+
 Task("Restore")
     .Does<BuildState>(state =>
 {
@@ -142,7 +158,6 @@ Task("UploadTestsToAppVeyor")
 });
 
 Task("Test")
-    .IsDependentOn("Build")
     .IsDependentOn("RunTests")
     .IsDependentOn("MergeCoverageResults")
     .IsDependentOn("GenerateXmlReport")
@@ -150,7 +165,8 @@ Task("Test")
     .IsDependentOn("UploadTestsToAppVeyor");
 
 Task("Pack")
-    .IsDependentOn("Test")
+    .IsDependentOn("Version")
+    .IsDependentOn("Restore")
     .Does<BuildState>(state =>
 {
     var settings = new DotNetCorePackSettings
@@ -159,7 +175,7 @@ Task("Pack")
         NoRestore = true,
         OutputDirectory = state.Paths.OutputFolder,
         IncludeSymbols = true,
-        ArgumentCustomization = args => args.Append("-p:SymbolPackageFormat=snupkg")
+        ArgumentCustomization = args => args.Append($"-p:SymbolPackageFormat=snupkg -p:Version={state.Version.SemVer}")
     };
 
     DotNetCorePack(state.Paths.SolutionFile.ToString(), settings);

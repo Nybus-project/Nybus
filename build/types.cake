@@ -1,6 +1,6 @@
 public class BuildState
 {
-    public BuildParameters Parameters { get; set; }
+    public VersionInfo Version { get; set; }
 
     public BuildPaths Paths { get; set; }
 }
@@ -8,7 +8,6 @@ public class BuildState
 public class BuildParameters
 {
 
-    public CoverageTool CoverageTools { get; set; }
 }
 
 public class BuildPaths
@@ -30,6 +29,11 @@ public class BuildPaths
     public FilePath DotCoverOutputFileXml => TestOutputFolder.CombineWithFilePath("coverage.xml");
 
     public FilePath OpenCoverResultFile => OutputFolder.CombineWithFilePath("OpenCover.xml");
+}
+
+public class VersionInfo
+{
+    public string SemVer { get; set; }
 }
 
 [Flags]
