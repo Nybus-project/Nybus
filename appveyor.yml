@@ -37,6 +37,14 @@ build_script:
 after_build:
   - ps: if ($env:COVERALLS_REPO_TOKEN -ne $null) { .\tools\csmacnz.coveralls.exe --reportgenerator -i .\outputs\tests\report --repoToken $env:COVERALLS_REPO_TOKEN --commitId $env:APPVEYOR_REPO_COMMIT --commitBranch $env:APPVEYOR_REPO_BRANCH --commitAuthor $env:APPVEYOR_REPO_COMMIT_AUTHOR --commitEmail $env:APPVEYOR_REPO_COMMIT_AUTHOR_EMAIL --commitMessage $env:APPVEYOR_REPO_COMMIT_MESSAGE --jobId $env:APPVEYOR_JOB_ID }
 
+deploy:
+  provider: NuGet
+  server: https://www.myget.org/F/nybus/api/v2/package
+  api_key:
+    secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
+  artifact: outputs\*.nupkg
+  
+
 artifacts:
   - path: outputs\*.nupkg
     name: packages
