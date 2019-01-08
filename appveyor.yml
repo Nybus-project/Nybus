@@ -42,7 +42,7 @@ deploy:
   server: https://www.myget.org/F/nybus/api/v2/package
   api_key:
     secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
-  artifact: outputs\*.nupkg
+  artifact: /outputs\\Nybus\..*\.nupkg/
   
 
 artifacts:
