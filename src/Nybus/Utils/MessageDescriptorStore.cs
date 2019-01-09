@@ -15,33 +15,30 @@ namespace Nybus.Utils
         {
             lock (_lock)
             {
-                if (!_descriptorsByType.ContainsKey(type))
+                if (!_descriptorsByType.ContainsKey(type) && TryGetDescriptorFromAttribute(type, out var descriptor) && !_typesByDescriptor.ContainsKey(descriptor))
                 {
-                    var descriptor = GetDescriptorForType(type);
+                    _descriptorsByType.Add(type, descriptor);
+                    _typesByDescriptor.Add(descriptor, type);
 
-                    if (!_typesByDescriptor.ContainsKey(descriptor))
-                    {
-                        _descriptorsByType.Add(type, descriptor);
-                        _typesByDescriptor.Add(descriptor, type);
-
-                        return true;
-                    }
+                    return true;
                 }
 
                 return false;
             }
         }
 
-        private MessageDescriptor GetDescriptorForType(Type type)
+        private bool TryGetDescriptorFromAttribute(Type type, out MessageDescriptor descriptor)
         {
             var attribute = type.GetCustomAttribute<MessageAttribute>();
 
             if (attribute == null)
             {
-                return type;
+                descriptor = MessageDescriptor.CreateFromType(type);
+                return true;
             }
 
-            return MessageDescriptor.CreateFromAttribute(attribute);
+            descriptor = MessageDescriptor.CreateFromAttribute(attribute);
+            return true;
         }
 
         public bool TryGetDescriptorForType(Type type, out MessageDescriptor descriptor) => _descriptorsByType.TryGetValue(type, out descriptor);
