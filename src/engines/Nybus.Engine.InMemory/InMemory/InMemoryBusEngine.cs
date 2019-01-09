@@ -3,37 +3,81 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
+using Nybus.Utils;
+
 // ReSharper disable InvokeAsExtensionMethod
 
-namespace Nybus
+namespace Nybus.InMemory
 {
     public class InMemoryBusEngine : IBusEngine
     {
-        private ISubject<Message> _sequenceOfMessages;
+        private readonly IMessageDescriptorStore _messageDescriptorStore;
+        private readonly IEnvelopeService _envelopeService;
+        private ISubject<Envelope> _sequenceOfMessages;
         private bool _isStarted;
         private readonly ISet<Type> _acceptedTypes = new HashSet<Type>();
 
+        public InMemoryBusEngine(IMessageDescriptorStore messageDescriptorStore, IEnvelopeService envelopeService)
+        {
+            _messageDescriptorStore = messageDescriptorStore ?? throw new ArgumentNullException(nameof(messageDescriptorStore));
+            _envelopeService = envelopeService ?? throw new ArgumentNullException(nameof(envelopeService));
+        }
+
         public Task<IObservable<Message>> StartAsync()
         {
-            _sequenceOfMessages = new Subject<Message>();
+            _sequenceOfMessages = new Subject<Envelope>();
 
             var commands = _sequenceOfMessages
                                 .Where(m => m != null)
                                 .Where(m => m.MessageType == MessageType.Command)
-                                .Cast<CommandMessage>()
-                                .Where(m => _acceptedTypes.Contains(m.Type))
+                                .Select(GetCommandMessage)
+                                .Where(m => m != null)
                                 .Cast<Message>();
 
             var events = _sequenceOfMessages
                                 .Where(m => m != null)
                                 .Where(m => m.MessageType == MessageType.Event)
-                                .Cast<EventMessage>()
-                                .Where(m => _acceptedTypes.Contains(m.Type))
+                                .Select(GetEventMessage)
+                                .Where(m => m != null)
                                 .Cast<Message>();
 
             _isStarted = true;
 
             return Task.FromResult(Observable.Merge(commands, events));
+
+            CommandMessage GetCommandMessage(Envelope incoming)
+            {
+                var incomingType = incoming.Type;
+
+                if (_acceptedTypes.Contains(incomingType))
+                {
+                    return _envelopeService.CreateCommandMessage(incoming, incomingType);
+                }
+
+                if (_messageDescriptorStore.TryGetTypeForDescriptor(incoming.Descriptor, out var outgoingType))
+                {
+                    return _envelopeService.CreateCommandMessage(incoming, outgoingType);
+                }
+
+                return null;
+            }
+
+            EventMessage GetEventMessage(Envelope incoming)
+            {
+                var incomingType = incoming.Type;
+
+                if (_acceptedTypes.Contains(incomingType))
+                {
+                    return _envelopeService.CreateEventMessage(incoming, incomingType);
+                }
+
+                if (_messageDescriptorStore.TryGetTypeForDescriptor(incoming.Descriptor, out var outgoingType))
+                {
+                    return _envelopeService.CreateEventMessage(incoming, outgoingType);
+                }
+
+                return null;
+            }
         }
 
         public Task StopAsync()
@@ -51,7 +95,8 @@ namespace Nybus
         {
             if (_isStarted)
             {
-                _sequenceOfMessages.OnNext(message);
+                var envelope = _envelopeService.CreateEnvelope(message);
+                _sequenceOfMessages.OnNext(envelope);
             }
 
             return Task.CompletedTask;
@@ -61,7 +106,8 @@ namespace Nybus
         {
             if (_isStarted)
             {
-                _sequenceOfMessages.OnNext(message);
+                var envelope = _envelopeService.CreateEnvelope(message);
+                _sequenceOfMessages.OnNext(envelope);
             }
 
             return Task.CompletedTask;
@@ -69,11 +115,13 @@ namespace Nybus
 
         public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
         {
+            _messageDescriptorStore.RegisterType(typeof(TCommand));
             _acceptedTypes.Add(typeof(TCommand));
         }
 
         public void SubscribeToEvent<TEvent>() where TEvent : class, IEvent
         {
+            _messageDescriptorStore.RegisterType(typeof(TEvent));
             _acceptedTypes.Add(typeof(TEvent));
         }
 

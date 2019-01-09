@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\engines\Nybus.Engine.InMemory\Nybus.Engine.InMemory.csproj" />
     <ProjectReference Include="..\..\src\Nybus\Nybus.csproj" />
     <ProjectReference Include="..\TestUtils\TestUtils.csproj" />
   </ItemGroup>

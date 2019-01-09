@@ -1,7 +1,7 @@
+using System;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using AutoFixture.NUnit3;
-using Nybus.Utils;
 
 namespace Tests
 {
@@ -22,7 +22,7 @@ namespace Tests
                 GenerateDelegates = true
             });
 
-            fixture.Register(() => MessageDescriptor.EqualityComparer);
+            fixture.Freeze<IServiceProvider>();
 
             return fixture;
         }

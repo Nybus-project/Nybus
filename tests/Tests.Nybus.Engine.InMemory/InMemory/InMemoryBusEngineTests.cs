@@ -1,16 +1,26 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoFixture;
+using AutoFixture.AutoMoq;
+using AutoFixture.Idioms;
 using AutoFixture.NUnit3;
 using Moq;
 using NUnit.Framework;
 using Nybus;
+using Nybus.InMemory;
 
-namespace Tests
+namespace Tests.InMemory
 {
     [TestFixture]
     public class InMemoryBusEngineTests
     {
+        [Test, AutoMoqData]
+        public void Constructor_is_guarded(GuardClauseAssertion assertion)
+        {
+            assertion.Verify(typeof(InMemoryBusEngine).GetConstructors());
+        }
+
         [Test, AutoMoqData]
         public void SubscribeToCommand_adds_type_to_AcceptedTypes_list(InMemoryBusEngine sut)
         {
@@ -28,8 +38,19 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Sent_commands_are_received(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
+        public async Task Sent_commands_are_received([Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage, IFixture fixture)
         {
+            fixture.Customize<Envelope>(c => c
+                                             .With(p => p.Type, testMessage.Type)
+                                             .With(p => p.Headers, testMessage.Headers)
+                                             .With(p => p.Content)
+                                             .With(p => p.MessageId, testMessage.MessageId)
+                                             .With(p => p.MessageType, testMessage.MessageType)
+            );
+
+            Mock.Get(envelopeService).Setup(p => p.CreateEnvelope(It.IsAny<CommandMessage<FirstTestCommand>>())).ReturnsUsingFixture(fixture);
+            Mock.Get(envelopeService).Setup(p => p.CreateCommandMessage(It.IsAny<Envelope>(), It.IsAny<Type>())).Returns(testMessage);
+
             sut.SubscribeToCommand<FirstTestCommand>();
 
             var sequence = await sut.StartAsync().ConfigureAwait(false);
@@ -37,13 +58,24 @@ namespace Tests
             var items = sequence.DumpInList();
 
             await sut.SendCommandAsync(testMessage);
-            
-            Assert.That(items.First(), Is.SameAs(testMessage));
+
+            Assert.That(items.First(), Is.EqualTo(testMessage).Using<CommandMessage<FirstTestCommand>>((x, y) => x.MessageId == y.MessageId));
         }
 
         [Test, AutoMoqData]
-        public async Task Sent_events_are_received(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
+        public async Task Sent_events_are_received([Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage, IFixture fixture)
         {
+            fixture.Customize<Envelope>(c => c
+                                             .With(p => p.Type, testMessage.Type)
+                                             .With(p => p.Headers, testMessage.Headers)
+                                             .With(p => p.Content)
+                                             .With(p => p.MessageId, testMessage.MessageId)
+                                             .With(p => p.MessageType, testMessage.MessageType)
+            );
+
+            Mock.Get(envelopeService).Setup(p => p.CreateEnvelope(It.IsAny<EventMessage<FirstTestEvent>>())).ReturnsUsingFixture(fixture);
+            Mock.Get(envelopeService).Setup(p => p.CreateEventMessage(It.IsAny<Envelope>(), It.IsAny<Type>())).Returns(testMessage);
+
             sut.SubscribeToEvent<FirstTestEvent>();
 
             var sequence = await sut.StartAsync().ConfigureAwait(false);
@@ -52,13 +84,13 @@ namespace Tests
 
             await sut.SendEventAsync(testMessage);
 
-            Assert.That(items.First(), Is.SameAs(testMessage));
+            Assert.That(items.First(), Is.EqualTo(testMessage).Using<EventMessage<FirstTestEvent>>((x, y) => x.MessageId == y.MessageId));
         }
 
         [Test, AutoMoqData]
-        public void Stop_completes_the_sequence_if_started(InMemoryBusEngine sut)
+        public async Task Stop_completes_the_sequence_if_started(InMemoryBusEngine sut)
         {
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             var isCompleted = false;
 
@@ -68,15 +100,15 @@ namespace Tests
                 onCompleted: () => isCompleted = true
             );
 
-            sut.StopAsync().Wait();
+            await sut.StopAsync();
 
             Assert.That(isCompleted, Is.True);
         }
 
         [Test, AutoMoqData]
-        public void Stop_is_ignored_if_not_started(InMemoryBusEngine sut)
+        public async Task Stop_is_ignored_if_not_started(InMemoryBusEngine sut)
         {
-            sut.StopAsync().Wait();
+            await sut.StopAsync();
         }
 
         [Test, AutoMoqData]

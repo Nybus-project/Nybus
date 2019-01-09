@@ -32,6 +32,9 @@ artifacts:
     name: packages
   - path: outputs\*.snupkg
     name: symbols
+  - path: outputs\tests\report
+    name: coverage report
+    type: zip
 
 deploy:
   provider: NuGet
@@ -40,12 +43,12 @@ deploy:
     secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
   artifact: packages
 
-for:
-  -
-    branches:
-      only:
-        - master
-    only_commits:
-      message: /build/    
-      files:
-        - src/
+# for:
+#   -
+#     branches:
+#       only:
+#         - master
+#     only_commits:
+#       message: /build/    
+#       files:
+#         - src/

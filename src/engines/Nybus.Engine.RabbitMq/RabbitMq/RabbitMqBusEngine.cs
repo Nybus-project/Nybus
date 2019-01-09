@@ -11,7 +11,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
 
-namespace Nybus
+namespace Nybus.RabbitMq
 {
     public class RabbitMqBusEngine : IBusEngine
     {
@@ -20,10 +20,12 @@ namespace Nybus
         private readonly ILogger<RabbitMqBusEngine> _logger;
         private readonly Dictionary<string, ObservableConsumer> _consumers = new Dictionary<string, ObservableConsumer>(StringComparer.OrdinalIgnoreCase);
         private readonly IRabbitMqConfiguration _configuration;
+        private readonly IMessageDescriptorStore _messageDescriptorStore;
 
-        public RabbitMqBusEngine(IRabbitMqConfiguration configuration, ILogger<RabbitMqBusEngine> logger)
+        public RabbitMqBusEngine(IRabbitMqConfiguration configuration, IMessageDescriptorStore messageDescriptorStore, ILogger<RabbitMqBusEngine> logger)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _messageDescriptorStore = messageDescriptorStore ?? throw new ArgumentNullException(nameof(messageDescriptorStore));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -112,20 +114,25 @@ namespace Nybus
 
                 Message message = null;
 
-                if (TryFindCommandByName(messageTypeName, out var commandType))
+                if (!MessageDescriptor.TryParse(messageTypeName, out var descriptor))
+                {
+                    NackMessage(args.DeliveryTag);
+                    return null;
+                }
+
+                if (TryFindCommandByName(descriptor, out var commandType) || _messageDescriptorStore.TryGetTypeForDescriptor(descriptor, out commandType))
                 {
                     var command = _configuration.Serializer.DeserializeObject(args.Body, commandType, encoding) as ICommand;
                     message = CreateCommandMessage(command);
                 }
-                else if (TryFindEventByName(messageTypeName, out var eventType))
+                else if (TryFindEventByName(descriptor, out var eventType) || _messageDescriptorStore.TryGetTypeForDescriptor(descriptor, out eventType))
                 {
                     var @event = _configuration.Serializer.DeserializeObject(args.Body, eventType, encoding) as IEvent;
                     message = CreateEventMessage(@event);
                 }
                 else
                 {
-                    _channel.BasicNack(args.DeliveryTag, false, true);
-                    _processingMessages.TryRemoveItem(args.DeliveryTag);
+                    NackMessage(args.DeliveryTag);
                     return null;
                 }
 
@@ -144,35 +151,31 @@ namespace Nybus
 
             CommandMessage CreateCommandMessage(ICommand command)
             {
-                const string propertyName = "Command";
-
                 var messageType = typeof(CommandMessage<>).MakeGenericType(command.GetType());
-                var message = Activator.CreateInstance(messageType);
+                var message = Activator.CreateInstance(messageType) as CommandMessage;
 
-                messageType.GetProperty(propertyName).SetValue(message, command);
+                message?.SetCommand(command);
 
-                return message as CommandMessage;
+                return message;
             }
 
             EventMessage CreateEventMessage(IEvent @event)
             {
-                const string propertyName = "Event";
-
                 var messageType = typeof(EventMessage<>).MakeGenericType(@event.GetType());
-                var message = Activator.CreateInstance(messageType);
+                var message = Activator.CreateInstance(messageType) as EventMessage;
 
-                messageType.GetProperty(propertyName).SetValue(message, @event);
+                message?.SetEvent(@event);
 
-                return message as EventMessage;
+                return message;
             }
 
-            bool TryFindCommandByName(string commandTypeName, out Type type) => TryFindTypeByName(AcceptedCommandTypes, commandTypeName, out type);
+            bool TryFindCommandByName(MessageDescriptor descriptor, out Type type) => TryFindTypeByName(AcceptedCommandTypes, descriptor, out type);
 
-            bool TryFindEventByName(string eventTypeName, out Type type) => TryFindTypeByName(AcceptedEventTypes, eventTypeName, out type);
+            bool TryFindEventByName(MessageDescriptor descriptor, out Type type) => TryFindTypeByName(AcceptedEventTypes, descriptor, out type);
 
-            bool TryFindTypeByName(ISet<Type> typeList, string typeName, out Type type)
+            bool TryFindTypeByName(ISet<Type> typeList, MessageDescriptor descriptor, out Type type)
             {
-                type = typeList.FirstOrDefault(o => o.FullName == typeName);
+                type = typeList.FirstOrDefault(o => string.Equals(o.Name, descriptor.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(o.Namespace, descriptor.Namespace, StringComparison.OrdinalIgnoreCase));
                 return type != null;
             }
 
@@ -213,7 +216,7 @@ namespace Nybus
             properties.Headers = new Dictionary<string, object>
             {
                 [Nybus(Headers.MessageId)] = message.MessageId,
-                [Nybus(Headers.MessageType)] = type.FullName
+                [Nybus(Headers.MessageType)] = message.Descriptor.ToString()
             };
 
             foreach (var header in message.Headers)
@@ -234,12 +237,14 @@ namespace Nybus
         public void SubscribeToCommand<TCommand>()
             where TCommand : class, ICommand
         {
+            _messageDescriptorStore.RegisterType(typeof(TCommand));
             AcceptedCommandTypes.Add(typeof(TCommand));
         }
 
         public void SubscribeToEvent<TEvent>()
             where TEvent : class, IEvent
         {
+            _messageDescriptorStore.RegisterType(typeof(TEvent));
             AcceptedEventTypes.Add(typeof(TEvent));
         }
 
@@ -273,8 +278,7 @@ namespace Nybus
             {
                 try
                 {
-                    _channel.BasicNack(deliveryTag, false, true);
-                    _processingMessages.TryRemoveItem(deliveryTag);
+                    NackMessage(deliveryTag);
                 }
                 catch (AlreadyClosedException ex)
                 {
@@ -291,7 +295,13 @@ namespace Nybus
             return Task.CompletedTask;
         }
 
-        private static string GetExchangeNameForType(Type type) => type.FullName;
+        private void NackMessage(ulong deliveryTag)
+        {
+            _channel.BasicNack(deliveryTag, false, true);
+            _processingMessages.TryRemoveItem(deliveryTag);
+        }
+
+        private static string GetExchangeNameForType(Type type) => type.FullName; //$"{type.Namespace}:{type.Name}";
 
         private static string Nybus(string key) => $"Nybus:{key}";
     }

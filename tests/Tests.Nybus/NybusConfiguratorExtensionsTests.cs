@@ -16,16 +16,6 @@ namespace Tests
     public class NybusConfiguratorExtensionsTests
     {
         [Test, AutoMoqData]
-        public void UseInMemoryBusEngine_registers_InMemory_bus_engine(TestNybusConfigurator nybus, IServiceCollection services)
-        {
-            NybusConfiguratorExtensions.UseInMemoryBusEngine(nybus);
-
-            nybus.ApplyServiceConfigurations(services);
-
-            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IBusEngine) && sd.ImplementationType == typeof(InMemoryBusEngine))));
-        }
-
-        [Test, AutoMoqData]
         public void SubscribeToCommand_registers_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             NybusConfiguratorExtensions.SubscribeToCommand<FirstTestCommand, FirstTestCommandHandler>(nybus);

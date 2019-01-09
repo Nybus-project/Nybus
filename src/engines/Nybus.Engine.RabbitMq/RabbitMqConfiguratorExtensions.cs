@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
+using Nybus.RabbitMq;
 
 namespace Nybus
 {

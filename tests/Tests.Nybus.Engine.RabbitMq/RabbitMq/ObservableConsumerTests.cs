@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive;
-using NUnit.Framework;
 using AutoFixture.NUnit3;
 using Moq;
-using Nybus;
+using NUnit.Framework;
+using Nybus.RabbitMq;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace Tests
+namespace Tests.RabbitMq
 {
     [TestFixture]
     public class ObservableConsumerTests

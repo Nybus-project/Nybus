@@ -6,6 +6,7 @@ using Moq;
 using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
+using Nybus.RabbitMq;
 using RabbitMQ.Client;
 using Tests.Configuration;
 // ReSharper disable InvokeAsExtensionMethod

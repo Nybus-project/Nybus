@@ -37,6 +37,4 @@ namespace Nybus.Configuration
             return JsonConvert.DeserializeObject(json, type, _settings);
         }
     }
-
-
 }

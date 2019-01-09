@@ -1,4 +1,4 @@
-﻿namespace Nybus
+﻿namespace Nybus.RabbitMq
 {
     public static class RabbitMqHeaders
     {

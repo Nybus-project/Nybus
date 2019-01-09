@@ -7,11 +7,6 @@ namespace Nybus
 {
     public static class NybusConfiguratorExtensions
     {
-        public static void UseInMemoryBusEngine(this INybusConfigurator configurator)
-        {
-            configurator.UseBusEngine<InMemoryBusEngine>();
-        }
-
         #region Subscribe to Command
 
         public static void SubscribeToCommand<TCommand, TCommandHandler>(this INybusConfigurator configurator)
