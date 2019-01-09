@@ -27,5 +27,14 @@ namespace Tests.Utils
             Assert.That(result, Is.False);
             Assert.That(descriptor, Is.Null);
         }
+
+        [Test, AutoMoqData]
+        public void MessageDescriptor_can_be_created_from_Type(Type type)
+        {
+            MessageDescriptor descriptor = type;
+
+            Assert.That(descriptor.Name, Is.EqualTo(type.Name));
+            Assert.That(descriptor.Namespace, Is.EqualTo(type.Namespace));
+        }
     }
 }
