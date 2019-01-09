@@ -32,6 +32,9 @@ artifacts:
     name: packages
   - path: outputs\*.snupkg
     name: symbols
+  - path: outputs\tests\report
+    name: coverage report
+    type: zip
 
 deploy:
   provider: NuGet

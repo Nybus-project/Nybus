@@ -88,9 +88,9 @@ namespace Tests.InMemory
         }
 
         [Test, AutoMoqData]
-        public void Stop_completes_the_sequence_if_started(InMemoryBusEngine sut)
+        public async Task Stop_completes_the_sequence_if_started(InMemoryBusEngine sut)
         {
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             var isCompleted = false;
 
@@ -100,15 +100,15 @@ namespace Tests.InMemory
                 onCompleted: () => isCompleted = true
             );
 
-            sut.StopAsync().Wait();
+            await sut.StopAsync();
 
             Assert.That(isCompleted, Is.True);
         }
 
         [Test, AutoMoqData]
-        public void Stop_is_ignored_if_not_started(InMemoryBusEngine sut)
+        public async Task Stop_is_ignored_if_not_started(InMemoryBusEngine sut)
         {
-            sut.StopAsync().Wait();
+            await sut.StopAsync();
         }
 
         [Test, AutoMoqData]
