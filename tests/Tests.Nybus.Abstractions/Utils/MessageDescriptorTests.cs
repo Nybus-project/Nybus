@@ -18,5 +18,14 @@ namespace Tests.Utils
         {
             Assert.Throws<ArgumentNullException>(() => MessageDescriptor.CreateFromAttribute(null));
         }
+
+        [Test, AutoMoqData]
+        public void TryParse_requires_correct_format(string descriptorName)
+        {
+            var result = MessageDescriptor.TryParse(descriptorName, out var descriptor);
+
+            Assert.That(result, Is.False);
+            Assert.That(descriptor, Is.Null);
+        }
     }
 }

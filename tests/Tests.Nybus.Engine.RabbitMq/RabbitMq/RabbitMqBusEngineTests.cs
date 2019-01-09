@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoFixture.Idioms;
 using AutoFixture.NUnit3;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -19,16 +20,12 @@ namespace Tests.RabbitMq
     [TestFixture]
     public class RabbitMqBusEngineTests
     {
-        [Test]
-        public void Configuration_is_required()
-        {
-            Assert.Throws<ArgumentNullException>(() => new RabbitMqBusEngine(null, Mock.Of<ILogger<RabbitMqBusEngine>>()));
-        }
+        private string DescriptorName(Type type) => $"{type.Namespace}:{type.Name}";
 
-        [Test]
-        public void Logger_is_required()
+        [Test, AutoMoqData]
+        public void Constructor_is_guarded(GuardClauseAssertion assertion)
         {
-            Assert.Throws<ArgumentNullException>(() => new RabbitMqBusEngine(Mock.Of<IRabbitMqConfiguration>(), null));
+            assertion.Verify(typeof(RabbitMqBusEngine).GetConstructors());
         }
 
         [Test, AutoMoqData]
@@ -88,9 +85,9 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void Empty_sequence_is_returned_if_no_subscription(RabbitMqBusEngine sut)
+        public async Task Empty_sequence_is_returned_if_no_subscription(RabbitMqBusEngine sut)
         {
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             var incomingMessages = sequence.DumpInList();
 
@@ -98,11 +95,11 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void Commands_can_be_subscribed(RabbitMqBusEngine sut)
+        public async Task Commands_can_be_subscribed(RabbitMqBusEngine sut)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             var incomingMessages = sequence.DumpInList();
 
@@ -110,11 +107,11 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void Events_can_be_subscribed(RabbitMqBusEngine sut)
+        public async Task Events_can_be_subscribed(RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             var incomingMessages = sequence.DumpInList();
 
@@ -122,13 +119,13 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void Commands_and_events_can_be_subscribed(RabbitMqBusEngine sut)
+        public async Task Commands_and_events_can_be_subscribed(RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             var incomingMessages = sequence.DumpInList();
 
@@ -136,74 +133,74 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void QueueFactory_is_invoked_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        public async Task QueueFactory_is_invoked_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             Mock.Get(configuration.EventQueueFactory).Verify(p => p.CreateQueue(It.IsAny<IModel>()));
 
         }
 
         [Test, AutoMoqData]
-        public void QueueFactory_is_invoked_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        public async Task QueueFactory_is_invoked_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             Mock.Get(configuration.CommandQueueFactory).Verify(p => p.CreateQueue(It.IsAny<IModel>()));
 
         }
 
         [Test, AutoMoqData]
-        public void Exchange_is_declared_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        public async Task Exchange_is_declared_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
 
         [Test, AutoMoqData]
-        public void Exchange_is_declared_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        public async Task Exchange_is_declared_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
 
         [Test, AutoMoqData]
-        public void Queue_is_bound_to_exchange_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        public async Task Queue_is_bound_to_exchange_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.QueueBind(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, object>>()));
         }
 
         [Test, AutoMoqData]
-        public void Queue_is_bound_to_exchange_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        public async Task Queue_is_bound_to_exchange_when_a_command_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.QueueBind(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IDictionary<string, object>>()));
         }
 
 
         [Test, AutoMoqData]
-        public void Event_consumer_is_exposed_when_sequence_is_subscribed(RabbitMqBusEngine sut)
+        public async Task Event_consumer_is_exposed_when_sequence_is_subscribed(RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             sequence.Subscribe(_ => { }); // subscribes to the sequence but takes no action when items are published
 
@@ -211,100 +208,24 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void Command_consumer_is_exposed_when_sequence_is_subscribed(RabbitMqBusEngine sut)
+        public async Task Command_consumer_is_exposed_when_sequence_is_subscribed(RabbitMqBusEngine sut)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             sequence.Subscribe(_ => { }); // subscribes to the sequence but takes no action when items are published
 
             Assert.That(sut.Consumers.Count, Is.EqualTo(1));
         }
 
+
         [Test, AutoMoqData]
-        public void Events_can_be_received([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
+        public async Task Events_with_invalid_type_format_are_ignored_and_nacked([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.StartAsync().Result;
-
-            var encoding = Encoding.UTF8;
-
-            IBasicProperties properties = new BasicProperties
-            {
-                MessageId = messageId,
-                ContentEncoding = encoding.WebName,
-                Headers = new Dictionary<string, object>
-                {
-                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
-                    ["Nybus:MessageType"] = encoding.GetBytes(@event.GetType().FullName),
-                    ["Nybus:CorrelationId"] = correlationId.ToByteArray()
-                }
-            };
-
-            var body = configuration.Serializer.SerializeObject(@event, encoding);
-
-            var incomingMessages = sequence.DumpInList();
-
-            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
-
-            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<EventMessage<FirstTestEvent>>());
-
-            var message = incomingMessages[0] as EventMessage<FirstTestEvent>;
-
-            Assert.That(message, Is.Not.Null);
-            Assert.That(message.MessageId, Is.EqualTo(messageId));
-            Assert.That(message.MessageType, Is.EqualTo(MessageType.Event));
-            Assert.That(message.Type, Is.EqualTo(@event.GetType()));
-            Assert.That(message.Event, Is.Not.Null);
-        }
-
-        [Test, AutoMoqData]
-        public void Commands_can_be_received([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
-        {
-            sut.SubscribeToCommand<FirstTestCommand>();
-
-            var sequence = sut.StartAsync().Result;
-
-            var encoding = Encoding.UTF8;
-
-            IBasicProperties properties = new BasicProperties
-            {
-                MessageId = messageId,
-                ContentEncoding = encoding.WebName,
-                Headers = new Dictionary<string, object>
-                {
-                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
-                    ["Nybus:MessageType"] = encoding.GetBytes(command.GetType().FullName),
-                    ["Nybus:CorrelationId"] = correlationId.ToByteArray()
-                }
-            };
-
-            var body = configuration.Serializer.SerializeObject(command, encoding);
-
-            var incomingMessages = sequence.DumpInList();
-
-            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
-
-            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<CommandMessage<FirstTestCommand>>());
-
-            var message = incomingMessages[0] as CommandMessage<FirstTestCommand>;
-
-            Assert.That(message, Is.Not.Null);
-            Assert.That(message.MessageId, Is.EqualTo(messageId));
-            Assert.That(message.MessageType, Is.EqualTo(MessageType.Command));
-            Assert.That(message.Type, Is.EqualTo(command.GetType()));
-            Assert.That(message.Command, Is.Not.Null);
-        }
-
-        [Test, AutoMoqData]
-        public void Invalid_events_are_discarded([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
-        {
-            // At least one subscription is needed to inject invalid messages
-            sut.SubscribeToEvent<SecondTestEvent>();
-
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
 
             var encoding = Encoding.UTF8;
 
@@ -332,12 +253,49 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void Invalid_commands_are_discarded([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
+        public async Task Events_can_be_received([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
         {
-            // At least one subscription is needed to inject invalid messages
-            sut.SubscribeToCommand<SecondTestCommand>();
+            sut.SubscribeToEvent<FirstTestEvent>();
 
-            var sequence = sut.StartAsync().Result;
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(@event.GetType())),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray()
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(@event, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<EventMessage<FirstTestEvent>>());
+
+            var message = incomingMessages[0] as EventMessage<FirstTestEvent>;
+
+            Assert.That(message, Is.Not.Null);
+            Assert.That(message.MessageId, Is.EqualTo(messageId));
+            Assert.That(message.MessageType, Is.EqualTo(MessageType.Event));
+            Assert.That(message.Type, Is.EqualTo(@event.GetType()));
+            Assert.That(message.Event, Is.Not.Null);
+        }
+
+        [Test, AutoMoqData]
+        public async Task Commands_with_invalid_type_format_are_ignored_and_nacked([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
+        {
+            sut.SubscribeToCommand<FirstTestCommand>();
+
+            var sequence = await sut.StartAsync();
 
             var encoding = Encoding.UTF8;
 
@@ -349,6 +307,111 @@ namespace Tests.RabbitMq
                 {
                     ["Nybus:MessageId"] = encoding.GetBytes(messageId),
                     ["Nybus:MessageType"] = encoding.GetBytes(command.GetType().FullName),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray()
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(command, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Is.Empty);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
+        }
+
+
+        [Test, AutoMoqData]
+        public async Task Commands_can_be_received([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
+        {
+            sut.SubscribeToCommand<FirstTestCommand>();
+
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(command.GetType())),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray()
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(command, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<CommandMessage<FirstTestCommand>>());
+
+            var message = incomingMessages[0] as CommandMessage<FirstTestCommand>;
+
+            Assert.That(message, Is.Not.Null);
+            Assert.That(message.MessageId, Is.EqualTo(messageId));
+            Assert.That(message.MessageType, Is.EqualTo(MessageType.Command));
+            Assert.That(message.Type, Is.EqualTo(command.GetType()));
+            Assert.That(message.Command, Is.Not.Null);
+        }
+
+        [Test, AutoMoqData]
+        public async Task Invalid_events_are_discarded([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent @event)
+        {
+            // At least one subscription is needed to inject invalid messages
+            sut.SubscribeToEvent<SecondTestEvent>();
+
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(@event.GetType())),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray()
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(@event, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Is.Empty);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
+        }
+
+        [Test, AutoMoqData]
+        public async Task Invalid_commands_are_discarded([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand command)
+        {
+            // At least one subscription is needed to inject invalid messages
+            sut.SubscribeToCommand<SecondTestCommand>();
+
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(command.GetType())),
                     ["Nybus:CorrelationId"] = correlationId.ToByteArray()
                 }
             };
@@ -436,7 +499,7 @@ namespace Tests.RabbitMq
                 Headers = new Dictionary<string, object>
                 {
                     ["Nybus:MessageId"] = encoding.GetBytes(messageId),
-                    ["Nybus:MessageType"] = encoding.GetBytes(command.GetType().FullName),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(command.GetType())),
                     ["Nybus:CorrelationId"] = correlationId.ToByteArray()
                 }
             };
@@ -468,7 +531,7 @@ namespace Tests.RabbitMq
                 Headers = new Dictionary<string, object>
                 {
                     ["Nybus:MessageId"] = encoding.GetBytes(messageId),
-                    ["Nybus:MessageType"] = encoding.GetBytes(@event.GetType().FullName),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(@event.GetType())),
                     ["Nybus:CorrelationId"] = correlationId.ToByteArray()
                 }
             };
@@ -500,7 +563,7 @@ namespace Tests.RabbitMq
                 Headers = new Dictionary<string, object>
                 {
                     ["Nybus:MessageId"] = encoding.GetBytes(messageId),
-                    ["Nybus:MessageType"] = encoding.GetBytes(command.GetType().FullName),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(command.GetType())),
                     ["Nybus:CorrelationId"] = correlationId.ToByteArray()
                 }
             };
@@ -534,7 +597,7 @@ namespace Tests.RabbitMq
                 Headers = new Dictionary<string, object>
                 {
                     ["Nybus:MessageId"] = encoding.GetBytes(messageId),
-                    ["Nybus:MessageType"] = encoding.GetBytes(command.GetType().FullName),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(command.GetType())),
                     ["Nybus:CorrelationId"] = correlationId.ToByteArray()
                 }
             };
@@ -566,7 +629,7 @@ namespace Tests.RabbitMq
                 Headers = new Dictionary<string, object>
                 {
                     ["Nybus:MessageId"] = encoding.GetBytes(messageId),
-                    ["Nybus:MessageType"] = encoding.GetBytes(command.GetType().FullName),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(command.GetType())),
                     ["Nybus:CorrelationId"] = correlationId.ToByteArray()
                 }
             };

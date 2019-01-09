@@ -34,6 +34,23 @@ namespace Nybus.Utils
             return new MessageDescriptor(attribute.Name, attribute.Namespace);
         }
 
+
+        private static readonly char[] Separators = new []{':'};
+
+        public static bool TryParse(string descriptorName, out MessageDescriptor descriptor)
+        {
+            var strings = descriptorName.Split(':');
+
+            if (strings.Length != 2)
+            {
+                descriptor = null;
+                return false;
+            }
+
+            descriptor = new MessageDescriptor(strings[1], strings[0]);
+            return true;
+        }
+
         public MessageDescriptor(string name, string @namespace)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
