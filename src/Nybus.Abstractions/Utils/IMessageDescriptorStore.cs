@@ -5,11 +5,23 @@ namespace Nybus.Utils
 {
     public interface IMessageDescriptorStore
     {
-        bool RegisterType(Type type);
+        bool RegisterCommandType<TCommand>()
+            where TCommand : class, ICommand;
 
-        bool TryGetDescriptorForType(Type type, out MessageDescriptor descriptor);
+        bool RegisterEventType<TEvent>()
+            where TEvent : class, IEvent;
 
-        bool TryGetTypeForDescriptor(MessageDescriptor descriptor, out Type type);
+        bool FindCommandTypeForDescriptor(MessageDescriptor descriptor, out Type type);
+
+        bool FindEventTypeForDescriptor(MessageDescriptor descriptor, out Type type);
+
+        bool HasCommands();
+
+        bool HasEvents();
+
+        IEnumerable<Type> Commands { get; }
+
+        IEnumerable<Type> Events { get; }
     }
 
     public class MessageDescriptor
@@ -39,6 +51,12 @@ namespace Nybus.Utils
 
         public static bool TryParse(string descriptorName, out MessageDescriptor descriptor)
         {
+            if (descriptorName == null)
+            {
+                descriptor = null;
+                return false;
+            }
+
             var strings = descriptorName.Split(':');
 
             if (strings.Length != 2)

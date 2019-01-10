@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Nybus;
 using Nybus.Configuration;
+using Nybus.Utils;
 
 namespace Tests
 {
@@ -44,5 +47,49 @@ namespace Tests
         {
             throw new NotImplementedException();
         }
+    }
+
+    public class TestMessageDescriptorStore : IMessageDescriptorStore
+    {
+        private readonly HashSet<Type> _commandTypes = new HashSet<Type>();
+        private readonly HashSet<Type> _eventTypes = new HashSet<Type>();
+
+        public bool RegisterCommandType<TCommand>()
+            where TCommand : class, ICommand
+        {
+            return _commandTypes.Add(typeof(TCommand));
+        }
+
+        public bool RegisterEventType<TEvent>()
+            where TEvent : class, IEvent
+        {
+            return _eventTypes.Add(typeof(TEvent));
+        }
+
+        public bool FindCommandTypeForDescriptor(MessageDescriptor descriptor, out Type type)
+        {
+            type = _commandTypes.FirstOrDefault(i => i.Name == descriptor.Name && i.Namespace == descriptor.Namespace);
+            return type != null;
+        }
+
+        public bool FindEventTypeForDescriptor(MessageDescriptor descriptor, out Type type)
+        {
+            type = _eventTypes.FirstOrDefault(i => i.Name == descriptor.Name && i.Namespace == descriptor.Namespace);
+            return type != null;
+        }
+
+        public bool HasCommands()
+        {
+            return _commandTypes.Count > 0;
+        }
+
+        public bool HasEvents()
+        {
+            return _eventTypes.Count > 0;
+        }
+
+        public IEnumerable<Type> Commands => _commandTypes;
+
+        public IEnumerable<Type> Events => _eventTypes;
     }
 }

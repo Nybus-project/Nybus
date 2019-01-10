@@ -20,6 +20,15 @@ namespace Tests.Utils
         }
 
         [Test, AutoMoqData]
+        public void TryParse_return_false_if_null()
+        {
+            var result = MessageDescriptor.TryParse(null, out var descriptor);
+
+            Assert.That(result, Is.False);
+            Assert.That(descriptor, Is.Null);
+        }
+
+        [Test, AutoMoqData]
         public void TryParse_requires_correct_format(string descriptorName)
         {
             var result = MessageDescriptor.TryParse(descriptorName, out var descriptor);

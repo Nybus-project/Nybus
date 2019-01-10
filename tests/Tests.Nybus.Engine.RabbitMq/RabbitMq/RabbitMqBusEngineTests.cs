@@ -11,6 +11,7 @@ using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
 using Nybus.RabbitMq;
+using Nybus.Utils;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 using RabbitMQ.Client.Framing;
@@ -29,59 +30,43 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void SubscribeToCommand_registers_command_type(RabbitMqBusEngine sut)
+        public void SubscribeToCommand_registers_command_type([Frozen] IMessageDescriptorStore messageDescriptorStore, RabbitMqBusEngine sut)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
-            Assert.That(sut.AcceptedCommandTypes, Contains.Item(typeof(FirstTestCommand)));
+            Assert.That(messageDescriptorStore.Commands, Contains.Item(typeof(FirstTestCommand)));
         }
 
         [Test, AutoMoqData]
-        public void SubscribeToCommand_handles_multiple_commands(RabbitMqBusEngine sut)
+        public void SubscribeToCommand_handles_multiple_commands([Frozen] IMessageDescriptorStore messageDescriptorStore, RabbitMqBusEngine sut)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
 
             sut.SubscribeToCommand<SecondTestCommand>();
 
-            Assert.That(sut.AcceptedCommandTypes, Has.Exactly(2).InstanceOf<Type>());
+            Assert.That(messageDescriptorStore.Commands, Contains.Item(typeof(FirstTestCommand)));
+
+            Assert.That(messageDescriptorStore.Commands, Contains.Item(typeof(SecondTestCommand)));
         }
 
         [Test, AutoMoqData]
-        public void SubscribeToCommand_ignores_multiple_registrations_of_same_command(RabbitMqBusEngine sut)
-        {
-            sut.SubscribeToCommand<FirstTestCommand>();
-
-            sut.SubscribeToCommand<FirstTestCommand>();
-
-            Assert.That(sut.AcceptedCommandTypes, Has.Exactly(1).InstanceOf<Type>());
-        }
-
-        [Test, AutoMoqData]
-        public void SubscribeToEvent_registers_event_type(RabbitMqBusEngine sut)
+        public void SubscribeToEvent_registers_event_type([Frozen] IMessageDescriptorStore messageDescriptorStore, RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
-            Assert.That(sut.AcceptedEventTypes, Contains.Item(typeof(FirstTestEvent)));
+            Assert.That(messageDescriptorStore.Events, Contains.Item(typeof(FirstTestEvent)));
         }
 
         [Test, AutoMoqData]
-        public void SubscribeToEvent_handles_multiple_events(RabbitMqBusEngine sut)
+        public void SubscribeToEvent_handles_multiple_events([Frozen] IMessageDescriptorStore messageDescriptorStore, RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
             sut.SubscribeToEvent<SecondTestEvent>();
 
-            Assert.That(sut.AcceptedEventTypes, Has.Exactly(2).InstanceOf<Type>());
-        }
+            Assert.That(messageDescriptorStore.Events, Contains.Item(typeof(FirstTestEvent)));
 
-        [Test, AutoMoqData]
-        public void SubscribeToEvent_ignores_multiple_registrations_of_same_event(RabbitMqBusEngine sut)
-        {
-            sut.SubscribeToEvent<FirstTestEvent>();
-
-            sut.SubscribeToEvent<FirstTestEvent>();
-
-            Assert.That(sut.AcceptedEventTypes, Has.Exactly(1).InstanceOf<Type>());
+            Assert.That(messageDescriptorStore.Events, Contains.Item(typeof(SecondTestEvent)));
         }
 
         [Test, AutoMoqData]
@@ -133,14 +118,13 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public async Task QueueFactory_is_invoked_when_a_event_is_registered([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        public async Task QueueFactory_is_invoked_when_a_event_is_registered([Frozen] IMessageDescriptorStore messageDescriptorStore, [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
 
             var sequence = await sut.StartAsync();
 
             Mock.Get(configuration.EventQueueFactory).Verify(p => p.CreateQueue(It.IsAny<IModel>()));
-
         }
 
         [Test, AutoMoqData]
