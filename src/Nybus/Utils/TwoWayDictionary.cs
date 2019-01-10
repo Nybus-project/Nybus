@@ -7,16 +7,20 @@ namespace Nybus.Utils
 {
     public class TwoWayDictionary<T1, T2>: IEnumerable<(T1 first, T2 second)> //IDictionary<T1, T2>, IDictionary<T2, T1>, 
     {
-        private readonly IEqualityComparer<T1> _firstEqualityComparer;
-        private readonly IEqualityComparer<T2> _secondEqualityComparer;
-
         private readonly IDictionary<T1, Tuple<T1, T2>> _firstDictionary;
         private readonly IDictionary<T2, Tuple<T1, T2>> _secondDictionary;
 
         public TwoWayDictionary(IEqualityComparer<T1> firstEqualityComparer, IEqualityComparer<T2> secondEqualityComparer)
         {
-            _firstEqualityComparer = firstEqualityComparer ?? throw new ArgumentNullException(nameof(firstEqualityComparer));
-            _secondEqualityComparer = secondEqualityComparer ?? throw new ArgumentNullException(nameof(secondEqualityComparer));
+            if (firstEqualityComparer == null)
+            {
+                throw new ArgumentNullException(nameof(firstEqualityComparer));
+            }
+
+            if (secondEqualityComparer == null)
+            {
+                throw new ArgumentNullException(nameof(secondEqualityComparer));
+            }
 
             _firstDictionary = new Dictionary<T1, Tuple<T1, T2>>(firstEqualityComparer);
             _secondDictionary = new Dictionary<T2, Tuple<T1, T2>>(secondEqualityComparer);
