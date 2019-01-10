@@ -9,6 +9,7 @@ using Moq;
 using NUnit.Framework;
 using Nybus;
 using Nybus.InMemory;
+using Nybus.Utils;
 
 namespace Tests.InMemory
 {
@@ -185,6 +186,52 @@ namespace Tests.InMemory
             sut.OnMessageNotifyFail -= handler;
 
             Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
+        }
+
+        [Test, AutoMoqData]
+        public async Task Commands_are_ignored_if_not_registered([Frozen] IMessageDescriptorStore messageDescriptorStore, [Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage, IFixture fixture)
+        {
+            fixture.Customize<Envelope>(c => c
+                                             .With(p => p.Type, testMessage.Type)
+                                             .With(p => p.Headers, testMessage.Headers)
+                                             .With(p => p.Content)
+                                             .With(p => p.MessageId, testMessage.MessageId)
+                                             .With(p => p.MessageType, testMessage.MessageType)
+            );
+
+            Mock.Get(envelopeService).Setup(p => p.CreateEnvelope(It.IsAny<CommandMessage<FirstTestCommand>>())).ReturnsUsingFixture(fixture);
+            Mock.Get(envelopeService).Setup(p => p.CreateCommandMessage(It.IsAny<Envelope>(), It.IsAny<Type>())).Returns(testMessage);
+
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
+
+            var items = sequence.DumpInList();
+
+            await sut.SendCommandAsync(testMessage);
+
+            Assert.That(items, Is.Empty);
+        }
+
+        [Test, AutoMoqData]
+        public async Task Events_are_ignored_if_not_registered([Frozen] IMessageDescriptorStore messageDescriptorStore, [Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage, IFixture fixture)
+        {
+            fixture.Customize<Envelope>(c => c
+                                             .With(p => p.Type, testMessage.Type)
+                                             .With(p => p.Headers, testMessage.Headers)
+                                             .With(p => p.Content)
+                                             .With(p => p.MessageId, testMessage.MessageId)
+                                             .With(p => p.MessageType, testMessage.MessageType)
+            );
+
+            Mock.Get(envelopeService).Setup(p => p.CreateEnvelope(It.IsAny<EventMessage<FirstTestEvent>>())).ReturnsUsingFixture(fixture);
+            Mock.Get(envelopeService).Setup(p => p.CreateEventMessage(It.IsAny<Envelope>(), It.IsAny<Type>())).Returns(testMessage);
+
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
+
+            var items = sequence.DumpInList();
+
+            await sut.SendEventAsync(testMessage);
+
+            Assert.That(items, Is.Empty);
         }
     }
 

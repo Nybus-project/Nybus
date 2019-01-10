@@ -1,7 +1,9 @@
 using System;
 using AutoFixture;
 using AutoFixture.AutoMoq;
+using AutoFixture.Kernel;
 using AutoFixture.NUnit3;
+using Nybus.Utils;
 
 namespace Tests
 {
@@ -23,6 +25,8 @@ namespace Tests
             });
 
             fixture.Freeze<IServiceProvider>();
+
+            fixture.Customizations.Add(new TypeRelay(typeof(IMessageDescriptorStore), typeof(TestMessageDescriptorStore)));
 
             return fixture;
         }
