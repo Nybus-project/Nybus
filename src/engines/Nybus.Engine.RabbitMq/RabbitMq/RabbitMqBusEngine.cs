@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,9 +30,6 @@ namespace Nybus.RabbitMq
 
         private IConnection _connection;
         private IModel _channel;
-
-        //public ISet<Type> AcceptedEventTypes { get; } = new HashSet<Type>();
-        //public ISet<Type> AcceptedCommandTypes { get; } = new HashSet<Type>();
 
         public IReadOnlyDictionary<string, ObservableConsumer> Consumers => _consumers;
 
@@ -120,13 +116,11 @@ namespace Nybus.RabbitMq
                     return null;
                 }
 
-                //if (TryFindCommandByName(descriptor, out var commandType) || _messageDescriptorStore.FindCommandTypeForDescriptor(descriptor, out commandType))
                 if (_messageDescriptorStore.FindCommandTypeForDescriptor(descriptor, out var commandType))
                     {
                     var command = _configuration.Serializer.DeserializeObject(args.Body, commandType, encoding) as ICommand;
                     message = CreateCommandMessage(command);
                 }
-                //else if (TryFindEventByName(descriptor, out var eventType) || _messageDescriptorStore.FindEventTypeForDescriptor(descriptor, out eventType))
                 else if (_messageDescriptorStore.FindEventTypeForDescriptor(descriptor, out var eventType))
                 {
                     var @event = _configuration.Serializer.DeserializeObject(args.Body, eventType, encoding) as IEvent;
@@ -170,16 +164,6 @@ namespace Nybus.RabbitMq
 
                 return message;
             }
-
-            //bool TryFindCommandByName(MessageDescriptor descriptor, out Type type) => TryFindTypeByName(AcceptedCommandTypes, descriptor, out type);
-
-            //bool TryFindEventByName(MessageDescriptor descriptor, out Type type) => TryFindTypeByName(AcceptedEventTypes, descriptor, out type);
-
-            //bool TryFindTypeByName(ISet<Type> typeList, MessageDescriptor descriptor, out Type type)
-            //{
-            //    type = typeList.FirstOrDefault(o => string.Equals(o.Name, descriptor.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(o.Namespace, descriptor.Namespace, StringComparison.OrdinalIgnoreCase));
-            //    return type != null;
-            //}
         }
 
         public Task StopAsync()
@@ -230,14 +214,12 @@ namespace Nybus.RabbitMq
             where TCommand : class, ICommand
         {
             _messageDescriptorStore.RegisterCommandType<TCommand>();
-            //AcceptedCommandTypes.Add(typeof(TCommand));
         }
 
         public void SubscribeToEvent<TEvent>()
             where TEvent : class, IEvent
         {
             _messageDescriptorStore.RegisterEventType<TEvent>();
-            //AcceptedEventTypes.Add(typeof(TEvent));
         }
 
         public Task NotifySuccessAsync(Message message)
