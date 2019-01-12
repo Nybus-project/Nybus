@@ -37,17 +37,9 @@ namespace Nybus.Utils
             }
         }
 
-        private bool TryGetDescriptorFromAttribute(Type type, out MessageDescriptor descriptor)
+        private static bool TryGetDescriptorFromAttribute(Type type, out MessageDescriptor descriptor)
         {
-            var attribute = type.GetCustomAttribute<MessageAttribute>();
-
-            if (attribute == null)
-            {
-                descriptor = MessageDescriptor.CreateFromType(type);
-                return true;
-            }
-
-            descriptor = MessageDescriptor.CreateFromAttribute(attribute);
+            descriptor = MessageDescriptor.CreateFromType(type);
             return true;
         }
 

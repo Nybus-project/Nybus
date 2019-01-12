@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -54,7 +55,7 @@ namespace Nybus.RabbitMq
 
                 foreach (var type in _messageDescriptorStore.Events)
                 {
-                    var exchangeName = GetExchangeNameForType(type);
+                    var exchangeName = MessageDescriptor.CreateFromType(type);
 
                     _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
@@ -70,7 +71,7 @@ namespace Nybus.RabbitMq
 
                 foreach (var type in _messageDescriptorStore.Commands)
                 {
-                    var exchangeName = GetExchangeNameForType(type);
+                    var exchangeName = MessageDescriptor.CreateFromType(type);
 
                     _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
@@ -200,7 +201,7 @@ namespace Nybus.RabbitMq
                 properties.Headers.Add(Nybus(header.Key), header.Value);
             }
 
-            var exchangeName = GetExchangeNameForType(type);
+            var exchangeName = MessageDescriptor.CreateFromType(type);
 
             _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
@@ -274,8 +275,6 @@ namespace Nybus.RabbitMq
             _channel.BasicNack(deliveryTag, false, true);
             _processingMessages.TryRemoveItem(deliveryTag);
         }
-
-        private static string GetExchangeNameForType(Type type) => type.FullName; //$"{type.Namespace}:{type.Name}";
 
         private static string Nybus(string key) => $"Nybus:{key}";
     }

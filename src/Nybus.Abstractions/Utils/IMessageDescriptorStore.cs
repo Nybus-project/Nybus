@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Nybus.Utils
 {
@@ -33,19 +34,15 @@ namespace Nybus.Utils
                 throw new ArgumentNullException(nameof(type));
             }
 
-            return new MessageDescriptor(type.Name, type.Namespace);
-        }
+            var attribute = type.GetCustomAttribute<MessageAttribute>();
 
-        public static MessageDescriptor CreateFromAttribute (MessageAttribute attribute)
-        {
             if (attribute == null)
             {
-                throw new ArgumentNullException(nameof(attribute));
+                return new MessageDescriptor(type);
             }
-
-            return new MessageDescriptor(attribute.Name, attribute.Namespace);
+            
+            return new MessageDescriptor(attribute);
         }
-
 
         private static readonly char[] Separators = new []{':'};
 
@@ -69,6 +66,10 @@ namespace Nybus.Utils
             return true;
         }
 
+        public MessageDescriptor(MessageAttribute attribute) : this (attribute.Name, attribute.Namespace) { }
+
+        public MessageDescriptor(Type type) : this (type.Name, type.Namespace) { }
+
         public MessageDescriptor(string name, string @namespace)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
@@ -81,7 +82,7 @@ namespace Nybus.Utils
 
         public override string ToString() => $"{Namespace}:{Name}";
 
-        public static implicit operator MessageDescriptor(Type type) => CreateFromType(type);
+        public static implicit operator string(MessageDescriptor descriptor) => descriptor.ToString();
 
         public static readonly IEqualityComparer<MessageDescriptor> EqualityComparer = new MessageDescriptorEqualityComparer();
 

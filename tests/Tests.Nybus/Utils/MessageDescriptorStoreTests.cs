@@ -20,7 +20,7 @@ namespace Tests.Utils
         [CustomAutoMoqData]
         public void Command_type_can_be_found_by_its_descriptor(MessageDescriptorStore sut)
         {
-            var descriptor = MessageDescriptor.CreateFromType(typeof(FirstTestCommand));
+            var descriptor = new MessageDescriptor(typeof(FirstTestCommand));
 
             sut.RegisterCommandType<FirstTestCommand>();
 
@@ -43,7 +43,7 @@ namespace Tests.Utils
         [CustomAutoMoqData]
         public void Event_type_can_be_found_by_its_descriptor(MessageDescriptorStore sut)
         {
-            var descriptor = MessageDescriptor.CreateFromType(typeof(FirstTestEvent));
+            var descriptor = new MessageDescriptor(typeof(FirstTestEvent));
 
             sut.RegisterEventType<FirstTestEvent>();
 
