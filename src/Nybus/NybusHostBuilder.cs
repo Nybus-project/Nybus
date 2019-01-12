@@ -9,7 +9,7 @@ namespace Nybus
     public class NybusHostBuilder : ISubscriptionBuilder
     {
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IList<Action<IBusHost>> _subscriptions = new List<Action<IBusHost>>();
+        private readonly IList<Action<NybusHost>> _subscriptions = new List<Action<NybusHost>>();
 
         public NybusHostBuilder(ILoggerFactory loggerFactory)
         {

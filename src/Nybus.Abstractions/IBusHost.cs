@@ -17,12 +17,6 @@ namespace Nybus
 
         Task StopAsync();
 
-        void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand;
-
-        void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent;
-
-        IBusExecutionEnvironment ExecutionEnvironment { get; }
-
         IBus Bus { get; }
     }
 
