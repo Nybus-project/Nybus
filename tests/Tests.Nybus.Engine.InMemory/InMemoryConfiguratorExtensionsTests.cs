@@ -14,7 +14,7 @@ namespace Tests
     [TestFixture]
     public class InMemoryConfiguratorExtensionsTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseInMemoryBusEngine_registers_InMemory_bus_engine(TestNybusConfigurator nybus, IServiceCollection services)
         {
             InMemoryConfiguratorExtensions.UseInMemoryBusEngine(nybus);

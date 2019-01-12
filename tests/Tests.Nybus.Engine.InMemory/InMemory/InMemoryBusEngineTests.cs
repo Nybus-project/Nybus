@@ -16,13 +16,13 @@ namespace Tests.InMemory
     [TestFixture]
     public class InMemoryBusEngineTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Constructor_is_guarded(GuardClauseAssertion assertion)
         {
             assertion.Verify(typeof(InMemoryBusEngine).GetConstructors());
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_adds_type_to_AcceptedTypes_list(InMemoryBusEngine sut)
         {
             sut.SubscribeToCommand<FirstTestCommand>();
@@ -30,7 +30,7 @@ namespace Tests.InMemory
             Assert.That(sut.IsTypeAccepted(typeof(FirstTestCommand)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_adds_type_AcceptedTypes_list(InMemoryBusEngine sut)
         {
             sut.SubscribeToEvent<FirstTestEvent>();
@@ -38,7 +38,7 @@ namespace Tests.InMemory
             Assert.That(sut.IsTypeAccepted(typeof(FirstTestEvent)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Sent_commands_are_received([Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage, IFixture fixture)
         {
             fixture.Customize<Envelope>(c => c
@@ -63,7 +63,7 @@ namespace Tests.InMemory
             Assert.That(items.First(), Is.EqualTo(testMessage).Using<CommandMessage<FirstTestCommand>>((x, y) => x.MessageId == y.MessageId));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Sent_events_are_received([Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage, IFixture fixture)
         {
             fixture.Customize<Envelope>(c => c
@@ -88,7 +88,7 @@ namespace Tests.InMemory
             Assert.That(items.First(), Is.EqualTo(testMessage).Using<EventMessage<FirstTestEvent>>((x, y) => x.MessageId == y.MessageId));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Stop_completes_the_sequence_if_started(InMemoryBusEngine sut)
         {
             var sequence = await sut.StartAsync();
@@ -106,19 +106,19 @@ namespace Tests.InMemory
             Assert.That(isCompleted, Is.True);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Stop_is_ignored_if_not_started(InMemoryBusEngine sut)
         {
             await sut.StopAsync();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void NotifySuccess_returns_completed_task(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
         {
             Assert.That(sut.NotifySuccessAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void NotifySuccess_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var handler = Mock.Of <EventHandler<MessageEventArgs>>();
@@ -131,7 +131,7 @@ namespace Tests.InMemory
             Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void NotifySuccess_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
             var handler = Mock.Of<EventHandler<MessageEventArgs>>();
@@ -144,25 +144,25 @@ namespace Tests.InMemory
             Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void NotifySuccess_returns_completed_task(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
             Assert.That(sut.NotifySuccessAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void NotifyFail_returns_completed_task(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
         {
             Assert.That(sut.NotifyFailAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void NotifyFail_returns_completed_task(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
             Assert.That(sut.NotifyFailAsync(testMessage), Is.SameAs(Task.CompletedTask));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void NotifyFail_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var handler = Mock.Of<EventHandler<MessageEventArgs>>();
@@ -175,7 +175,7 @@ namespace Tests.InMemory
             Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void NotifyFail_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
         {
             var handler = Mock.Of<EventHandler<MessageEventArgs>>();
@@ -188,7 +188,7 @@ namespace Tests.InMemory
             Mock.Get(handler).Verify(p => p(sut, It.Is<MessageEventArgs>(m => ReferenceEquals(m.Message, testMessage))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Commands_are_ignored_if_not_registered([Frozen] IMessageDescriptorStore messageDescriptorStore, [Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage, IFixture fixture)
         {
             fixture.Customize<Envelope>(c => c
@@ -211,7 +211,7 @@ namespace Tests.InMemory
             Assert.That(items, Is.Empty);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Events_are_ignored_if_not_registered([Frozen] IMessageDescriptorStore messageDescriptorStore, [Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage, IFixture fixture)
         {
             fixture.Customize<Envelope>(c => c
@@ -244,7 +244,7 @@ namespace Tests.InMemory
             Assert.Throws<ArgumentNullException>(() => new MessageEventArgs(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Message_is_attached([Frozen] Message message, MessageEventArgs sut)
         {
             Assert.That(sut.Message, Is.SameAs(message));

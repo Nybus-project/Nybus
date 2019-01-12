@@ -32,7 +32,7 @@ namespace Tests.RabbitMq
             Assert.Throws<ArgumentNullException>(() => new ObservableConsumer(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Can_subscribe_to_incoming_messages(string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, IBasicProperties properties, byte[] body)
         {
             var messages = new List<BasicDeliverEventArgs>();
@@ -54,7 +54,7 @@ namespace Tests.RabbitMq
             subscription.Dispose();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Messages_are__not_lost_if_not_subscribed(string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, IBasicProperties properties, byte[] body)
         {
             
@@ -87,7 +87,7 @@ namespace Tests.RabbitMq
             Assert.Throws<ArgumentNullException>(() => sut.ConsumeFrom(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void IsRunning_returns_true_if_consumer_registered(ObservableConsumer sut, string consumerTag)
         {
             sut.HandleBasicConsumeOk(consumerTag);
@@ -95,13 +95,13 @@ namespace Tests.RabbitMq
             Assert.That(sut.IsRunning, Is.True);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void HandleBasicConsumeOk_accepts_incoming_consumerTag(ObservableConsumer sut, string consumerTag)
         {
             sut.HandleBasicConsumeOk(consumerTag);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void HandleBasicCancel_accepts_departing_consumerTag(ObservableConsumer sut, string consumerTag)
         {
             sut.HandleBasicConsumeOk(consumerTag);
@@ -109,7 +109,7 @@ namespace Tests.RabbitMq
             sut.HandleBasicCancel(consumerTag);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void HandleBasicCancel_raise_ConsumerCancelled_event(ObservableConsumer sut, string consumerTag)
         {
             var eventHandler = Mock.Of<EventHandler<ConsumerEventArgs>>();
@@ -125,7 +125,7 @@ namespace Tests.RabbitMq
             Mock.Get(eventHandler).Verify(p => p(sut, It.Is<ConsumerEventArgs>(c => c.ConsumerTag == consumerTag)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void HandleBasicCancelOk_accepts_departing_consumerTag(ObservableConsumer sut, string consumerTag)
         {
             sut.HandleBasicConsumeOk(consumerTag);
@@ -133,7 +133,7 @@ namespace Tests.RabbitMq
             sut.HandleBasicCancelOk(consumerTag);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void HandleBasicCancelOk_raise_ConsumerCancelled_event(ObservableConsumer sut, string consumerTag)
         {
             var eventHandler = Mock.Of<EventHandler<ConsumerEventArgs>>();
@@ -149,7 +149,7 @@ namespace Tests.RabbitMq
             Mock.Get(eventHandler).Verify(p => p(sut, It.Is<ConsumerEventArgs>(c => c.ConsumerTag == consumerTag)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Handle_([Frozen] IModel model, ObservableConsumer sut, ShutdownEventArgs shutdownEventArgs)
         {
             sut.HandleModelShutdown(model, shutdownEventArgs);

@@ -20,7 +20,7 @@ namespace Tests
             configuratorDelegate = Mock.Of<Action<INybusConfigurator>>();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ServiceCollection_is_returned(IServiceCollection services)
         {
             var result = ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);
@@ -28,7 +28,7 @@ namespace Tests
             Assert.That(result, Is.SameAs(services));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void AddNybus_invokes_configuratorDelegate(IServiceCollection services)
         {
             ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);
@@ -49,7 +49,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == serviceType && sd.ImplementationFactory != null)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void AddNybus_registers_NybusHostOptions(IServiceCollection services, IConfigurationSection configuration)
         {
             ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);

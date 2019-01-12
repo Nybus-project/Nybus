@@ -8,7 +8,7 @@ namespace Tests.Utils
     public class MessageDescriptorStoreTests
     {
         [Test]
-        [AutoMoqData]
+        [CustomAutoMoqData]
         public void Same_command_type_wont_be_registered_twice(MessageDescriptorStore sut)
         {
             Assume.That(sut.RegisterCommandType<FirstTestCommand>(), Is.True);
@@ -17,7 +17,7 @@ namespace Tests.Utils
         }
 
         [Test]
-        [AutoMoqData]
+        [CustomAutoMoqData]
         public void Command_type_can_be_found_by_its_descriptor(MessageDescriptorStore sut)
         {
             var descriptor = MessageDescriptor.CreateFromType(typeof(FirstTestCommand));
@@ -31,7 +31,7 @@ namespace Tests.Utils
         }
 
         [Test]
-        [AutoMoqData]
+        [CustomAutoMoqData]
         public void Same_event_type_wont_be_registered_twice(MessageDescriptorStore sut)
         {
             Assume.That(sut.RegisterEventType<FirstTestEvent>(), Is.True);
@@ -40,7 +40,7 @@ namespace Tests.Utils
         }
 
         [Test]
-        [AutoMoqData]
+        [CustomAutoMoqData]
         public void Event_type_can_be_found_by_its_descriptor(MessageDescriptorStore sut)
         {
             var descriptor = MessageDescriptor.CreateFromType(typeof(FirstTestEvent));

@@ -7,25 +7,13 @@ using Moq;
 using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
+using static Tests.TestUtils;
 
 namespace Tests
 {
     [TestFixture]
     public class DelegateHandlerBareConfigurationTests
     {
-        private static IBusHost CreateNybusHost(Action<INybusConfigurator> configurator)
-        {
-            var services = new ServiceCollection().AddLogging();
-
-            services.AddNybus(configurator);
-
-            var serviceProvider = services.BuildServiceProvider();
-
-            var host = serviceProvider.GetRequiredService<IBusHost>();
-
-            return host;
-        }
-
         [Test, AutoMoqData]
         public async Task Host_can_loopback_commands(FakeServer server, FirstTestCommand testCommand)
         {

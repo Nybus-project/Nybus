@@ -1,15 +1,17 @@
-using System;
+using System.Linq;
+using System.Text;
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using AutoFixture.Kernel;
 using AutoFixture.NUnit3;
+using Nybus.Configuration;
 using Nybus.Utils;
 
 namespace Tests
 {
-    public class AutoMoqDataAttribute : AutoDataAttribute
+    public class CustomAutoMoqDataAttribute : AutoDataAttribute
     {
-        public AutoMoqDataAttribute() : base(CreateFixture)
+        public CustomAutoMoqDataAttribute() : base(CreateFixture)
         {
             
         }
@@ -24,17 +26,23 @@ namespace Tests
                 GenerateDelegates = true
             });
 
-            fixture.Freeze<IServiceProvider>();
+            fixture.Customizations.Add(new TypeRelay(typeof(ISerializer), typeof(JsonSerializer)));
 
             fixture.Customizations.Add(new TypeRelay(typeof(IMessageDescriptorStore), typeof(TestMessageDescriptorStore)));
+
+            fixture.Register(() => TemporaryQueueFactory.Instance as TemporaryQueueFactory);
+
+            fixture.Customizations.Add(new ElementsBuilder<Encoding>(Encoding.GetEncodings().Select(e => e.GetEncoding())));
+
+            fixture.Customize<RabbitMqOptions>(c => c.With(p => p.OutboundEncoding, (Encoding encoding) => encoding.WebName));
 
             return fixture;
         }
     }
 
-    public class InlineAutoMoqDataAttribute : InlineAutoDataAttribute
+    public class CustomInlineAutoMoqDataAttribute : InlineAutoDataAttribute
     {
-        public InlineAutoMoqDataAttribute(params object[] args) : base(CreateFixture, args)
+        public CustomInlineAutoMoqDataAttribute(params object[] args) : base(CreateFixture, args)
         {
             
         }
@@ -48,6 +56,8 @@ namespace Tests
                 ConfigureMembers = true,
                 GenerateDelegates = true
             });
+
+            fixture.Customizations.Add(new TypeRelay(typeof(ISerializer), typeof(JsonSerializer)));
 
             return fixture;
         }

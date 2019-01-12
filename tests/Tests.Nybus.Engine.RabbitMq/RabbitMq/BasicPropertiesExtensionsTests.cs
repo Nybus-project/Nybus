@@ -13,7 +13,7 @@ namespace Tests.RabbitMq
     [TestFixture]
     public class BasicPropertiesExtensionsTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void GetHeader_supports_bytes(IBasicProperties properties, string headerName, Encoding encoding, string value)
         {
             var values = new Dictionary<string, object>
@@ -28,7 +28,7 @@ namespace Tests.RabbitMq
             Assert.That(result, Is.EqualTo(value));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void GetHeader_supports_strings(IBasicProperties properties, string headerName, Encoding encoding, string value)
         {
             var values = new Dictionary<string, object>
@@ -43,7 +43,7 @@ namespace Tests.RabbitMq
             Assert.That(result, Is.EqualTo(value));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void GetHeader_returns_null_if_unknown_type(IBasicProperties properties, string headerName, Encoding encoding, object value)
         {
             var values = new Dictionary<string, object>

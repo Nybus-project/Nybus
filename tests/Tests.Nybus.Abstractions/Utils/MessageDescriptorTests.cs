@@ -19,7 +19,7 @@ namespace Tests.Utils
             Assert.Throws<ArgumentNullException>(() => MessageDescriptor.CreateFromAttribute(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void TryParse_return_false_if_null()
         {
             var result = MessageDescriptor.TryParse(null, out var descriptor);
@@ -28,7 +28,7 @@ namespace Tests.Utils
             Assert.That(descriptor, Is.Null);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void TryParse_requires_correct_format(string descriptorName)
         {
             var result = MessageDescriptor.TryParse(descriptorName, out var descriptor);
@@ -37,7 +37,7 @@ namespace Tests.Utils
             Assert.That(descriptor, Is.Null);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void MessageDescriptor_can_be_created_from_Type(Type type)
         {
             MessageDescriptor descriptor = type;

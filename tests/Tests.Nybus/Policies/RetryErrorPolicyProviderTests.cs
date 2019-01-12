@@ -12,19 +12,19 @@ namespace Tests.Policies
     [TestFixture]
     public class RetryErrorPolicyProviderTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void LoggerFactory_is_required()
         {
             Assert.Throws<ArgumentNullException>(() => new RetryErrorPolicyProvider(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ProviderName_is_retry(RetryErrorPolicyProvider sut)
         {
             Assert.That(sut.ProviderName, Is.EqualTo("retry"));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreatePolicy_returns_RetryErrorPolicy_instance(RetryErrorPolicyProvider sut, IConfigurationSection configurationSection, int maxRetries)
         {
             Mock.Get(configurationSection.GetSection("MaxRetries")).Setup(p => p.Value).Returns(maxRetries.ToString());

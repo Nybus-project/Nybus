@@ -8,7 +8,7 @@ namespace Tests.RabbitMq
     [TestFixture]
     public class BufferSubjectTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void IsRunning_returns_false_when_OnCompleted(BufferSubject<string> sut)
         {
             sut.OnCompleted();
@@ -16,7 +16,7 @@ namespace Tests.RabbitMq
             Assert.That(sut.IsRunning, Is.False);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void IsRunning_returns_false_when_OnCompleted_with_subscribers(BufferSubject<string> sut, IObserver<string> observer)
         {
             sut.Subscribe(observer);
@@ -26,7 +26,7 @@ namespace Tests.RabbitMq
             Assert.That(sut.IsRunning, Is.False);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void IsRunning_returns_false_after_error(BufferSubject<string> sut, Exception error)
         {
             sut.OnError(error);
@@ -34,7 +34,7 @@ namespace Tests.RabbitMq
             Assert.That(sut.IsRunning, Is.False);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void IsRunning_returns_false_after_error_with_subscribers(BufferSubject<string> sut, IObserver<string> observer, Exception error)
         {
             sut.Subscribe(observer);
@@ -44,7 +44,7 @@ namespace Tests.RabbitMq
             Assert.That(sut.IsRunning, Is.False);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Early_subscriber_is_notified_when_completed(BufferSubject<string> sut, IObserver<string> observer)
         {
             sut.Subscribe(observer);
@@ -54,7 +54,7 @@ namespace Tests.RabbitMq
             observer.IsCompleted();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Late_subscriber_is_notified_when_completed(BufferSubject<string> sut, IObserver<string> observer)
         {
             sut.OnCompleted();
@@ -64,7 +64,7 @@ namespace Tests.RabbitMq
             observer.IsCompleted();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_early_subscriber_is_notified_when_completed(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second)
         {
             sut.Subscribe(first);
@@ -76,7 +76,7 @@ namespace Tests.RabbitMq
             second.IsCompleted();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_late_subscriber_is_notified_when_completed(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second)
         {
             sut.OnCompleted();
@@ -88,7 +88,7 @@ namespace Tests.RabbitMq
             second.IsCompleted();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_late_with_early_first_subscriber_is_notified_when_completed(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second)
         {
             sut.Subscribe(first);
@@ -100,7 +100,7 @@ namespace Tests.RabbitMq
             second.IsCompleted();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Early_subscriber_is_notified_when_error(BufferSubject<string> sut, IObserver<string> observer, Exception error)
         {
             sut.Subscribe(observer);
@@ -110,7 +110,7 @@ namespace Tests.RabbitMq
             observer.HasError(error);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Late_subscriber_is_notified_when_error(BufferSubject<string> sut, IObserver<string> observer, Exception error)
         {
             sut.OnError(error);
@@ -120,7 +120,7 @@ namespace Tests.RabbitMq
             observer.HasError(error);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_early_subscriber_is_notified_when_error(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second, Exception error)
         {
             sut.Subscribe(first);
@@ -132,7 +132,7 @@ namespace Tests.RabbitMq
             second.HasError(error);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_late_subscriber_is_notified_when_error(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second, Exception error)
         {
             sut.OnError(error);
@@ -144,7 +144,7 @@ namespace Tests.RabbitMq
             second.HasError(error);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_late_with_early_first_subscriber_is_notified_when_error(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second, Exception error)
         {
             sut.Subscribe(first);
@@ -156,7 +156,7 @@ namespace Tests.RabbitMq
             second.HasError(error);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Early_subscriber_gets_all_items(BufferSubject<string> sut, IObserver<string> observer, Generator<string> generator)
         {
             sut.Subscribe(observer);
@@ -170,7 +170,7 @@ namespace Tests.RabbitMq
             observer.ReceivedItems(3);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Late_subscriber_gets_all_items(BufferSubject<string> sut, IObserver<string> observer, Generator<string> generator)
         {
             sut.OnNext(generator);
@@ -184,7 +184,7 @@ namespace Tests.RabbitMq
             observer.ReceivedItems(3);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_early_subscriber_gets_all_items(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second, Generator<string> generator)
         {
             sut.Subscribe(first);
@@ -200,7 +200,7 @@ namespace Tests.RabbitMq
             second.ReceivedItems(3);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_late_subscriber_gets_no_item(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second, Generator<string> generator)
         {
             sut.OnNext(generator);
@@ -216,7 +216,7 @@ namespace Tests.RabbitMq
             second.ReceivedNoItem();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Second_late_subscriber_with_early_first_subscriber_gets_no_item(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second, Generator<string> generator)
         {
             sut.Subscribe(first);
@@ -236,7 +236,7 @@ namespace Tests.RabbitMq
     [TestFixture]
     public class BufferSubjectComplexTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Complex_scenario_1(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second, Generator<string> generator)
         {
             sut.OnNext(generator);
@@ -251,7 +251,7 @@ namespace Tests.RabbitMq
             second.IsCompleted();
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Complex_scenario_2(BufferSubject<string> sut, IObserver<string> first, IObserver<string> second, Generator<string> generator)
         {
             sut.OnNext(generator);
@@ -268,7 +268,7 @@ namespace Tests.RabbitMq
         }
 
         [Test(Description = "When the only subscriber disconnects and then reconnects, the items published in the meanwhile are not lost")]
-        [AutoMoqData]
+        [CustomAutoMoqData]
         public void Complex_scenario_3(BufferSubject<string> sut, IObserver<string> observer, Generator<string> generator)
         {
             sut.OnNext(generator);

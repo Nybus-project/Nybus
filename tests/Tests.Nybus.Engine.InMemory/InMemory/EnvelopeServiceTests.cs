@@ -11,19 +11,19 @@ namespace Tests.InMemory
     [TestFixture]
     public class EnvelopeServiceTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Create_from_CommandMessage_requires_valid_message(EnvelopeService sut)
         {
             Assert.Throws<ArgumentNullException>(() => sut.CreateEnvelope((CommandMessage<FirstTestCommand>)null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Create_from_EventMessage_requires_valid_message(EnvelopeService sut)
         {
             Assert.Throws<ArgumentNullException>(() => sut.CreateEnvelope((EventMessage<FirstTestEvent>)null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Create_from_CommandMessage_can_create_envelope(EnvelopeService sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var envelope = sut.CreateEnvelope(testMessage);
@@ -35,7 +35,7 @@ namespace Tests.InMemory
             Assert.That(envelope.MessageType, Is.EqualTo(testMessage.MessageType));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Create_from_EventMessage_can_create_envelope(EnvelopeService sut, EventMessage<FirstTestEvent> testMessage)
         {
             var envelope = sut.CreateEnvelope(testMessage);
@@ -47,7 +47,7 @@ namespace Tests.InMemory
             Assert.That(envelope.MessageType, Is.EqualTo(testMessage.MessageType));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Create_from_CommandMessage_uses_serializer([Frozen] ISerializer serializer, EnvelopeService sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var envelope = sut.CreateEnvelope(testMessage);
@@ -57,7 +57,7 @@ namespace Tests.InMemory
             Mock.Get(serializer).Verify(p => p.SerializeObject(testMessage.Command), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Create_from_EventMessage_uses_serializer([Frozen] ISerializer serializer, EnvelopeService sut, EventMessage<FirstTestEvent> testMessage)
         {
             var envelope = sut.CreateEnvelope(testMessage);
@@ -67,19 +67,19 @@ namespace Tests.InMemory
             Mock.Get(serializer).Verify(p => p.SerializeObject(testMessage.Event), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateCommandMessage_requires_valid_envelope(EnvelopeService sut, Type type)
         {
             Assert.Throws<ArgumentNullException>(() => sut.CreateCommandMessage(null, type));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateCommandMessage_requires_valid_commandType(EnvelopeService sut, Envelope envelope)
         {
             Assert.Throws<ArgumentNullException>(() => sut.CreateCommandMessage(envelope, null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateCommandMessage_returns_message_from_Envelope([Frozen] ISerializer serializer, EnvelopeService sut, Envelope envelope, FirstTestCommand testCommand)
         {
             envelope.MessageType = MessageType.Command;
@@ -95,19 +95,19 @@ namespace Tests.InMemory
             Assert.That(commandMessage.MessageType, Is.EqualTo(envelope.MessageType));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateEventMessage_requires_valid_envelope(EnvelopeService sut, Type type)
         {
             Assert.Throws<ArgumentNullException>(() => sut.CreateEventMessage(null, type));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateEventMessage_requires_valid_eventType(EnvelopeService sut, Envelope envelope)
         {
             Assert.Throws<ArgumentNullException>(() => sut.CreateEventMessage(envelope, null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateEventMessage_returns_message_from_Envelope([Frozen] ISerializer serializer, EnvelopeService sut, Envelope envelope, FirstTestEvent testEvent)
         {
             envelope.MessageType = MessageType.Event;

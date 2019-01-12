@@ -16,7 +16,7 @@ namespace Tests.Configuration
             Assert.Throws<ArgumentNullException>(() => new DelegateWrapperCommandHandler<FirstTestCommand>(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Handler_is_executed(IDispatcher dispatcher, ICommandContext<FirstTestCommand> context)
         {
             var handler = Mock.Of<CommandReceived<FirstTestCommand>>();
@@ -28,7 +28,7 @@ namespace Tests.Configuration
             Mock.Get(handler).Verify(p => p(dispatcher, context), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Handler_errors_are_not_caught(IDispatcher dispatcher, ICommandContext<FirstTestCommand> context, Exception error)
         {
             var handler = Mock.Of<CommandReceived<FirstTestCommand>>();

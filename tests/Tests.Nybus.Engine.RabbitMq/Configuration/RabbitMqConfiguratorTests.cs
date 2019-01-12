@@ -12,7 +12,7 @@ namespace Tests.Configuration
     [TestFixture]
     public class RabbitMqConfiguratorTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void RegisterQueueFactoryProvider_adds_provider_with_default_setup(RabbitMqConfigurator sut, TestNybusConfigurator configurator)
         {
             sut.RegisterQueueFactoryProvider<TestQueueFactoryProvider>();
@@ -30,7 +30,7 @@ namespace Tests.Configuration
             Assert.That(provider, Is.InstanceOf<TestQueueFactoryProvider>());
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void RegisterQueueFactoryProvider_adds_provider_with_custom_setup(RabbitMqConfigurator sut, TestNybusConfigurator configurator, TestQueueFactoryProvider factoryProvider)
         {
             var setup = new Mock<Func<IServiceProvider, IQueueFactoryProvider>>();
@@ -52,7 +52,7 @@ namespace Tests.Configuration
             Assert.That(provider, Is.SameAs(factoryProvider));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Configure_sets_action_to_be_used(RabbitMqConfigurator sut, TestNybusConfigurator configurator, IConfigurationFactory configurationFactory, RabbitMqOptions options)
         {
             var configurationSetup = new Mock<Action<IRabbitMqConfiguration>>();
@@ -75,7 +75,7 @@ namespace Tests.Configuration
             configurationSetup.Verify(p => p(configuration), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseConfiguration_binds_values_to_options(RabbitMqConfigurator sut, TestNybusConfigurator configurator, IConfigurationFactory configurationFactory, string nybusSectionName, string rabbitMqSectionName)
         {
             var values = new Dictionary<string, string>

@@ -10,7 +10,7 @@ namespace Tests
     [TestFixture]
     public class NybusHostBuilderTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void BuildHost_assembles_host(NybusHostBuilder sut, IBusEngine engine, IServiceProvider serviceProvider, NybusConfiguration configuration)
         {
             var host = sut.BuildHost(engine, serviceProvider, configuration);
@@ -44,13 +44,13 @@ namespace Tests
             Assert.That(host, Is.Not.Null);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_throws_if_type_is_not_valid(NybusHostBuilder sut, Type type)
         {
             Assert.Throws<ArgumentException>(() => sut.SubscribeToCommand<FirstTestCommand>(type));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_throws_if_type_is_not_valid(NybusHostBuilder sut, Type type)
         {
             Assert.Throws<ArgumentException>(() => sut.SubscribeToEvent<FirstTestEvent>(type));

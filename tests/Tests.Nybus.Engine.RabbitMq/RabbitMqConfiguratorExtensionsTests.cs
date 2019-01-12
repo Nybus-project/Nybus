@@ -16,7 +16,7 @@ namespace Tests
     [TestFixture]
     public class RabbitMqConfiguratorExtensionsTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseRabbitMqBusEngine_registers_RabbitMqBusEngine(TestNybusConfigurator configurator, IServiceCollection services)
         {
             RabbitMqConfiguratorExtensions.UseRabbitMqBusEngine(configurator);
@@ -26,7 +26,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IBusEngine) && sd.ImplementationType == typeof(RabbitMqBusEngine))), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseRabbitMqBusEngine_registers_ConfigurationFactory(TestNybusConfigurator configurator, IServiceCollection services)
         {
             RabbitMqConfiguratorExtensions.UseRabbitMqBusEngine(configurator);
@@ -37,7 +37,7 @@ namespace Tests
 
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseRabbitMqBusEngine_registers_ConnectionFactoryProviders(TestNybusConfigurator configurator, IServiceCollection services)
         {
             RabbitMqConfiguratorExtensions.UseRabbitMqBusEngine(configurator);
@@ -47,7 +47,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IConnectionFactoryProviders) && sd.ImplementationType == typeof(ConnectionFactoryProviders))), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseRabbitMqBusEngine_registers_TemporaryQueueFactoryProvider(TestNybusConfigurator configurator, IServiceCollection services)
         {
             RabbitMqConfiguratorExtensions.UseRabbitMqBusEngine(configurator);
@@ -57,7 +57,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IQueueFactoryProvider) && sd.ImplementationType == typeof(TemporaryQueueFactoryProvider))), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseRabbitMqBusEngine_registers_StaticQueueFactoryProvider(TestNybusConfigurator configurator, IServiceCollection services)
         {
             RabbitMqConfiguratorExtensions.UseRabbitMqBusEngine(configurator);
@@ -67,7 +67,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IQueueFactoryProvider) && sd.ImplementationType == typeof(StaticQueueFactoryProvider))), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseRabbitMqBusEngine_invokes_configuration_delegate(TestNybusConfigurator configurator, IServiceCollection services)
         {
             Mock<Action<IRabbitMqConfigurator>> configurationDelegate = new Mock<Action<IRabbitMqConfigurator>>();

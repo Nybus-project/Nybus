@@ -8,19 +8,19 @@ namespace Tests.Utils
     [TestFixture]
     public class MessageDescriptorEqualityComparerTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Item_is_equal_to_itself(IEqualityComparer<MessageDescriptor> sut, MessageDescriptor descriptor)
         {
             Assert.That(sut.Equals(descriptor, descriptor), Is.True);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Null_is_equal_to_itself(IEqualityComparer<MessageDescriptor> sut)
         {
             Assert.That(sut.Equals(null, null), Is.True);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Items_with_same_values_are_equal(
             IEqualityComparer<MessageDescriptor> sut, 
             [Frozen(Matching.ParameterName)] string name, // must have the same name as the MessageDescriptor.ctor parameter
@@ -34,19 +34,19 @@ namespace Tests.Utils
             Assert.That(sut.Equals(first, second), Is.True);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Item_is_not_equal_to_null(IEqualityComparer<MessageDescriptor> sut, MessageDescriptor descriptor)
         {
             Assert.That(sut.Equals(descriptor, null), Is.False);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Null_is_not_equal_to_any_item(IEqualityComparer<MessageDescriptor> sut, MessageDescriptor descriptor)
         {
             Assert.That(sut.Equals(null, descriptor), Is.False);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Items_with_same_values_have_same_hashcode(
             IEqualityComparer<MessageDescriptor> sut,
             [Frozen(Matching.ParameterName)] string name, // must have the same name as the MessageDescriptor.ctor parameter

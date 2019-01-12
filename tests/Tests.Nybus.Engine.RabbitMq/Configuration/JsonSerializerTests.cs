@@ -8,7 +8,7 @@ namespace Tests.Configuration
     [TestFixture]
     public class JsonSerializerTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SerializeObject_returns_byte_representation_of_object(JsonSerializer sut, FirstTestCommand testObject)
         {
             var json = JsonConvert.SerializeObject(testObject);
@@ -19,7 +19,7 @@ namespace Tests.Configuration
             CollectionAssert.AreEqual(bytes, result);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void DeserializeObject_returns_object_from_byte_representation(JsonSerializer sut, FirstTestCommand testObject)
         {
             var json = JsonConvert.SerializeObject(testObject);

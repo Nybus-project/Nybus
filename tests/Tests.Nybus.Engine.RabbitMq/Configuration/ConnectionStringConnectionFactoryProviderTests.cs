@@ -11,7 +11,7 @@ namespace Tests.Configuration
     [TestFixture]
     public class ConnectionStringConnectionFactoryProviderTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ConnectionString_value_is_required(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section)
         {
             Mock.Get(section).SetupGet(p => p.Value).Returns(null as string);
@@ -19,7 +19,7 @@ namespace Tests.Configuration
             Assert.Throws<ArgumentNullException>(() => sut.CreateFactory(section));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_creates_a_ConnectionFactory_from_connectionString(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section, string hostname, string username, string password, string virtualHost)
         {
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -35,7 +35,7 @@ namespace Tests.Configuration
             Assert.That(factory, Is.Not.Null);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_uses_given_hostName(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section, string value)
         {
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -49,7 +49,7 @@ namespace Tests.Configuration
             Assert.That(factory.HostName, Is.EqualTo(value));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_uses_given_username(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section, string value)
         {
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -63,7 +63,7 @@ namespace Tests.Configuration
             Assert.That(factory.UserName, Is.EqualTo(value));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_uses_given_password(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section, string value)
         {
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -77,7 +77,7 @@ namespace Tests.Configuration
             Assert.That(factory.Password, Is.EqualTo(value));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_uses_given_virtualHost(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section, string value)
         {
             var connectionStringBuilder = new DbConnectionStringBuilder();

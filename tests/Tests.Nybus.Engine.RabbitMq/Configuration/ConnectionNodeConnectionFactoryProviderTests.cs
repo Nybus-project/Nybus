@@ -9,7 +9,7 @@ namespace Tests.Configuration
     [TestFixture]
     public class ConnectionNodeConnectionFactoryProviderTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_returns_a_ConnectionFactory(ConnectionNodeConnectionFactoryProvider sut, IConfigurationSection configuration)
         {
             var factory = sut.CreateFactory(configuration);
@@ -18,7 +18,7 @@ namespace Tests.Configuration
             Assert.That(factory, Is.InstanceOf<ConnectionFactory>());
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_adds_hostName(ConnectionNodeConnectionFactoryProvider sut, IConfigurationSection configuration, IConfigurationSection valueSection, string value)
         {
             Mock.Get(valueSection).SetupGet(p => p.Value).Returns(value);
@@ -31,7 +31,7 @@ namespace Tests.Configuration
             Assert.That(factory.HostName, Is.EqualTo(value));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_adds_username(ConnectionNodeConnectionFactoryProvider sut, IConfigurationSection configuration, IConfigurationSection valueSection, string value)
         {
             Mock.Get(valueSection).SetupGet(p => p.Value).Returns(value);
@@ -44,7 +44,7 @@ namespace Tests.Configuration
             Assert.That(factory.UserName, Is.EqualTo(value));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_adds_password(ConnectionNodeConnectionFactoryProvider sut, IConfigurationSection configuration, IConfigurationSection valueSection, string value)
         {
             Mock.Get(valueSection).SetupGet(p => p.Value).Returns(value);
@@ -57,7 +57,7 @@ namespace Tests.Configuration
             Assert.That(factory.Password, Is.EqualTo(value));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_adds_virtualHost(ConnectionNodeConnectionFactoryProvider sut, IConfigurationSection configuration, IConfigurationSection valueSection, string value)
         {
             Mock.Get(valueSection).SetupGet(p => p.Value).Returns(value);
