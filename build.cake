@@ -93,7 +93,8 @@ Task("RunTests")
             {
                 NoBuild = true,
                 NoRestore = true,
-                Logger = $"trx;LogFileName={testResultFile.FullPath}"
+                Logger = $"trx;LogFileName={testResultFile.FullPath}",
+                Filter = "TestCategory!=External"
             };
 
             DotCoverCover(c => c.DotNetCoreTest(projectFile, settings), coverageResultFile, dotCoverSettings);

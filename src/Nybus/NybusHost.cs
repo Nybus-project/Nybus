@@ -26,6 +26,8 @@ namespace Nybus
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
+        public IBus Bus => this;
+
         public Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
             var message = new CommandMessage<TCommand>

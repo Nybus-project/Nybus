@@ -22,6 +22,8 @@ namespace Nybus
         void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent;
 
         IBusExecutionEnvironment ExecutionEnvironment { get; }
+
+        IBus Bus { get; }
     }
 
     public delegate Task CommandReceived<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context) where TCommand : class, ICommand;

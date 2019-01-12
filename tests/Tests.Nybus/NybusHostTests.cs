@@ -41,6 +41,12 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
+        public void Bus_returns_self(NybusHost sut)
+        {
+            Assert.That(sut.Bus, Is.SameAs(sut));
+        }
+
+        [Test, AutoMoqData]
         public async Task InvokeCommandAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestCommand testCommand, Guid correlationId)
         {
             await sut.InvokeCommandAsync(testCommand, correlationId);

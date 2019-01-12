@@ -1,18 +1,30 @@
 ﻿using System;
 using System.Threading.Tasks;
-using FakeRabbitMQ;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
+using RabbitMQ.Client;
 
-namespace Tests
+namespace Tests.External
 {
-    [TestFixture]
+    [ExternalTestFixture]
     public class DelegateHandlerBareConfigurationTests
     {
+        [TearDown]
+        public void OnTestComplete()
+        {
+            var connectionFactory = new ConnectionFactory();
+            var connection = connectionFactory.CreateConnection();
+            var model = connection.CreateModel();
+
+            model.ExchangeDelete(typeof(FirstTestCommand).FullName);
+            model.ExchangeDelete(typeof(FirstTestEvent).FullName);
+
+            connection.Close();
+        }
+
         private static IBusHost CreateNybusHost(Action<INybusConfigurator> configurator)
         {
             var services = new ServiceCollection().AddLogging();
@@ -27,7 +39,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(FakeServer server, FirstTestCommand testCommand)
+        public async Task Host_can_loopback_commands(FirstTestCommand testCommand)
         {
             var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
 
@@ -35,7 +47,7 @@ namespace Tests
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
                 {
-                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
+                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = new ConnectionFactory());
                 });
 
                 nybus.SubscribeToCommand(commandReceived);
@@ -45,13 +57,15 @@ namespace Tests
 
             await host.Bus.InvokeCommandAsync(testCommand);
 
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+
             await host.StopAsync();
 
             Mock.Get(commandReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>()));
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent)
+        public async Task Host_can_loopback_events(FirstTestEvent testEvent)
         {
             var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
 
@@ -59,7 +73,7 @@ namespace Tests
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
                 {
-                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
+                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = new ConnectionFactory());
                 });
 
                 nybus.SubscribeToEvent(eventReceived);
@@ -69,19 +83,21 @@ namespace Tests
 
             await host.Bus.RaiseEventAsync(testEvent);
 
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+
             await host.StopAsync();
 
             Mock.Get(eventReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>()));
         }
 
         [Test, AutoMoqData]
-        public async Task Hosts_can_exchange_commands(FakeServer server, FirstTestCommand testCommand)
+        public async Task Hosts_can_exchange_commands(FirstTestCommand testCommand)
         {
             var sender = CreateNybusHost(nybus =>
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
                 {
-                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
+                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = new ConnectionFactory());
                 });
             });
 
@@ -91,7 +107,7 @@ namespace Tests
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
                 {
-                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
+                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = new ConnectionFactory());
                 });
 
                 nybus.SubscribeToCommand(commandReceived);
@@ -103,6 +119,8 @@ namespace Tests
 
             await sender.Bus.InvokeCommandAsync(testCommand);
 
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
+
             await receiver.StopAsync();
 
             await sender.StopAsync();
@@ -111,13 +129,13 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Hosts_can_exchange_events(FakeServer server, FirstTestEvent testEvent)
+        public async Task Hosts_can_exchange_events(FirstTestEvent testEvent)
         {
             var sender = CreateNybusHost(nybus =>
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
                 {
-                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
+                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = new ConnectionFactory());
                 });
             });
 
@@ -127,7 +145,7 @@ namespace Tests
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
                 {
-                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
+                    rabbitMq.Configure(configuration => configuration.ConnectionFactory = new ConnectionFactory());
                 });
 
                 nybus.SubscribeToEvent(eventReceived);
@@ -138,6 +156,8 @@ namespace Tests
             await receiver.StartAsync();
 
             await sender.Bus.RaiseEventAsync(testEvent);
+
+            await Task.Delay(TimeSpan.FromMilliseconds(50));
 
             await receiver.StopAsync();
 
