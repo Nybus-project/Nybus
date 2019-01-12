@@ -55,7 +55,7 @@ namespace Tests.RabbitMq
         }
 
         [Test, AutoMoqData]
-        public void Messages_are_lost_if_not_subscribed(string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, IBasicProperties properties, byte[] body)
+        public void Messages_are__not_lost_if_not_subscribed(string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, IBasicProperties properties, byte[] body)
         {
             
             var sut = CreateSystemUnderTest();
@@ -64,7 +64,7 @@ namespace Tests.RabbitMq
 
             var messages = sut.DumpInList();
 
-            Assert.That(messages, Is.Empty);
+            Assert.That(messages, Has.Exactly(1).InstanceOf<BasicDeliverEventArgs>());
         }
 
         [Test, AutoData]
