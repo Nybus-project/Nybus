@@ -8,7 +8,7 @@ namespace Nybus.RabbitMq
 {
     public class ObservableConsumer : IBasicConsumer, IObservable<BasicDeliverEventArgs>
     {
-        private readonly ISubject<BasicDeliverEventArgs> _subject = new QueueSubject<BasicDeliverEventArgs>();
+        private readonly ISubject<BasicDeliverEventArgs> _subject = new BufferSubject<BasicDeliverEventArgs>();
         private readonly ISet<string> _consumerTags = new HashSet<string>();
         private readonly object _consumerTagsLock = new object();
 

@@ -21,7 +21,13 @@ namespace Tests
     {
         public static void OnNext<T>(this IObserver<T> observer, Generator<T> generator)
         {
-            observer.OnNext(generator.GetEnumerator().Current);
+            using (var enumerator = generator.GetEnumerator())
+            {
+                if (enumerator.MoveNext())
+                {
+                    observer.OnNext(enumerator.Current);
+                }
+            }
         }
 
         public static void ReceivedItems<T>(this IObserver<T> observer, int times)

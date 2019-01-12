@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Nybus.RabbitMq
 {
-    public class QueueSubject<T> : ISubject<T>
+    public class BufferSubject<T> : ISubject<T>
     {
         private readonly Subject<T> _subject = new Subject<T>();
         private readonly Queue<Action<IObserver<T>>> _actions = new Queue<Action<IObserver<T>>>();
