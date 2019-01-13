@@ -22,7 +22,7 @@ namespace Nybus
 
         public Guid CorrelationId { get; }
 
-        protected Message Message { get; }
+        public Message Message { get; }
     }
 
     public class NybusCommandContext<TCommand> : NybusContext, ICommandContext<TCommand> where TCommand : class, ICommand

@@ -125,7 +125,7 @@ namespace Nybus
 
             async Task ExecuteHandler(ICommandContext<TCommand> context)
             {
-                var dispatcher = new NybusDispatcher(this, context.CorrelationId);
+                var dispatcher = new NybusDispatcher(this, context.Message);
                 await commandReceived(dispatcher, context).ConfigureAwait(false);
             }
 
@@ -167,7 +167,7 @@ namespace Nybus
 
             async Task ExecuteHandler(IEventContext<TEvent> context)
             {
-                var dispatcher = new NybusDispatcher(this, context.CorrelationId);
+                var dispatcher = new NybusDispatcher(this, context.Message);
                 await eventReceived(dispatcher, context).ConfigureAwait(false);
             }
 

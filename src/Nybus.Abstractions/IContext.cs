@@ -9,5 +9,7 @@ namespace Nybus
         DateTimeOffset SentOn { get; }
 
         Guid CorrelationId { get; }
+
+        Message Message { get; }
     }
 }
