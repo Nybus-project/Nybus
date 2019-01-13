@@ -14,7 +14,7 @@ namespace Tests.Configuration
     [TestFixture]
     public class NybusConfiguratorExtensionsTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseBusEngine_registers_BusEngine(INybusConfigurator configurator, TestBusEngine engine)
         {
             IServiceCollection serviceCollection = new ServiceCollection();
@@ -28,7 +28,7 @@ namespace Tests.Configuration
             Assert.That(serviceProvider.GetRequiredService<IBusEngine>(), Is.InstanceOf<TestBusEngine>());
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ServiceConfigurator_delegate_is_registered(INybusConfigurator configurator, TestBusEngine engine)
         {
             var serviceConfigurator = Mock.Of<Action<IServiceCollection>>();

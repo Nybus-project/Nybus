@@ -16,13 +16,13 @@ namespace Tests.Configuration
             Assert.Throws<ArgumentNullException>(() => new StaticQueueFactory(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Model_is_required_when_creating_a_queue(StaticQueueFactory sut)
         {
             Assert.Throws<ArgumentNullException>(() => sut.CreateQueue(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Created_queue_has_correct_name(StaticQueueFactory sut, IModel model)
         {
             sut.CreateQueue(model);
@@ -30,7 +30,7 @@ namespace Tests.Configuration
             Mock.Get(model).Verify(p => p.QueueDeclare(sut.QueueName, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Created_queue_is_durable(StaticQueueFactory sut, IModel model)
         {
             sut.CreateQueue(model);
@@ -38,7 +38,7 @@ namespace Tests.Configuration
             Mock.Get(model).Verify(p => p.QueueDeclare(It.IsAny<string>(), true, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Created_queue_is_not_exclusive(StaticQueueFactory sut, IModel model)
         {
             sut.CreateQueue(model);
@@ -46,7 +46,7 @@ namespace Tests.Configuration
             Mock.Get(model).Verify(p => p.QueueDeclare(It.IsAny<string>(), It.IsAny<bool>(), false, It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Created_queue_is_not_auto_delete(StaticQueueFactory sut, IModel model)
         {
             sut.CreateQueue(model);

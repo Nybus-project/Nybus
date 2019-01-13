@@ -9,13 +9,13 @@ namespace Tests.Configuration
     [TestFixture]
     public class StaticQueueFactoryProviderTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ProviderName_returns_static(StaticQueueFactoryProvider sut)
         {
             Assert.That(sut.ProviderName, Is.EqualTo("static"));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_returns_StaticQueueFactory(StaticQueueFactoryProvider sut, IConfigurationSection configuration, string queueName)
         {
             Mock.Get(configuration.GetSection("QueueName")).SetupGet(p => p.Value).Returns(queueName);
@@ -25,7 +25,7 @@ namespace Tests.Configuration
             Assert.That(factory, Is.InstanceOf<StaticQueueFactory>());
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_returns_StaticQueueFactory_with_given_queueName(StaticQueueFactoryProvider sut, IConfigurationSection configuration, string queueName)
         {
             Mock.Get(configuration.GetSection("QueueName")).SetupGet(p => p.Value).Returns(queueName);
@@ -36,7 +36,7 @@ namespace Tests.Configuration
             Assert.That(factory.QueueName, Is.EqualTo(queueName));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateFactory_throws_if_no_queueName_is_specified(StaticQueueFactoryProvider sut, IConfigurationSection configuration)
         {
             Mock.Get(configuration.GetSection("QueueName")).SetupGet(p => p.Value).Returns(null as string);

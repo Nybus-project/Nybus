@@ -10,7 +10,7 @@ namespace Tests.Configuration
     [TestFixture]
     public class NybusConfiguratorTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void AddServiceConfiguration_configures_given_service(NybusConfigurator sut, Type serviceType, IServiceCollection services)
         {
             sut.AddServiceConfiguration(svc => svc.AddSingleton(serviceType));
@@ -20,7 +20,7 @@ namespace Tests.Configuration
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == serviceType)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void AddServiceConfiguration_invokes_configuration_delegate(NybusConfigurator sut, IServiceCollection services)
         {
             var configurationDelegate = Mock.Of<Action<IServiceCollection>>();
@@ -32,13 +32,13 @@ namespace Tests.Configuration
             Mock.Get(configurationDelegate).Verify(p => p(services), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void AddServiceConfiguration_requires_non_null_configuration_delegate(NybusConfigurator sut)
         {
             Assert.Throws<ArgumentNullException>(() => sut.AddServiceConfiguration(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void AddSubscription_configures(NybusConfigurator sut, ISubscriptionBuilder subscriptionBuilder)
         {
             var subscriptionDelegate = Mock.Of<Action<ISubscriptionBuilder>>();
@@ -50,13 +50,13 @@ namespace Tests.Configuration
             Mock.Get(subscriptionDelegate).Verify(p => p(subscriptionBuilder), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void AddSubscription_requires_non_null_subscription_delegate(NybusConfigurator sut)
         {
             Assert.Throws<ArgumentNullException>(() => sut.AddSubscription(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseConfiguration_uses_specified_section(NybusConfigurator sut, IConfigurationSection configuration, string sectionName)
         {
             sut.UseConfiguration(configuration, sectionName);
@@ -66,19 +66,19 @@ namespace Tests.Configuration
             Assert.That(sut.Configuration, Is.SameAs(configuration.GetSection(sectionName)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseConfiguration_requires_configuration(NybusConfigurator sut, string sectionName)
         {
             Assert.Throws<ArgumentNullException>(() => sut.UseConfiguration(null, sectionName));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseConfiguration_requires_sectionName(NybusConfigurator sut, IConfigurationSection configuration)
         {
             Assert.Throws<ArgumentNullException>(() => sut.UseConfiguration(configuration, null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void UseConfiguration_uses_default_sectionName(NybusConfigurator sut, IConfigurationSection configuration)
         {
             sut.UseConfiguration(configuration);
@@ -86,7 +86,7 @@ namespace Tests.Configuration
             Mock.Get(configuration).Verify(p => p.GetSection("Nybus"), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Configure_(NybusConfigurator sut, IServiceProvider serviceProvider, INybusConfiguration configuration)
         {
             var configurationDelegate = Mock.Of<Action<INybusConfiguration>>();

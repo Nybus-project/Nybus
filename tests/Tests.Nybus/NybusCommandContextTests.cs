@@ -14,7 +14,7 @@ namespace Tests
             Assert.Throws<ArgumentNullException>(() => new NybusCommandContext<FirstTestCommand>(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CommandMessage_is_attached_to_context(CommandMessage<FirstTestCommand> commandMessage)
         {
             var sut = new NybusCommandContext<FirstTestCommand>(commandMessage);
@@ -22,7 +22,7 @@ namespace Tests
             Assert.That(sut.CommandMessage, Is.SameAs(commandMessage));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Command_is_attached_to_context(CommandMessage<FirstTestCommand> commandMessage)
         {
             var sut = new NybusCommandContext<FirstTestCommand>(commandMessage);
@@ -30,7 +30,7 @@ namespace Tests
             Assert.That(sut.Command, Is.SameAs(commandMessage.Command));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Message_correlationId_is_attached_to_context(CommandMessage<FirstTestCommand> commandMessage)
         {
             var sut = new NybusCommandContext<FirstTestCommand>(commandMessage);
@@ -38,7 +38,7 @@ namespace Tests
             Assert.That(sut.CorrelationId, Is.EqualTo(commandMessage.Headers.CorrelationId));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Message_SentOn_is_attached_to_context(CommandMessage<FirstTestCommand> commandMessage)
         {
             var sut = new NybusCommandContext<FirstTestCommand>(commandMessage);
@@ -46,7 +46,7 @@ namespace Tests
             Assert.That(sut.SentOn, Is.EqualTo(commandMessage.Headers.SentOn));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ReceivedOn_is_attached_to_context_from_clock(CommandMessage<FirstTestCommand> commandMessage, DateTimeOffset now)
         {
             Clock.SetTo(new TestClock(now));

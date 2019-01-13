@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using AutoFixture.Idioms;
 using AutoFixture.NUnit3;
 using Moq;
 using NUnit.Framework;
@@ -11,25 +12,25 @@ namespace Tests
     public class NybusDispatcherTests
     {
         [Test, AutoMoqData]
-        public void Bus_is_required(Guid correlationId)
+        public void Constructor_is_guarded(GuardClauseAssertion assertion)
         {
-            Assert.Throws<ArgumentNullException>(() => new NybusDispatcher(null, correlationId));
+            assertion.Verify(typeof(NybusDispatcher).GetConstructors());
         }
 
-        [Test, AutoMoqData]
-        public async Task Command_is_invoked_with_given_correlationId([Frozen] IBus bus, [Frozen] Guid correlationId, NybusDispatcher sut, FirstTestCommand testCommand)
+        [Test, CustomAutoMoqData]
+        public async Task Command_is_invoked_with_given_correlationId([Frozen] IBus bus, [Frozen] Message message, NybusDispatcher sut, FirstTestCommand testCommand)
         {
             await sut.InvokeCommandAsync(testCommand);
 
-            Mock.Get(bus).Verify(p => p.InvokeCommandAsync(testCommand, correlationId), Times.Once);
+            Mock.Get(bus).Verify(p => p.InvokeCommandAsync(testCommand, message.Headers.CorrelationId), Times.Once);
         }
 
-        [Test, AutoMoqData]
-        public async Task Event_is_raised_with_given_correlationId([Frozen] IBus bus, [Frozen] Guid correlationId, NybusDispatcher sut, FirstTestEvent testEvent)
+        [Test, CustomAutoMoqData]
+        public async Task Event_is_raised_with_given_correlationId([Frozen] IBus bus, [Frozen] Message message, NybusDispatcher sut, FirstTestEvent testEvent)
         {
             await sut.RaiseEventAsync(testEvent);
 
-            Mock.Get(bus).Verify(p => p.RaiseEventAsync(testEvent, correlationId), Times.Once);
+            Mock.Get(bus).Verify(p => p.RaiseEventAsync(testEvent, message.Headers.CorrelationId), Times.Once);
         }
     }
 }

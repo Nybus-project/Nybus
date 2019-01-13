@@ -54,7 +54,7 @@ namespace Nybus.InMemory
                     return _envelopeService.CreateCommandMessage(incoming, incomingType);
                 }
 
-                if (_messageDescriptorStore.TryGetTypeForDescriptor(incoming.Descriptor, out var outgoingType))
+                if (_messageDescriptorStore.FindCommandTypeForDescriptor(incoming.Descriptor, out var outgoingType))
                 {
                     return _envelopeService.CreateCommandMessage(incoming, outgoingType);
                 }
@@ -71,7 +71,7 @@ namespace Nybus.InMemory
                     return _envelopeService.CreateEventMessage(incoming, incomingType);
                 }
 
-                if (_messageDescriptorStore.TryGetTypeForDescriptor(incoming.Descriptor, out var outgoingType))
+                if (_messageDescriptorStore.FindEventTypeForDescriptor(incoming.Descriptor, out var outgoingType))
                 {
                     return _envelopeService.CreateEventMessage(incoming, outgoingType);
                 }
@@ -115,13 +115,13 @@ namespace Nybus.InMemory
 
         public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
         {
-            _messageDescriptorStore.RegisterType(typeof(TCommand));
+            _messageDescriptorStore.RegisterCommandType<TCommand>();
             _acceptedTypes.Add(typeof(TCommand));
         }
 
         public void SubscribeToEvent<TEvent>() where TEvent : class, IEvent
         {
-            _messageDescriptorStore.RegisterType(typeof(TEvent));
+            _messageDescriptorStore.RegisterEventType<TEvent>();
             _acceptedTypes.Add(typeof(TEvent));
         }
 

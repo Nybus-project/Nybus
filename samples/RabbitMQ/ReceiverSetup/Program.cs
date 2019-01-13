@@ -5,10 +5,11 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nybus;
+using Nybus.Configuration;
 using RabbitMQ.Client;
 using Types;
 
-namespace ReceiverConfig
+namespace ReceiverSetup
 {
     class Program
     {
@@ -46,6 +47,8 @@ namespace ReceiverConfig
                             Password = Password,
                             VirtualHost = VirtualHost
                         };
+
+                        c.CommandQueueFactory = new StaticQueueFactory("my-test-queue");
                     });
                 });
 

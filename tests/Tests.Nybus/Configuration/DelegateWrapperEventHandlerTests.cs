@@ -16,7 +16,7 @@ namespace Tests.Configuration
             Assert.Throws<ArgumentNullException>(() => new DelegateWrapperEventHandler<FirstTestEvent>(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Handler_is_executed(IDispatcher dispatcher, IEventContext<FirstTestEvent> context)
         {
             var handler = Mock.Of<EventReceived<FirstTestEvent>>();
@@ -28,7 +28,7 @@ namespace Tests.Configuration
             Mock.Get(handler).Verify(p => p(dispatcher, context), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Handler_errors_are_not_caught(IDispatcher dispatcher, IEventContext<FirstTestEvent> context, Exception error)
         {
             var handler = Mock.Of<EventReceived<FirstTestEvent>>();

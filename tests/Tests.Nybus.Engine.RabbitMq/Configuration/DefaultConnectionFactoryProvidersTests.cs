@@ -6,13 +6,13 @@ namespace Tests.Configuration
     [TestFixture]
     public class ConnectionFactoryProvidersTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ConnectionString_returns_ConnectionStringConnectionFactoryProvider(ConnectionFactoryProviders sut)
         {
             Assert.That(sut.ConnectionString, Is.InstanceOf<ConnectionStringConnectionFactoryProvider>());
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ConnectionNode_returns_ConnectionNodeConnectionFactoryProvider(ConnectionFactoryProviders sut)
         {
             Assert.That(sut.ConnectionNode, Is.InstanceOf<ConnectionNodeConnectionFactoryProvider>());

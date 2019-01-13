@@ -9,7 +9,7 @@ namespace Tests.Configuration
     [TestFixture]
     public class ConfigurationExceptionTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ConfigurationException_can_be_built_with_message(string message)
         {
             var sut = new ConfigurationException(message);
@@ -17,7 +17,7 @@ namespace Tests.Configuration
             Assert.That(sut.Message, Is.EqualTo(message));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ConfigurationException_can_be_built_with_message_and_innerException(string message, Exception innerException)
         {
             var sut = new ConfigurationException(message, innerException);

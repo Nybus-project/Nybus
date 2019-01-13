@@ -7,13 +7,13 @@ namespace Tests.Policies
     [TestFixture]
     public class NoopErrorPolicyProviderTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ProvideName_is_noop(NoopErrorPolicyProvider sut)
         {
             Assert.That(sut.ProviderName, Is.EqualTo("noop"));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreatePolicy_returns_NoopErrorPolicy_instance(NoopErrorPolicyProvider sut, IConfigurationSection configurationSection)
         {
             var policy = sut.CreatePolicy(configurationSection) as NoopErrorPolicy;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -32,9 +32,6 @@ namespace Nybus.RabbitMq
         private IConnection _connection;
         private IModel _channel;
 
-        public ISet<Type> AcceptedEventTypes { get; } = new HashSet<Type>();
-        public ISet<Type> AcceptedCommandTypes { get; } = new HashSet<Type>();
-
         public IReadOnlyDictionary<string, ObservableConsumer> Consumers => _consumers;
 
         public Task<IObservable<Message>> StartAsync()
@@ -42,8 +39,8 @@ namespace Nybus.RabbitMq
             _connection = _configuration.ConnectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            var hasEvents = AcceptedEventTypes.Any();
-            var hasCommands = AcceptedCommandTypes.Any();
+            var hasEvents = _messageDescriptorStore.HasEvents();
+            var hasCommands = _messageDescriptorStore.HasCommands();
 
             if (!hasEvents && !hasCommands)
             {
@@ -56,9 +53,9 @@ namespace Nybus.RabbitMq
             {
                 var eventQueue = _configuration.EventQueueFactory.CreateQueue(_channel);
 
-                foreach (var type in AcceptedEventTypes)
+                foreach (var type in _messageDescriptorStore.Events)
                 {
-                    var exchangeName = GetExchangeNameForType(type);
+                    var exchangeName = MessageDescriptor.CreateFromType(type);
 
                     _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
@@ -72,9 +69,9 @@ namespace Nybus.RabbitMq
             {
                 var commandQueue = _configuration.CommandQueueFactory.CreateQueue(_channel);
 
-                foreach (var type in AcceptedCommandTypes)
+                foreach (var type in _messageDescriptorStore.Commands)
                 {
-                    var exchangeName = GetExchangeNameForType(type);
+                    var exchangeName = MessageDescriptor.CreateFromType(type);
 
                     _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
@@ -110,7 +107,7 @@ namespace Nybus.RabbitMq
                 _processingMessages.Add(args.DeliveryTag);
 
                 var encoding = Encoding.GetEncoding(args.BasicProperties.ContentEncoding);
-                var messageTypeName = GetHeader(args.BasicProperties, Nybus(Headers.MessageType), encoding);
+                var messageTypeName = args.BasicProperties.GetHeader(Nybus(Headers.MessageType), encoding);
 
                 Message message = null;
 
@@ -120,12 +117,12 @@ namespace Nybus.RabbitMq
                     return null;
                 }
 
-                if (TryFindCommandByName(descriptor, out var commandType) || _messageDescriptorStore.TryGetTypeForDescriptor(descriptor, out commandType))
-                {
+                if (_messageDescriptorStore.FindCommandTypeForDescriptor(descriptor, out var commandType))
+                    {
                     var command = _configuration.Serializer.DeserializeObject(args.Body, commandType, encoding) as ICommand;
                     message = CreateCommandMessage(command);
                 }
-                else if (TryFindEventByName(descriptor, out var eventType) || _messageDescriptorStore.TryGetTypeForDescriptor(descriptor, out eventType))
+                else if (_messageDescriptorStore.FindEventTypeForDescriptor(descriptor, out var eventType))
                 {
                     var @event = _configuration.Serializer.DeserializeObject(args.Body, eventType, encoding) as IEvent;
                     message = CreateEventMessage(@event);
@@ -136,12 +133,12 @@ namespace Nybus.RabbitMq
                     return null;
                 }
 
-                message.MessageId = GetHeader(args.BasicProperties, Nybus(Headers.MessageId), encoding);
+                message.MessageId = args.BasicProperties.GetHeader(Nybus(Headers.MessageId), encoding);
                 message.Headers = new HeaderBag
                 {
-                    [Headers.CorrelationId] = GetHeader(args.BasicProperties, Nybus(Headers.CorrelationId), encoding),
-                    [Headers.SentOn] = GetHeader(args.BasicProperties, Nybus(Headers.SentOn), encoding),
-                    [Headers.RetryCount] = GetHeader(args.BasicProperties, Nybus(Headers.RetryCount), encoding),
+                    [Headers.CorrelationId] = args.BasicProperties.GetHeader(Nybus(Headers.CorrelationId), encoding),
+                    [Headers.SentOn] = args.BasicProperties.GetHeader(Nybus(Headers.SentOn), encoding),
+                    [Headers.RetryCount] = args.BasicProperties.GetHeader(Nybus(Headers.RetryCount), encoding),
                     [RabbitMqHeaders.DeliveryTag] = args.DeliveryTag.ToString(),
                     [RabbitMqHeaders.MessageId] = args.BasicProperties.MessageId
                 };
@@ -167,26 +164,6 @@ namespace Nybus.RabbitMq
                 message?.SetEvent(@event);
 
                 return message;
-            }
-
-            bool TryFindCommandByName(MessageDescriptor descriptor, out Type type) => TryFindTypeByName(AcceptedCommandTypes, descriptor, out type);
-
-            bool TryFindEventByName(MessageDescriptor descriptor, out Type type) => TryFindTypeByName(AcceptedEventTypes, descriptor, out type);
-
-            bool TryFindTypeByName(ISet<Type> typeList, MessageDescriptor descriptor, out Type type)
-            {
-                type = typeList.FirstOrDefault(o => string.Equals(o.Name, descriptor.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(o.Namespace, descriptor.Namespace, StringComparison.OrdinalIgnoreCase));
-                return type != null;
-            }
-
-            string GetHeader(IBasicProperties properties, string headerName, Encoding encoding)
-            {
-                if (properties.Headers.TryGetValue(headerName, out var value) && value is byte[] bytes)
-                {
-                    return encoding.GetString(bytes);
-                }
-
-                return null;
             }
         }
 
@@ -224,7 +201,7 @@ namespace Nybus.RabbitMq
                 properties.Headers.Add(Nybus(header.Key), header.Value);
             }
 
-            var exchangeName = GetExchangeNameForType(type);
+            var exchangeName = MessageDescriptor.CreateFromType(type);
 
             _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
 
@@ -237,15 +214,13 @@ namespace Nybus.RabbitMq
         public void SubscribeToCommand<TCommand>()
             where TCommand : class, ICommand
         {
-            _messageDescriptorStore.RegisterType(typeof(TCommand));
-            AcceptedCommandTypes.Add(typeof(TCommand));
+            _messageDescriptorStore.RegisterCommandType<TCommand>();
         }
 
         public void SubscribeToEvent<TEvent>()
             where TEvent : class, IEvent
         {
-            _messageDescriptorStore.RegisterType(typeof(TEvent));
-            AcceptedEventTypes.Add(typeof(TEvent));
+            _messageDescriptorStore.RegisterEventType<TEvent>();
         }
 
         public Task NotifySuccessAsync(Message message)
@@ -300,8 +275,6 @@ namespace Nybus.RabbitMq
             _channel.BasicNack(deliveryTag, false, true);
             _processingMessages.TryRemoveItem(deliveryTag);
         }
-
-        private static string GetExchangeNameForType(Type type) => type.FullName; //$"{type.Namespace}:{type.Name}";
 
         private static string Nybus(string key) => $"Nybus:{key}";
     }

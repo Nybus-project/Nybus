@@ -15,32 +15,38 @@ namespace Tests
     [TestFixture]
     public class NybusHostTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void BusEngine_is_required(INybusConfiguration configuration, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
         {
             Assert.Throws<ArgumentNullException>(() => new NybusHost(null, configuration, serviceProvider, logger));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Options_is_required(IBusEngine engine, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
         {
             Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, null, serviceProvider, logger));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ServiceProvider_is_required(IBusEngine engine, INybusConfiguration configuration, ILogger<NybusHost> logger)
         {
             Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, configuration, null, logger));
         }
 
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Logger_is_required(IBusEngine engine, INybusConfiguration configuration, IServiceProvider serviceProvider)
         {
             Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, configuration, serviceProvider, null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
+        public void Bus_returns_self(NybusHost sut)
+        {
+            Assert.That(sut.Bus, Is.SameAs(sut));
+        }
+
+        [Test, CustomAutoMoqData]
         public async Task InvokeCommandAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestCommand testCommand, Guid correlationId)
         {
             await sut.InvokeCommandAsync(testCommand, correlationId);
@@ -48,7 +54,7 @@ namespace Tests
             Mock.Get(engine).Verify(p => p.SendCommandAsync(It.Is<CommandMessage<FirstTestCommand>>(m => ReferenceEquals(m.Command, testCommand) && m.Headers.CorrelationId == correlationId)), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task RaiseEventAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestEvent testEvent, Guid correlationId)
         {
             await sut.RaiseEventAsync(testEvent, correlationId);
@@ -56,7 +62,7 @@ namespace Tests
             Mock.Get(engine).Verify(p => p.SendEventAsync(It.Is<EventMessage<FirstTestEvent>>(m => ReferenceEquals(m.Event, testEvent) && m.Headers.CorrelationId == correlationId)), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task StartAsync_starts_the_engine([Frozen] IBusEngine engine, NybusHost sut)
         {
             await sut.StartAsync();
@@ -64,7 +70,7 @@ namespace Tests
             Mock.Get(engine).Verify(p => p.StartAsync(), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task StopAsync_is_ignored_if_not_started([Frozen] IBusEngine engine, NybusHost sut)
         {
             await sut.StopAsync();
@@ -73,7 +79,7 @@ namespace Tests
 
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task StopAsync_stops_the_engine_if_started([Frozen] IBusEngine engine, NybusHost sut)
         {
             await sut.StartAsync();
@@ -83,7 +89,7 @@ namespace Tests
             Mock.Get(engine).Verify(p => p.StopAsync(), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Handler_is_executed_when_commandMessages_are_processed([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var subject = new Subject<Message>();
@@ -103,7 +109,7 @@ namespace Tests
             Mock.Get(receivedMessage).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>()), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Engine_is_notified_when_commandMessages_are_successfully_processed([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var subject = new Subject<Message>();
@@ -123,7 +129,7 @@ namespace Tests
             Mock.Get(engine).Verify(p => p.NotifySuccessAsync(testMessage), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Error_policy_is_executed_when_commandMessages_are_processed_with_errors([Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, CommandMessage<FirstTestCommand> testMessage, Exception error)
         {
             var subject = new Subject<Message>();
@@ -144,7 +150,7 @@ namespace Tests
             Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleErrorAsync(engine, error, testMessage), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var subject = new Subject<Message>();
@@ -164,7 +170,7 @@ namespace Tests
             Mock.Get(receivedMessage).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>()), Times.Never);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Handler_is_executed_when_eventMessages_are_processed([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
         {
             var subject = new Subject<Message>();
@@ -184,7 +190,7 @@ namespace Tests
             Mock.Get(receivedMessage).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>()), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Engine_is_notified_when_eventMessages_are_successfully_processed([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
         {
             var subject = new Subject<Message>();
@@ -204,7 +210,7 @@ namespace Tests
             Mock.Get(engine).Verify(p => p.NotifySuccessAsync(testMessage), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Error_policy_is_executed_when_eventMessages_are_processed_with_errors([Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, EventMessage<FirstTestEvent> testMessage, Exception error)
         {
             var subject = new Subject<Message>();
@@ -225,7 +231,7 @@ namespace Tests
             Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleErrorAsync(engine, error, testMessage), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
         {
             var subject = new Subject<Message>();
@@ -245,13 +251,13 @@ namespace Tests
             Mock.Get(receivedMessage).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>()), Times.Never);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ExecutionEnvironment_returns_self(NybusHost sut)
         {
             Assert.That(sut.ExecutionEnvironment, Is.SameAs(sut));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task ExecuteCommandHandler_creates_new_scope_for_execution([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
         {
             var handlerType = handler.GetType();
@@ -265,7 +271,7 @@ namespace Tests
             Mock.Get(scopeFactory).Verify(p => p.CreateScope(), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task ExecuteCommandHandler_executes_handler([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
         {
             var handlerType = handler.GetType();
@@ -279,7 +285,7 @@ namespace Tests
             Mock.Get(handler).Verify(p => p.HandleAsync(dispatcher, commandContext), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ExecuteCommandHandlerAsync_throws_if_handler_is_not_registered([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, ICommandContext<FirstTestCommand> commandContext, IServiceScopeFactory scopeFactory)
         {
             var handlerType = typeof(FirstTestCommandHandler);
@@ -291,7 +297,7 @@ namespace Tests
             Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteCommandHandlerAsync(dispatcher, commandContext, handlerType));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task ExecuteEventHandler_creates_new_scope_for_execution([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
         {
             var handlerType = handler.GetType();
@@ -305,7 +311,7 @@ namespace Tests
             Mock.Get(scopeFactory).Verify(p => p.CreateScope(), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public async Task ExecuteEventHandler_executes_handler([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
         {
             var handlerType = handler.GetType();
@@ -319,7 +325,7 @@ namespace Tests
             Mock.Get(handler).Verify(p => p.HandleAsync(dispatcher, eventContext), Times.Once);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ExecuteEventHandlerAsync_throws_if_handler_is_not_registered([Frozen] IServiceProvider serviceProvider, NybusHost sut, IDispatcher dispatcher, IEventContext<FirstTestEvent> eventContext, IServiceScopeFactory scopeFactory)
         {
             var handlerType = typeof(FirstTestEventHandler);

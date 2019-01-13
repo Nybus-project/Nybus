@@ -15,7 +15,7 @@ namespace Tests
     [TestFixture]
     public class NybusConfiguratorExtensionsTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_registers_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             NybusConfiguratorExtensions.SubscribeToCommand<FirstTestCommand, FirstTestCommandHandler>(nybus);
@@ -25,7 +25,7 @@ namespace Tests
             Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToCommand<FirstTestCommand>(typeof(FirstTestCommandHandler)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_registers_handler_type(TestNybusConfigurator nybus, IServiceCollection services)
         {
             NybusConfiguratorExtensions.SubscribeToCommand<FirstTestCommand, FirstTestCommandHandler>(nybus);
@@ -35,7 +35,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(FirstTestCommandHandler))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_registers_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             var testHandler = Mock.Of<CommandReceived<FirstTestCommand>>();
@@ -47,7 +47,7 @@ namespace Tests
             Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToCommand<FirstTestCommand>(typeof(DelegateWrapperCommandHandler<FirstTestCommand>)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_registers_delegate_handler_type(TestNybusConfigurator nybus, IServiceCollection services)
         {
             var testHandler = Mock.Of<CommandReceived<FirstTestCommand>>();
@@ -59,7 +59,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(DelegateWrapperCommandHandler<FirstTestCommand>))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_subscribes_to_command_type(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             NybusConfiguratorExtensions.SubscribeToCommand<FirstTestCommand>(nybus);
@@ -69,7 +69,7 @@ namespace Tests
             Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToCommand<FirstTestCommand>(typeof(ICommandHandler<FirstTestCommand>)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_registers_handler_instance_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder, FirstTestCommandHandler handler)
         {
             NybusConfiguratorExtensions.SubscribeToCommand<FirstTestCommand, FirstTestCommandHandler>(nybus, handler);
@@ -79,7 +79,7 @@ namespace Tests
             Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToCommand<FirstTestCommand>(handler.GetType()));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_registers_handler_instance(TestNybusConfigurator nybus, IServiceCollection services, FirstTestCommandHandler handler)
         {
             NybusConfiguratorExtensions.SubscribeToCommand<FirstTestCommand, FirstTestCommandHandler>(nybus, handler);
@@ -89,7 +89,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == handler.GetType())));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_registers_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             NybusConfiguratorExtensions.SubscribeToEvent<FirstTestEvent, FirstTestEventHandler>(nybus);
@@ -99,7 +99,7 @@ namespace Tests
             Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToEvent<FirstTestEvent>(typeof(FirstTestEventHandler)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_registers_handler_type(TestNybusConfigurator nybus, IServiceCollection services)
         {
             NybusConfiguratorExtensions.SubscribeToEvent<FirstTestEvent, FirstTestEventHandler>(nybus);
@@ -109,7 +109,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(FirstTestEventHandler))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_registers_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             var testHandler = Mock.Of<EventReceived<FirstTestEvent>>();
@@ -121,7 +121,7 @@ namespace Tests
             Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToEvent<FirstTestEvent>(typeof(DelegateWrapperEventHandler<FirstTestEvent>)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_registers_delegate_handler_type(TestNybusConfigurator nybus, IServiceCollection services)
         {
             var testHandler = Mock.Of<EventReceived<FirstTestEvent>>();
@@ -133,7 +133,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(DelegateWrapperEventHandler<FirstTestEvent>))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_subscribes_to_command_type(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             NybusConfiguratorExtensions.SubscribeToEvent<FirstTestEvent>(nybus);
@@ -143,7 +143,7 @@ namespace Tests
             Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToEvent<FirstTestEvent>(typeof(IEventHandler<FirstTestEvent>)));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_registers_handler_instance_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder, FirstTestEventHandler handler)
         {
             NybusConfiguratorExtensions.SubscribeToEvent<FirstTestEvent, FirstTestEventHandler>(nybus, handler);
@@ -153,7 +153,7 @@ namespace Tests
             Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToEvent<FirstTestEvent>(handler.GetType()));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_registers_handler_instance(TestNybusConfigurator nybus, IServiceCollection services, FirstTestEventHandler handler)
         {
             NybusConfiguratorExtensions.SubscribeToEvent<FirstTestEvent, FirstTestEventHandler>(nybus, handler);
@@ -163,7 +163,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == handler.GetType())));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void RegisterErrorPolicyProvider_adds_provider_with_default_setup(TestNybusConfigurator nybus, IServiceCollection services)
         {
             NybusConfiguratorExtensions.RegisterErrorPolicyProvider<TestErrorPolicyProvider>(nybus);
@@ -173,7 +173,7 @@ namespace Tests
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IErrorPolicyProvider) && sd.ImplementationType == typeof(TestErrorPolicyProvider))));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void RegisterErrorPolicyProvider_adds_provider_with_custom_setup(TestNybusConfigurator nybus, IServiceCollection services)
         {
             var providerFactory = Mock.Of<Func<IServiceProvider, IErrorPolicyProvider>>();

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FakeRabbitMQ" Version="1.0.0-beta.11" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
     <PackageReference Include="nunit" Version="3.11.0" />
@@ -15,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\engines\Nybus.Engine.InMemory\Nybus.Engine.InMemory.csproj" />
-    <ProjectReference Include="..\..\src\Nybus\Nybus.csproj" />
-    <ProjectReference Include="..\TestUtils\TestUtils.csproj" />
+    <ProjectReference Include="..\..\..\src\Nybus\Nybus.csproj" />
+    <ProjectReference Include="..\..\..\src\engines\Nybus.Engine.RabbitMq\Nybus.Engine.RabbitMq.csproj" />
+    <ProjectReference Include="..\..\TestUtils\TestUtils.csproj" />
   </ItemGroup>
 
 </Project>

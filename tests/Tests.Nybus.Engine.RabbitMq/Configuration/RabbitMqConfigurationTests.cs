@@ -11,7 +11,7 @@ namespace Tests.Configuration
     [TestFixture]
     public class RabbitMqConfigurationTests
     {
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Serializer_can_be_assigned(RabbitMqConfiguration sut, ISerializer serializer)
         {
             sut.Serializer = serializer;
@@ -19,13 +19,13 @@ namespace Tests.Configuration
             Assert.That(sut.Serializer, Is.SameAs(serializer));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void Serializer_can_be_accessed(RabbitMqConfiguration sut)
         {
             Assert.That(sut.Serializer, Is.Not.Null);
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ConnectionFactory_can_be_assigned(RabbitMqConfiguration sut, IConnectionFactory connectionFactory)
         {
             sut.ConnectionFactory = connectionFactory;
@@ -33,7 +33,7 @@ namespace Tests.Configuration
             Assert.That(sut.ConnectionFactory, Is.SameAs(connectionFactory));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void ConnectionFactory_can_be_accessed(RabbitMqConfiguration sut)
         {
             Assert.That(sut.ConnectionFactory, Is.Not.Null);

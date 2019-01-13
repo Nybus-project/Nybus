@@ -1,24 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Nybus.Utils
 {
     public class MessageDescriptorStore : IMessageDescriptorStore
     {
-        private readonly IDictionary<Type, MessageDescriptor> _descriptorsByType = new Dictionary<Type, MessageDescriptor>();
-        private readonly IDictionary<MessageDescriptor, Type> _typesByDescriptor = new Dictionary<MessageDescriptor, Type>(MessageDescriptor.EqualityComparer);
+        private readonly TwoWayDictionary<Type, MessageDescriptor> _commandTypes = new TwoWayDictionary<Type, MessageDescriptor>(MessageDescriptor.EqualityComparer);
+        private readonly TwoWayDictionary<Type, MessageDescriptor> _eventTypes = new TwoWayDictionary<Type, MessageDescriptor>(MessageDescriptor.EqualityComparer);
 
         private readonly object _lock = new object();
         
-        public bool RegisterType(Type type)
+        public bool RegisterCommandType<TCommand>() where TCommand : class, ICommand
+        {
+            return RegisterType(_commandTypes, typeof(TCommand));
+        }
+
+        public bool RegisterEventType<TEvent>() where TEvent : class, IEvent
+        {
+            return RegisterType(_eventTypes, typeof(TEvent));
+        }
+
+        private bool RegisterType(TwoWayDictionary<Type, MessageDescriptor> registeredTypes, Type type)
         {
             lock (_lock)
             {
-                if (!_descriptorsByType.ContainsKey(type) && TryGetDescriptorFromAttribute(type, out var descriptor) && !_typesByDescriptor.ContainsKey(descriptor))
+                if (!registeredTypes.ContainsKey(type) && TryGetDescriptorFromAttribute(type, out var descriptor))
                 {
-                    _descriptorsByType.Add(type, descriptor);
-                    _typesByDescriptor.Add(descriptor, type);
+                    registeredTypes.Add(type, descriptor);
 
                     return true;
                 }
@@ -27,22 +37,30 @@ namespace Nybus.Utils
             }
         }
 
-        private bool TryGetDescriptorFromAttribute(Type type, out MessageDescriptor descriptor)
+        private static bool TryGetDescriptorFromAttribute(Type type, out MessageDescriptor descriptor)
         {
-            var attribute = type.GetCustomAttribute<MessageAttribute>();
-
-            if (attribute == null)
-            {
-                descriptor = MessageDescriptor.CreateFromType(type);
-                return true;
-            }
-
-            descriptor = MessageDescriptor.CreateFromAttribute(attribute);
+            descriptor = MessageDescriptor.CreateFromType(type);
             return true;
         }
 
-        public bool TryGetDescriptorForType(Type type, out MessageDescriptor descriptor) => _descriptorsByType.TryGetValue(type, out descriptor);
+        public bool FindCommandTypeForDescriptor(MessageDescriptor descriptor, out Type type) => FindTypeForDescriptor(_commandTypes, descriptor, out type);
 
-        public bool TryGetTypeForDescriptor(MessageDescriptor descriptor, out Type type) => _typesByDescriptor.TryGetValue(descriptor, out type);
+        public bool FindEventTypeForDescriptor(MessageDescriptor descriptor, out Type type) => FindTypeForDescriptor(_eventTypes, descriptor, out type);
+
+        private static bool FindTypeForDescriptor(TwoWayDictionary<Type, MessageDescriptor> registeredTypes, MessageDescriptor descriptor, out Type type) => registeredTypes.TryGetValue(descriptor, out type);
+
+        public bool HasCommands()
+        {
+            return _commandTypes.FirstItems.Count > 0;
+        }
+
+        public bool HasEvents()
+        {
+            return _eventTypes.FirstItems.Count > 0;
+        }
+
+        public IEnumerable<Type> Commands => _commandTypes.FirstItems;
+
+        public IEnumerable<Type> Events => _eventTypes.FirstItems;
     }
 }

@@ -26,6 +26,8 @@ namespace Nybus
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
+        public IBus Bus => this;
+
         public Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
         {
             var message = new CommandMessage<TCommand>
@@ -123,7 +125,7 @@ namespace Nybus
 
             async Task ExecuteHandler(ICommandContext<TCommand> context)
             {
-                var dispatcher = new NybusDispatcher(this, context.CorrelationId);
+                var dispatcher = new NybusDispatcher(this, context.Message);
                 await commandReceived(dispatcher, context).ConfigureAwait(false);
             }
 
@@ -165,7 +167,7 @@ namespace Nybus
 
             async Task ExecuteHandler(IEventContext<TEvent> context)
             {
-                var dispatcher = new NybusDispatcher(this, context.CorrelationId);
+                var dispatcher = new NybusDispatcher(this, context.Message);
                 await eventReceived(dispatcher, context).ConfigureAwait(false);
             }
 

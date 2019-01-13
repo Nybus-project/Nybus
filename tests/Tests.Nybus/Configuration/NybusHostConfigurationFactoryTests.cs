@@ -20,7 +20,7 @@ namespace Tests.Configuration
             Assert.Throws<ArgumentNullException>(() => new NybusHostConfigurationFactory(null));
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateConfiguration_uses_NoopErrorPolicy_if_no_policy_is_specified(NybusHostConfigurationFactory sut, NybusHostOptions options)
         {
             var configuration = sut.CreateConfiguration(options);
@@ -28,7 +28,7 @@ namespace Tests.Configuration
             Assert.That(configuration.ErrorPolicy, Is.InstanceOf<NoopErrorPolicy>());
         }
 
-        [Test, AutoMoqData]
+        [Test, CustomAutoMoqData]
         public void CreateConfiguration_uses_selected_provider([Frozen] IEnumerable<IErrorPolicyProvider> errorPolicyProviders, NybusHostConfigurationFactory sut, NybusHostOptions options)
         {
             Mock.Get(options.ErrorPolicy.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(errorPolicyProviders.First().ProviderName);

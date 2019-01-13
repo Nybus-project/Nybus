@@ -1,15 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Nybus.Utils
 {
     public interface IMessageDescriptorStore
     {
-        bool RegisterType(Type type);
+        bool RegisterCommandType<TCommand>()
+            where TCommand : class, ICommand;
 
-        bool TryGetDescriptorForType(Type type, out MessageDescriptor descriptor);
+        bool RegisterEventType<TEvent>()
+            where TEvent : class, IEvent;
 
-        bool TryGetTypeForDescriptor(MessageDescriptor descriptor, out Type type);
+        bool FindCommandTypeForDescriptor(MessageDescriptor descriptor, out Type type);
+
+        bool FindEventTypeForDescriptor(MessageDescriptor descriptor, out Type type);
+
+        bool HasCommands();
+
+        bool HasEvents();
+
+        IEnumerable<Type> Commands { get; }
+
+        IEnumerable<Type> Events { get; }
     }
 
     public class MessageDescriptor
@@ -21,24 +34,26 @@ namespace Nybus.Utils
                 throw new ArgumentNullException(nameof(type));
             }
 
-            return new MessageDescriptor(type.Name, type.Namespace);
-        }
+            var attribute = type.GetCustomAttribute<MessageAttribute>();
 
-        public static MessageDescriptor CreateFromAttribute (MessageAttribute attribute)
-        {
             if (attribute == null)
             {
-                throw new ArgumentNullException(nameof(attribute));
+                return new MessageDescriptor(type);
             }
-
-            return new MessageDescriptor(attribute.Name, attribute.Namespace);
+            
+            return new MessageDescriptor(attribute);
         }
-
 
         private static readonly char[] Separators = new []{':'};
 
         public static bool TryParse(string descriptorName, out MessageDescriptor descriptor)
         {
+            if (descriptorName == null)
+            {
+                descriptor = null;
+                return false;
+            }
+
             var strings = descriptorName.Split(':');
 
             if (strings.Length != 2)
@@ -50,6 +65,10 @@ namespace Nybus.Utils
             descriptor = new MessageDescriptor(strings[1], strings[0]);
             return true;
         }
+
+        public MessageDescriptor(MessageAttribute attribute) : this (attribute.Name, attribute.Namespace) { }
+
+        public MessageDescriptor(Type type) : this (type.Name, type.Namespace) { }
 
         public MessageDescriptor(string name, string @namespace)
         {
@@ -63,7 +82,7 @@ namespace Nybus.Utils
 
         public override string ToString() => $"{Namespace}:{Name}";
 
-        public static implicit operator MessageDescriptor(Type type) => CreateFromType(type);
+        public static implicit operator string(MessageDescriptor descriptor) => descriptor.ToString();
 
         public static readonly IEqualityComparer<MessageDescriptor> EqualityComparer = new MessageDescriptorEqualityComparer();
 
