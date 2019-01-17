@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using Nybus;
 using Nybus.Configuration;
 
 namespace Tests.Configuration
