@@ -16,7 +16,7 @@ namespace Nybus
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
-        public NybusHost BuildHost(IBusEngine engine, IServiceProvider serviceProvider, NybusConfiguration configuration)
+        public NybusHost BuildHost(IBusEngine engine, IServiceProvider serviceProvider, INybusConfiguration configuration)
         {
             var host = new NybusHost(engine, configuration, serviceProvider, _loggerFactory.CreateLogger<NybusHost>());
 

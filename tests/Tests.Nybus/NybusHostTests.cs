@@ -17,7 +17,7 @@ namespace Tests
     public class NybusHostTests
     {
         [Test, CustomAutoMoqData]
-        public void BusEngine_is_required(NybusConfiguration configuration, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
+        public void BusEngine_is_required(INybusConfiguration configuration, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
         {
             Assert.Throws<ArgumentNullException>(() => new NybusHost(null, configuration, serviceProvider, logger));
         }
@@ -29,7 +29,7 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void ServiceProvider_is_required(IBusEngine engine, NybusConfiguration configuration, ILogger<NybusHost> logger)
+        public void ServiceProvider_is_required(IBusEngine engine, INybusConfiguration configuration, ILogger<NybusHost> logger)
         {
             Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, configuration, null, logger));
         }
@@ -233,7 +233,7 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task ExecuteCommandHandlerAsync_executed_error_policy_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] NybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler, Exception error)
+        public async Task ExecuteCommandHandlerAsync_executed_error_policy_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler, Exception error)
         {
             configuration.CommandErrorFilters = new ICommandErrorFilter[0];
 
@@ -309,7 +309,7 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task ExecuteEventHandlerAsync_executed_error_policy_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] NybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler, Exception error)
+        public async Task ExecuteEventHandlerAsync_executed_error_policy_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler, Exception error)
         {
             configuration.EventErrorFilters = new IEventErrorFilter[0];
 
