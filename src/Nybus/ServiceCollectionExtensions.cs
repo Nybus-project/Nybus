@@ -58,7 +58,7 @@ namespace Nybus
             {
                 var engine = sp.GetRequiredService<IBusEngine>();
                 var builder = sp.GetRequiredService<NybusHostBuilder>();
-                var configuration = sp.GetRequiredService<INybusConfiguration>();
+                var configuration = sp.GetRequiredService<NybusConfiguration>();
 
                 configurator.ConfigureBuilder(builder);
 

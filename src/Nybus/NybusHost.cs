@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -8,6 +10,7 @@ using System.Reactive;
 using System.Reactive.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
+using Nybus.Filters;
 
 namespace Nybus
 {
@@ -15,10 +18,10 @@ namespace Nybus
     {
         private readonly IBusEngine _engine;
         private readonly IServiceProvider _serviceProvider;
-        private readonly INybusConfiguration _configuration;
+        private readonly NybusConfiguration _configuration;
         private readonly ILogger<NybusHost> _logger;
 
-        public NybusHost(IBusEngine busEngine, INybusConfiguration configuration, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
+        public NybusHost(IBusEngine busEngine, NybusConfiguration configuration, IServiceProvider serviceProvider, ILogger<NybusHost> logger)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _engine = busEngine ?? throw new ArgumentNullException(nameof(busEngine));
@@ -99,16 +102,14 @@ namespace Nybus
             }
         }
 
-        private readonly List<MessagePipeline> _messagePipelines = new List<MessagePipeline>();
+        private readonly IList<MessagePipeline> _messagePipelines = new List<MessagePipeline>();
 
         public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived)
             where TCommand : class, ICommand
         {
             _engine.SubscribeToCommand<TCommand>();
 
-            _messagePipelines.Add(ProcessMessage);
-
-            async Task ProcessMessage(Message message)
+            _messagePipelines.Add(async message =>
             {
                 if (message is CommandMessage<TCommand> commandMessage)
                 {
@@ -116,7 +117,7 @@ namespace Nybus
                     var context = new NybusCommandContext<TCommand>(commandMessage);
                     await commandReceived(dispatcher, context).ConfigureAwait(false);
                 }
-            }
+            });
         }
 
         public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived)
@@ -124,9 +125,7 @@ namespace Nybus
         {
             _engine.SubscribeToEvent<TEvent>();
 
-            _messagePipelines.Add(ProcessMessage);
-
-            async Task ProcessMessage(Message message)
+            _messagePipelines.Add(async message =>
             {
                 if (message is EventMessage<TEvent> eventMessage)
                 {
@@ -134,7 +133,7 @@ namespace Nybus
                     var context = new NybusEventContext<TEvent>(eventMessage);
                     await eventReceived(dispatcher, context).ConfigureAwait(false);
                 }
-            }
+            });
         }
 
         private delegate Task MessagePipeline(Message message);
@@ -168,7 +167,7 @@ namespace Nybus
                     var message = context.Message as CommandMessage<TCommand>;
                     _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = context.Message.MessageId, EventType = typeof(TCommand).Name, Message = message }, ex, (s, e) => $"An error occurred while handling {s.EventType}. {e.Message}");
 
-                    await _configuration.ErrorPolicy.HandleErrorAsync(_engine, ex, context.Message as CommandMessage<TCommand>).ConfigureAwait(false);
+                    await _configuration.HandleCommandErrorAsync(_engine, context, ex).ConfigureAwait(false);
                 }
             }
         }
@@ -200,7 +199,7 @@ namespace Nybus
                     var message = context.Message as EventMessage<TEvent>;
                     _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = context.Message.MessageId, EventType = typeof(TEvent).Name, Message = message }, ex, (s,e) => $"An error occurred while handling {s.EventType}. {e.Message}");
 
-                    await _configuration.ErrorPolicy.HandleErrorAsync(_engine, ex, message).ConfigureAwait(false);
+                    await _configuration.HandleEventErrorAsync(_engine, context, ex).ConfigureAwait(false);
                 }
             }
         }
