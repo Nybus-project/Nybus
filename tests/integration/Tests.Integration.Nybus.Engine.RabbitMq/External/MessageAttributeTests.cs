@@ -11,6 +11,25 @@ namespace Tests.External
     [ExternalTestFixture]
     public class MessageAttributeTests
     {
+        [TearDown]
+        public void OnTestComplete()
+        {
+            var connectionFactory = new ConnectionFactory();
+            var connection = connectionFactory.CreateConnection();
+            var model = connection.CreateModel();
+
+            model.ExchangeDelete(ExchangeName(typeof(FirstTestCommand)));
+            model.ExchangeDelete(ExchangeName(typeof(SecondTestCommand)));
+            model.ExchangeDelete(ExchangeName(typeof(ThirdTestCommand)));
+            model.ExchangeDelete(ExchangeName(typeof(FirstTestEvent)));
+            model.ExchangeDelete(ExchangeName(typeof(SecondTestEvent)));
+            model.ExchangeDelete(ExchangeName(typeof(ThirdTestEvent)));
+
+            connection.Close();
+        }
+
+        private string ExchangeName(Type type) => $"{type.Namespace}:{type.Name}";
+
         [Test, AutoMoqData]
         public async Task Commands_are_matched_via_MessageAttribute(ThirdTestCommand testCommand)
         {
