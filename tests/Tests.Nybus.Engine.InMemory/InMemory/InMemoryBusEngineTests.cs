@@ -58,7 +58,7 @@ namespace Tests.InMemory
 
             var items = sequence.DumpInList();
 
-            await sut.SendCommandAsync(testMessage);
+            await sut.SendMessageAsync(testMessage);
 
             Assert.That(items.First(), Is.EqualTo(testMessage).Using<CommandMessage<FirstTestCommand>>((x, y) => x.MessageId == y.MessageId));
         }
@@ -83,7 +83,7 @@ namespace Tests.InMemory
 
             var items = sequence.DumpInList();
 
-            await sut.SendEventAsync(testMessage);
+            await sut.SendMessageAsync(testMessage);
 
             Assert.That(items.First(), Is.EqualTo(testMessage).Using<EventMessage<FirstTestEvent>>((x, y) => x.MessageId == y.MessageId));
         }
@@ -206,7 +206,7 @@ namespace Tests.InMemory
 
             var items = sequence.DumpInList();
 
-            await sut.SendCommandAsync(testMessage);
+            await sut.SendMessageAsync(testMessage);
 
             Assert.That(items, Is.Empty);
         }
@@ -229,7 +229,7 @@ namespace Tests.InMemory
 
             var items = sequence.DumpInList();
 
-            await sut.SendEventAsync(testMessage);
+            await sut.SendMessageAsync(testMessage);
 
             Assert.That(items, Is.Empty);
         }

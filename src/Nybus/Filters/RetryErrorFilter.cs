@@ -63,7 +63,7 @@ namespace Nybus.Filters
 
                     message.Headers[Headers.RetryCount] = retryCount.Stringfy();
 
-                    await _engine.SendCommandAsync(message).ConfigureAwait(false);
+                    await _engine.SendMessageAsync(message).ConfigureAwait(false);
                 }
                 else
                 {
@@ -89,7 +89,7 @@ namespace Nybus.Filters
 
                     message.Headers[Headers.RetryCount] = retryCount.Stringfy();
 
-                    await _engine.SendEventAsync(message).ConfigureAwait(false);
+                    await _engine.SendMessageAsync(message).ConfigureAwait(false);
                 }
                 else
                 {

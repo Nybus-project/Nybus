@@ -427,7 +427,7 @@ namespace Tests.RabbitMq
         {
             await sut.StartAsync().ConfigureAwait(false);
 
-            await sut.SendCommandAsync(message);
+            await sut.SendMessageAsync(message);
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()));
         }
@@ -439,7 +439,7 @@ namespace Tests.RabbitMq
 
             await sut.StartAsync().ConfigureAwait(false);
 
-            await sut.SendCommandAsync(message);
+            await sut.SendMessageAsync(message);
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Nybus:{headerKey}")), It.IsAny<byte[]>()));
         }
@@ -449,7 +449,7 @@ namespace Tests.RabbitMq
         {
             await sut.StartAsync().ConfigureAwait(false);
             
-            await sut.SendEventAsync(message);
+            await sut.SendMessageAsync(message);
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()));
 
@@ -462,7 +462,7 @@ namespace Tests.RabbitMq
 
             await sut.StartAsync().ConfigureAwait(false);
 
-            await sut.SendEventAsync(message);
+            await sut.SendMessageAsync(message);
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Nybus:{headerKey}")), It.IsAny<byte[]>()));
         }
