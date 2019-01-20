@@ -91,7 +91,7 @@ namespace Tests.Filters
 
             await sut.HandleErrorAsync(context, error, next);
 
-            Mock.Get(engine).Verify(p => p.SendCommandAsync(context.CommandMessage));
+            Mock.Get(engine).Verify(p => p.SendMessageAsync(context.CommandMessage));
         }
 
         [Test, CustomAutoMoqData]
@@ -114,7 +114,7 @@ namespace Tests.Filters
 
             await sut.HandleErrorAsync(context, error, next);
 
-            Mock.Get(engine).Verify(p => p.SendCommandAsync(context.CommandMessage));
+            Mock.Get(engine).Verify(p => p.SendMessageAsync(context.CommandMessage));
         }
 
         [Test, CustomAutoMoqData]
@@ -160,7 +160,7 @@ namespace Tests.Filters
 
             await sut.HandleErrorAsync(context, error, next);
 
-            Mock.Get(engine).Verify(p => p.SendEventAsync(context.EventMessage));
+            Mock.Get(engine).Verify(p => p.SendMessageAsync(context.EventMessage));
         }
 
         [Test, CustomAutoMoqData]
@@ -183,7 +183,7 @@ namespace Tests.Filters
 
             await sut.HandleErrorAsync(context, error, next);
 
-            Mock.Get(engine).Verify(p => p.SendEventAsync(context.EventMessage));
+            Mock.Get(engine).Verify(p => p.SendMessageAsync(context.EventMessage));
         }
 
         [Test, CustomAutoMoqData]

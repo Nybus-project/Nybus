@@ -175,17 +175,23 @@ namespace Nybus.RabbitMq
             return Task.CompletedTask;
         }
 
-        public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand 
-            => SendItemAsync(message, message.Command);
-
-        public Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent 
-            => SendItemAsync(message, message.Event);
-
-        private Task SendItemAsync<T>(Message message, T item)
+        public void SubscribeToCommand<TCommand>()
+            where TCommand : class, ICommand
         {
-            var type = typeof(T);
+            _messageDescriptorStore.RegisterCommandType<TCommand>();
+        }
 
-            var body = _configuration.Serializer.SerializeObject(item, _configuration.OutboundEncoding);
+        public void SubscribeToEvent<TEvent>()
+            where TEvent : class, IEvent
+        {
+            _messageDescriptorStore.RegisterEventType<TEvent>();
+        }
+
+        public Task SendMessageAsync(Message message)
+        {
+            var type = message.Type;
+
+            var body = _configuration.Serializer.SerializeObject(message.Item, _configuration.OutboundEncoding);
 
             var properties = _channel.CreateBasicProperties();
             properties.ContentEncoding = _configuration.OutboundEncoding.WebName;
@@ -209,18 +215,6 @@ namespace Nybus.RabbitMq
 
             return Task.CompletedTask;
 
-        }
-
-        public void SubscribeToCommand<TCommand>()
-            where TCommand : class, ICommand
-        {
-            _messageDescriptorStore.RegisterCommandType<TCommand>();
-        }
-
-        public void SubscribeToEvent<TEvent>()
-            where TEvent : class, IEvent
-        {
-            _messageDescriptorStore.RegisterEventType<TEvent>();
         }
 
         public Task NotifySuccessAsync(Message message)

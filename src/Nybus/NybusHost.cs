@@ -47,7 +47,7 @@ namespace Nybus
             };
 
             _logger.LogTrace(new { type = typeof(TCommand).FullName, correlationId = correlationId, command }, arg => $"Invoking command of type {arg.type} with correlationId {arg.correlationId}. Command: {arg.command.ToString()}");
-            return _engine.SendCommandAsync(message);
+            return _engine.SendMessageAsync(message);
         }
 
         public Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId)
@@ -65,7 +65,7 @@ namespace Nybus
             };
 
             _logger.LogTrace(new { type = typeof(TEvent).FullName, correlationId = correlationId, @event }, arg => $"Raising event of type {arg.type} with correlationId {arg.correlationId}. Event: {arg.@event.ToString()}");
-            return _engine.SendEventAsync(message);
+            return _engine.SendMessageAsync(message);
         }
 
         private bool _isStarted;
