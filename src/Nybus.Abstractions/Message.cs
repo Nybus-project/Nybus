@@ -26,6 +26,10 @@ namespace Nybus
 
     public class HeaderBag : Dictionary<string, string>
     {
+        public HeaderBag(IDictionary<string, string> headers) : base(headers, StringComparer.Ordinal) { }
+
+        public HeaderBag() : this (new Dictionary<string, string>()) { }
+
         public DateTimeOffset SentOn
         {
             get => DateTimeOffset.Parse(this[Headers.SentOn]);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -48,19 +49,45 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task InvokeCommandAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestCommand testCommand, Guid correlationId)
+        public async Task InvokeCommandAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestCommand testCommand, Guid correlationId, IDictionary<string, string> headers)
         {
-            await sut.InvokeCommandAsync(testCommand, correlationId);
+            await sut.InvokeCommandAsync(testCommand, correlationId, headers);
 
             Mock.Get(engine).Verify(p => p.SendMessageAsync(It.Is<CommandMessage<FirstTestCommand>>(m => ReferenceEquals(m.Command, testCommand) && m.Headers.CorrelationId == correlationId)), Times.Once);
         }
 
-        [Test, CustomAutoMoqData]
-        public async Task RaiseEventAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestEvent testEvent, Guid correlationId)
+        [Test, AutoMoqData]
+        public async Task InvokeCommandAsync_forwards_given_headers([Frozen] IBusEngine engine, NybusHost sut, FirstTestCommand testCommand, Guid correlationId, string headerKey, string headerValue)
         {
-            await sut.RaiseEventAsync(testEvent, correlationId);
+            var headers = new Dictionary<string, string>
+            {
+                [headerKey] = headerValue
+            };
+
+            await sut.InvokeCommandAsync(testCommand, correlationId, headers);
+
+            Mock.Get(engine).Verify(p => p.SendMessageAsync(It.Is<Message>(message => message.Headers.ContainsKey(headerKey) && message.Headers[headerKey] == headerValue)));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task RaiseEventAsync_forwards_message_to_engine([Frozen] IBusEngine engine, NybusHost sut, FirstTestEvent testEvent, Guid correlationId, IDictionary<string, string> headers)
+        {
+            await sut.RaiseEventAsync(testEvent, correlationId, headers);
 
             Mock.Get(engine).Verify(p => p.SendMessageAsync(It.Is<EventMessage<FirstTestEvent>>(m => ReferenceEquals(m.Event, testEvent) && m.Headers.CorrelationId == correlationId)), Times.Once);
+        }
+
+        [Test, AutoMoqData]
+        public async Task RaiseEventAsync_forwards_given_headers([Frozen] IBusEngine engine, NybusHost sut, FirstTestEvent testEvent, Guid correlationId, string headerKey, string headerValue)
+        {
+            var headers = new Dictionary<string, string>
+            {
+                [headerKey] = headerValue
+            };
+
+            await sut.RaiseEventAsync(testEvent, correlationId, headers);
+
+            Mock.Get(engine).Verify(p => p.SendMessageAsync(It.Is<Message>(message => message.Headers.ContainsKey(headerKey) && message.Headers[headerKey] == headerValue)));
         }
 
         [Test, CustomAutoMoqData]
@@ -233,7 +260,7 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task ExecuteCommandHandlerAsync_executed_error_filter_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler, Exception error, IErrorFilter errorFilter)
+        public async Task ExecuteCommandHandlerAsync_executes_error_filter_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler, Exception error, IErrorFilter errorFilter)
         {
             configuration.CommandErrorFilters = new[] { errorFilter };
 
@@ -309,7 +336,7 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task ExecuteEventHandlerAsync_executed_error_filter_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler, Exception error, IErrorFilter errorFilter)
+        public async Task ExecuteEventHandlerAsync_executes_error_filter_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler, Exception error, IErrorFilter errorFilter)
         {
             configuration.EventErrorFilters = new[] { errorFilter };
 

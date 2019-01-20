@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Nybus
@@ -14,16 +15,16 @@ namespace Nybus
             _message = message ?? throw new ArgumentNullException(nameof(message));
         }
 
-        public Task InvokeCommandAsync<TCommand>(TCommand command)
+        public Task InvokeCommandAsync<TCommand>(TCommand command, IDictionary<string, string> headers)
             where TCommand : class, ICommand
         {
-            return _bus.InvokeCommandAsync(command, _message.Headers.CorrelationId);
+            return _bus.InvokeCommandAsync(command, _message.Headers.CorrelationId, headers);
         }
 
-        public Task RaiseEventAsync<TEvent>(TEvent @event)
+        public Task RaiseEventAsync<TEvent>(TEvent @event, IDictionary<string, string> headers)
             where TEvent : class, IEvent
         {
-            return _bus.RaiseEventAsync(@event, _message.Headers.CorrelationId);
+            return _bus.RaiseEventAsync(@event, _message.Headers.CorrelationId, headers);
         }
     }
 }
