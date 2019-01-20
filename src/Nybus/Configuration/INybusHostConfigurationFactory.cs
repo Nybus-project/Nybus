@@ -1,33 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
-using Nybus.Policies;
+using Nybus.Filters;
 using Nybus.Utils;
 
 namespace Nybus.Configuration
 {
     public interface INybusHostConfigurationFactory
     {
-        INybusConfiguration CreateConfiguration(NybusHostOptions options);
+        NybusConfiguration CreateConfiguration(NybusHostOptions options);
     }
 
     public class NybusHostOptions
     {
-        public IConfigurationSection ErrorPolicy { get; set; }
+        public IConfigurationSection[] ErrorFilters { get; set; }
+
+        public IConfigurationSection[] CommandErrorFilters { get; set; }
+
+        public IConfigurationSection[] EventErrorFilters { get; set; }
     }
 
     public class NybusHostConfigurationFactory : INybusHostConfigurationFactory
     {
-        private readonly IReadOnlyDictionary<string, IErrorPolicyProvider> _errorPolicyProviders;
+        private readonly IErrorFilter _fallbackErrorFilter;
+        private readonly IReadOnlyDictionary<string, IErrorFilterProvider> _errorFilterProvidersByName;
 
-        public NybusHostConfigurationFactory(IEnumerable<IErrorPolicyProvider> errorPolicyProviders)
+        public NybusHostConfigurationFactory(IEnumerable<IErrorFilterProvider> errorFilterProviders, FallbackErrorFilter fallbackErrorFilter)
         {
-            _errorPolicyProviders = CreateDictionary(errorPolicyProviders ?? throw new ArgumentNullException(nameof(errorPolicyProviders)));
+            _fallbackErrorFilter = fallbackErrorFilter ?? throw new ArgumentNullException(nameof(fallbackErrorFilter));
+            _errorFilterProvidersByName = CreateDictionary(errorFilterProviders ?? throw new ArgumentNullException(nameof(errorFilterProviders)));
         }
 
-        private IReadOnlyDictionary<string, IErrorPolicyProvider> CreateDictionary(IEnumerable<IErrorPolicyProvider> providers)
+        private static IReadOnlyDictionary<string, IErrorFilterProvider> CreateDictionary(IEnumerable<IErrorFilterProvider> providers)
         {
-            var result = new Dictionary<string, IErrorPolicyProvider>(StringComparer.OrdinalIgnoreCase);
+            var result = new Dictionary<string, IErrorFilterProvider>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var provider in providers)
             {
@@ -40,30 +47,40 @@ namespace Nybus.Configuration
             return result;
         }
 
-        public INybusConfiguration CreateConfiguration(NybusHostOptions options)
+        public NybusConfiguration CreateConfiguration(NybusHostOptions options)
         {
-            var errorPolicy = GetErrorPolicy(options.ErrorPolicy);
-
             return new NybusConfiguration
             {
-                ErrorPolicy = errorPolicy
+                FallbackErrorFilter = _fallbackErrorFilter,
+                CommandErrorFilters = GetErrorFilters(options.CommandErrorFilters),
+                EventErrorFilters = GetErrorFilters(options.EventErrorFilters)
             };
 
-            IErrorPolicy GetErrorPolicy(IConfigurationSection section)
+            IReadOnlyList<IErrorFilter> GetErrorFilters(IEnumerable<IConfigurationSection> sections) => sections
+                                                                                                        .IfNull(options.ErrorFilters)
+                                                                                                        .EmptyIfNull()
+                                                                                                        .Select(GetErrorFilter)
+                                                                                                        .NotNull()
+                                                                                                        .ToArray();
+
+            IErrorFilter GetErrorFilter(IConfigurationSection section)
             {
-                if (section != null && section.TryGetValue("ProviderName", out var providerName) && _errorPolicyProviders.TryGetValue(providerName, out var provider))
+                if (section != null && section.TryGetValue("type", out var providerName) && _errorFilterProvidersByName.TryGetValue(providerName, out var provider))
                 {
-                    return provider.CreatePolicy(section);
+                    return provider.CreateErrorFilter(section);
                 }
 
-                return new NoopErrorPolicy();
+                return null;
             }
         }
     }
 
     public class NybusConfiguration : INybusConfiguration
     {
-        public IErrorPolicy ErrorPolicy { get; set; }
-    }
+        public IReadOnlyList<IErrorFilter> CommandErrorFilters { get; set; } = new IErrorFilter[0];
 
+        public IReadOnlyList<IErrorFilter> EventErrorFilters { get; set; } = new IErrorFilter[0];
+
+        public IErrorFilter FallbackErrorFilter { get; set; }
+    }
 }

@@ -3,7 +3,7 @@ using Nybus.Configuration;
 using System;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Nybus.Policies;
+using Nybus.Filters;
 using Nybus.Utils;
 
 namespace Nybus
@@ -14,8 +14,10 @@ namespace Nybus
         {
             var configurator = new NybusConfigurator();
 
-            configurator.RegisterErrorPolicyProvider<RetryErrorPolicyProvider>();
-            configurator.RegisterErrorPolicyProvider<NoopErrorPolicyProvider>();
+            configurator.RegisterErrorFilterProvider<RetryErrorFilterProvider>();
+            configurator.RegisterErrorFilterProvider<DiscardErrorFilterProvider>();
+
+            services.AddSingleton<FallbackErrorFilter>();
             
             configure(configurator);
 
@@ -58,7 +60,7 @@ namespace Nybus
             {
                 var engine = sp.GetRequiredService<IBusEngine>();
                 var builder = sp.GetRequiredService<NybusHostBuilder>();
-                var configuration = sp.GetRequiredService<INybusConfiguration>();
+                var configuration = sp.GetRequiredService<NybusConfiguration>();
 
                 configurator.ConfigureBuilder(builder);
 

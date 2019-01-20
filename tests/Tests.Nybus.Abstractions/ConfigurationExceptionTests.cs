@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using NUnit.Framework;
-using Nybus.Configuration;
+using Nybus;
 
-namespace Tests.Configuration
+namespace Tests
 {
     [TestFixture]
     public class ConfigurationExceptionTests

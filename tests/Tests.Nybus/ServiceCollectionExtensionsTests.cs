@@ -38,7 +38,7 @@ namespace Tests
 
         [Test]
         [InlineAutoMoqData(typeof(NybusHostBuilder))]
-        [InlineAutoMoqData(typeof(INybusConfiguration))]
+        [InlineAutoMoqData(typeof(NybusConfiguration))]
         [InlineAutoMoqData(typeof(NybusHost))]
         [InlineAutoMoqData(typeof(IBusHost))]
         [InlineAutoMoqData(typeof(IBus))]

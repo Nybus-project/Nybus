@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -8,6 +11,7 @@ using System.Reactive;
 using System.Reactive.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
+using Nybus.Filters;
 
 namespace Nybus
 {
@@ -28,7 +32,8 @@ namespace Nybus
 
         public IBus Bus => this;
 
-        public Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand
+        public Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId)
+            where TCommand : class, ICommand
         {
             var message = new CommandMessage<TCommand>
             {
@@ -45,7 +50,8 @@ namespace Nybus
             return _engine.SendCommandAsync(message);
         }
 
-        public Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent
+        public Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId)
+            where TEvent : class, IEvent
         {
             var message = new EventMessage<TEvent>
             {
@@ -76,7 +82,7 @@ namespace Nybus
                              from pipeline in _messagePipelines
                              from execution in pipeline(message).ToObservable()
                              select Unit.Default;
-        
+
             _disposable = observable.Subscribe();
 
             _logger.LogTrace("Bus started");
@@ -97,90 +103,42 @@ namespace Nybus
             }
         }
 
-        private readonly List<MessagePipeline> _messagePipelines = new List<MessagePipeline>();
+        private readonly IList<MessagePipeline> _messagePipelines = new List<MessagePipeline>();
 
-        public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
+        public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived)
+            where TCommand : class, ICommand
         {
             _engine.SubscribeToCommand<TCommand>();
 
-            _messagePipelines.Add(ProcessMessage);
+            _errorHandlers.AddOrUpdate(typeof(TCommand), CreateCommandErrorDelegate<TCommand>(), (key, item) => item);
 
-            async Task ProcessMessage(Message message)
+            _messagePipelines.Add(async message =>
             {
                 if (message is CommandMessage<TCommand> commandMessage)
                 {
+                    var dispatcher = new NybusDispatcher(this, commandMessage);
                     var context = new NybusCommandContext<TCommand>(commandMessage);
-
-                    try
-                    {
-                        await ExecuteHandler(context).ConfigureAwait(false);
-                        await NotifySuccess(commandMessage).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        await HandleError(ex, commandMessage, context).ConfigureAwait(false);
-                    }
+                    await commandReceived(dispatcher, context).ConfigureAwait(false);
                 }
-            }
-
-            async Task ExecuteHandler(ICommandContext<TCommand> context)
-            {
-                var dispatcher = new NybusDispatcher(this, context.Message);
-                await commandReceived(dispatcher, context).ConfigureAwait(false);
-            }
-
-            async Task NotifySuccess(CommandMessage<TCommand> message)
-            {
-                await _engine.NotifySuccessAsync(message).ConfigureAwait(false);
-            }
-
-            Task HandleError(Exception exception, CommandMessage<TCommand> message, ICommandContext<TCommand> context)
-            {
-                _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, CommandType = typeof(TCommand).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.CommandType}. {s.Exception.Message}");
-                return _configuration.ErrorPolicy.HandleErrorAsync(_engine, exception, message);
-            }
+            });
         }
 
-        public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
+        public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived)
+            where TEvent : class, IEvent
         {
             _engine.SubscribeToEvent<TEvent>();
 
-            _messagePipelines.Add(ProcessMessage);
+            _errorHandlers.AddOrUpdate(typeof(TEvent), CreateEventErrorDelegate<TEvent>(), (key, item) => item);
 
-            async Task ProcessMessage(Message message)
+            _messagePipelines.Add(async message =>
             {
                 if (message is EventMessage<TEvent> eventMessage)
                 {
+                    var dispatcher = new NybusDispatcher(this, eventMessage);
                     var context = new NybusEventContext<TEvent>(eventMessage);
-
-                    try
-                    {
-                        await ExecuteHandler(context).ConfigureAwait(false);
-                        await NotifySuccess(eventMessage).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        await HandleError(ex, eventMessage, context).ConfigureAwait(false);
-                    }
+                    await eventReceived(dispatcher, context).ConfigureAwait(false);
                 }
-            }
-
-            async Task ExecuteHandler(IEventContext<TEvent> context)
-            {
-                var dispatcher = new NybusDispatcher(this, context.Message);
-                await eventReceived(dispatcher, context).ConfigureAwait(false);
-            }
-
-            async Task NotifySuccess(EventMessage<TEvent> message)
-            {
-                await _engine.NotifySuccessAsync(message).ConfigureAwait(false);
-            }
-
-            Task HandleError(Exception exception, EventMessage<TEvent> message, IEventContext<TEvent> context)
-            {
-                _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = message.MessageId, EventType = typeof(TEvent).Name, Exception = exception, Message = message }, s => $"An error occurred while handling {s.EventType}. {s.Exception.Message}");
-                return _configuration.ErrorPolicy.HandleErrorAsync(_engine, exception, message);
-            }
+            });
         }
 
         private delegate Task MessagePipeline(Message message);
@@ -194,13 +152,27 @@ namespace Nybus
             {
                 try
                 {
-                    var handler = (ICommandHandler<TCommand>)scope.ServiceProvider.GetRequiredService(handlerType);
-                    await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+                    if (scope.ServiceProvider.GetService(handlerType) is ICommandHandler<TCommand> handler)
+                    {
+                        await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+                        await _engine.NotifySuccessAsync(context.Message).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        throw new MissingHandlerException(handlerType, $"No valid registration for {handlerType.FullName}");
+                    }
                 }
-                catch (InvalidOperationException ex)
+                catch (MissingHandlerException ex)
                 {
-                    _logger.LogError(new { commandType = typeof(TCommand), handlerType}, s => $"No valid registration for {s.handlerType.FullName}");
-                    throw new ConfigurationException($"No valid registration for {handlerType.FullName}", ex);
+                    _logger.LogError(new { eventType = typeof(TCommand), ex.HandlerType }, ex, (s, e) => $"No valid registration for {s.HandlerType.FullName}");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    var message = context.Message as CommandMessage<TCommand>;
+                    _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = context.Message.MessageId, EventType = typeof(TCommand).Name, Message = message }, ex, (s, e) => $"An error occurred while handling {s.EventType}. {e.Message}");
+
+                    await HandleCommandErrorAsync(context, ex).ConfigureAwait(false);
                 }
             }
         }
@@ -212,16 +184,96 @@ namespace Nybus
             {
                 try
                 {
-                    var handler = (IEventHandler<TEvent>)scope.ServiceProvider.GetRequiredService(handlerType);
-                    await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
-
+                    if (scope.ServiceProvider.GetService(handlerType) is IEventHandler<TEvent> handler)
+                    {
+                        await handler.HandleAsync(dispatcher, context).ConfigureAwait(false);
+                        await _engine.NotifySuccessAsync(context.Message).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        throw new MissingHandlerException(handlerType, $"No valid registration for {handlerType.FullName}");
+                    }
                 }
-                catch (InvalidOperationException ex)
+                catch (MissingHandlerException ex)
                 {
-                    _logger.LogError(new { eventType = typeof(TEvent), handlerType }, s => $"No valid registration for {s.handlerType.FullName}");
-                    throw new ConfigurationException($"No valid registration for {handlerType.FullName}", ex);
+                    _logger.LogError(new { eventType = typeof(TEvent), ex.HandlerType }, ex, (s, e) => $"No valid registration for {s.HandlerType.FullName}");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    var message = context.Message as EventMessage<TEvent>;
+                    _logger.LogError(new { CorrelationId = context.CorrelationId, MessageId = context.Message.MessageId, EventType = typeof(TEvent).Name, Message = message }, ex, (s,e) => $"An error occurred while handling {s.EventType}. {e.Message}");
+
+                    await HandleEventErrorAsync(context, ex).ConfigureAwait(false);
                 }
             }
         }
+
+        private readonly ConcurrentDictionary<Type, Func<IContext, Exception, Task>> _errorHandlers = new ConcurrentDictionary<Type, Func<IContext, Exception, Task>>();
+
+        private Task HandleCommandErrorAsync<TCommand>(ICommandContext<TCommand> context, Exception error)
+            where TCommand : class, ICommand
+        {
+            var handler = _errorHandlers.GetOrAdd(typeof(TCommand), CreateCommandErrorDelegate<TCommand>());
+            return handler(context, error);
+        }
+
+        private Func<IContext, Exception, Task> CreateCommandErrorDelegate<TCommand>()
+            where TCommand : class, ICommand
+        {
+            var chain = new List<CommandErrorDelegate<TCommand>>
+            {
+                (c, ex) => _configuration.FallbackErrorFilter.HandleErrorAsync(c, ex, null)
+            };
+
+            foreach (var filter in _configuration.CommandErrorFilters.Reverse())
+            {
+                var latest = chain.Last();
+                chain.Add((c, ex) => filter.HandleErrorAsync(c, ex, latest));
+            }
+
+            return (ctx, exception) =>
+            {
+                if (ctx is ICommandContext<TCommand> context)
+                {
+                    return chain.Last().Invoke(context, exception);
+                }
+
+                return Task.FromException(exception);
+            };
+        }
+
+        private Task HandleEventErrorAsync<TEvent>(IEventContext<TEvent> context, Exception error)
+            where TEvent : class, IEvent
+        {
+            var handler = _errorHandlers.GetOrAdd(typeof(TEvent), CreateEventErrorDelegate<TEvent>());
+            return handler(context, error);
+        }
+
+        private Func<IContext, Exception, Task> CreateEventErrorDelegate<TEvent>()
+            where TEvent : class, IEvent
+        {
+            var chain = new List<EventErrorDelegate<TEvent>>
+            {
+                (c, ex) => _configuration.FallbackErrorFilter.HandleErrorAsync(c, ex, null)
+            };
+
+            foreach (var filter in _configuration.EventErrorFilters.Reverse())
+            {
+                var latest = chain.Last();
+                chain.Add((c, ex) => filter.HandleErrorAsync(c, ex, latest));
+            }
+
+            return (ctx, exception) =>
+            {
+                if (ctx is IEventContext<TEvent> context)
+                {
+                    return chain.Last().Invoke(context, exception);
+                }
+
+                return Task.FromException(exception);
+            };
+        }
+
     }
 }

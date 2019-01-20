@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nybus.Policies;
+using Nybus.Filters;
 
 namespace Nybus.Configuration
 {
@@ -20,7 +21,11 @@ namespace Nybus.Configuration
 
     public interface INybusConfiguration
     {
-        IErrorPolicy ErrorPolicy { get; set; }
+        IErrorFilter FallbackErrorFilter { get; }
+
+        IReadOnlyList<IErrorFilter> CommandErrorFilters { get; set; }
+
+        IReadOnlyList<IErrorFilter> EventErrorFilters { get; set; }
     }
 
     public static class NybusConfiguratorExtensions
@@ -28,7 +33,7 @@ namespace Nybus.Configuration
         public static void UseBusEngine<TEngine>(this INybusConfigurator configurator, Action<IServiceCollection> configureServices = null)
             where TEngine : class, IBusEngine
         {
-            configurator.AddServiceConfiguration(svcs => svcs.AddSingleton<IBusEngine, TEngine>());
+            configurator.AddServiceConfiguration(services => services.AddSingleton<IBusEngine, TEngine>());
 
             if (configureServices != null)
             {

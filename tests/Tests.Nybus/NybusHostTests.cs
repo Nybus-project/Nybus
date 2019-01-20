@@ -9,6 +9,7 @@ using Moq;
 using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
+using Nybus.Filters;
 
 namespace Tests
 { 
@@ -35,7 +36,7 @@ namespace Tests
 
 
         [Test, CustomAutoMoqData]
-        public void Logger_is_required(IBusEngine engine, INybusConfiguration configuration, IServiceProvider serviceProvider)
+        public void Logger_is_required(IBusEngine engine, NybusConfiguration configuration, IServiceProvider serviceProvider)
         {
             Assert.Throws<ArgumentNullException>(() => new NybusHost(engine, configuration, serviceProvider, null));
         }
@@ -110,47 +111,6 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Engine_is_notified_when_commandMessages_are_successfully_processed([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
-        {
-            var subject = new Subject<Message>();
-
-            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
-
-            var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
-
-            sut.SubscribeToCommand(receivedMessage);
-
-            await sut.StartAsync();
-
-            subject.OnNext(testMessage);
-
-            await sut.StopAsync();
-
-            Mock.Get(engine).Verify(p => p.NotifySuccessAsync(testMessage), Times.Once);
-        }
-
-        [Test, CustomAutoMoqData]
-        public async Task Error_policy_is_executed_when_commandMessages_are_processed_with_errors([Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, CommandMessage<FirstTestCommand> testMessage, Exception error)
-        {
-            var subject = new Subject<Message>();
-
-            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
-
-            var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
-            Mock.Get(receivedMessage).Setup(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>())).Throws(error);
-
-            sut.SubscribeToCommand(receivedMessage);
-
-            await sut.StartAsync();
-
-            subject.OnNext(testMessage);
-
-            await sut.StopAsync();
-
-            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleErrorAsync(engine, error, testMessage), Times.Once);
-        }
-
-        [Test, CustomAutoMoqData]
         public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
         {
             var subject = new Subject<Message>();
@@ -188,47 +148,6 @@ namespace Tests
             await sut.StopAsync();
 
             Mock.Get(receivedMessage).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>()), Times.Once);
-        }
-
-        [Test, CustomAutoMoqData]
-        public async Task Engine_is_notified_when_eventMessages_are_successfully_processed([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
-        {
-            var subject = new Subject<Message>();
-
-            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
-
-            var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
-
-            sut.SubscribeToEvent(receivedMessage);
-
-            await sut.StartAsync();
-
-            subject.OnNext(testMessage);
-
-            await sut.StopAsync();
-
-            Mock.Get(engine).Verify(p => p.NotifySuccessAsync(testMessage), Times.Once);
-        }
-
-        [Test, CustomAutoMoqData]
-        public async Task Error_policy_is_executed_when_eventMessages_are_processed_with_errors([Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, EventMessage<FirstTestEvent> testMessage, Exception error)
-        {
-            var subject = new Subject<Message>();
-
-            Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
-
-            var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
-            Mock.Get(receivedMessage).Setup(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>())).Throws(error);
-
-            sut.SubscribeToEvent(receivedMessage);
-
-            await sut.StartAsync();
-
-            subject.OnNext(testMessage);
-
-            await sut.StopAsync();
-
-            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleErrorAsync(engine, error, testMessage), Times.Once);
         }
 
         [Test, CustomAutoMoqData]
@@ -292,9 +211,45 @@ namespace Tests
 
             Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
 
-            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Throws<InvalidOperationException>();
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(null as FirstTestCommandHandler);
 
-            Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteCommandHandlerAsync(dispatcher, commandContext, handlerType));
+            Assert.ThrowsAsync<MissingHandlerException>(() => sut.ExecuteCommandHandlerAsync(dispatcher, commandContext, handlerType));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task ExecuteCommandHandlerAsync_notifies_engine_on_success([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler)
+        {
+            var handlerType = handler.GetType();
+
+            var context = new NybusCommandContext<FirstTestCommand>(commandMessage);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+
+            await sut.ExecuteCommandHandlerAsync(dispatcher, context, handlerType);
+
+            Mock.Get(engine).Verify(p => p.NotifySuccessAsync(context.Message));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task ExecuteCommandHandlerAsync_executed_error_filter_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler, Exception error, IErrorFilter errorFilter)
+        {
+            configuration.CommandErrorFilters = new[] { errorFilter };
+
+            var handlerType = handler.GetType();
+
+            var context = new NybusCommandContext<FirstTestCommand>(commandMessage);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+
+            Mock.Get(handler).Setup(p => p.HandleAsync(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>())).Throws(error);
+
+            await sut.ExecuteCommandHandlerAsync(dispatcher, context, handlerType);
+
+            Mock.Get(errorFilter).Verify(p => p.HandleErrorAsync(context, error, It.IsAny<CommandErrorDelegate<FirstTestCommand>>()));
         }
 
         [Test, CustomAutoMoqData]
@@ -332,9 +287,45 @@ namespace Tests
 
             Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
 
-            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Throws<InvalidOperationException>();
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(null as FirstTestEventHandler);
 
-            Assert.ThrowsAsync<ConfigurationException>(() => sut.ExecuteEventHandlerAsync(dispatcher, eventContext, handlerType));
+            Assert.ThrowsAsync<MissingHandlerException>(() => sut.ExecuteEventHandlerAsync(dispatcher, eventContext, handlerType));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task ExecuteEventHandlerAsync_notifies_engine_on_success([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler)
+        {
+            var handlerType = handler.GetType();
+
+            var context = new NybusEventContext<FirstTestEvent>(eventMessage);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+
+            await sut.ExecuteEventHandlerAsync(dispatcher, context, handlerType);
+
+            Mock.Get(engine).Verify(p => p.NotifySuccessAsync(context.Message));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task ExecuteEventHandlerAsync_executed_error_filter_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler, Exception error, IErrorFilter errorFilter)
+        {
+            configuration.EventErrorFilters = new[] { errorFilter };
+
+            var handlerType = handler.GetType();
+
+            var context = new NybusEventContext<FirstTestEvent>(eventMessage);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(typeof(IServiceScopeFactory))).Returns(scopeFactory);
+
+            Mock.Get(serviceProvider).Setup(p => p.GetService(handlerType)).Returns(handler);
+
+            Mock.Get(handler).Setup(p => p.HandleAsync(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>())).Throws(error);
+
+            await sut.ExecuteEventHandlerAsync(dispatcher, context, handlerType);
+
+            Mock.Get(errorFilter).Verify(p => p.HandleErrorAsync(context, error, It.IsAny<EventErrorDelegate<FirstTestEvent>>()));
         }
     }
 }

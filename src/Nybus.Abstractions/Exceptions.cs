@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nybus.Configuration
+namespace Nybus
 {
     public class ConfigurationException : Exception
     {
@@ -13,5 +13,15 @@ namespace Nybus.Configuration
         {
             
         }
+    }
+
+    public class MissingHandlerException : Exception
+    {
+        public MissingHandlerException(Type handlerType, string message) : base(message)
+        {
+            HandlerType = handlerType;
+        }
+
+        public Type HandlerType { get; }
     }
 }
