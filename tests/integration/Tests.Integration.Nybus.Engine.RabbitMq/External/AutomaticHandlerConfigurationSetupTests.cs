@@ -13,6 +13,19 @@ namespace Tests.External
     [ExternalTestFixture]
     public class AutomaticHandlerConfigurationSetupTests
     {
+        [TearDown]
+        public void OnTestComplete()
+        {
+            var connectionFactory = new ConnectionFactory();
+            var connection = connectionFactory.CreateConnection();
+            var model = connection.CreateModel();
+
+            model.ExchangeDelete(typeof(FirstTestCommand).FullName);
+            model.ExchangeDelete(typeof(FirstTestEvent).FullName);
+
+            connection.Close();
+        }
+                
         [Test, AutoMoqData]
         public async Task Host_can_loopback_commands(SecondTestCommand testCommand)
         {
