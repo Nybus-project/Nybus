@@ -6,6 +6,8 @@ namespace Nybus.InMemory
 {
     public interface IEnvelopeService
     {
+        Envelope CreateEnvelope(Message message);
+
         Envelope CreateEnvelope<T>(CommandMessage<T> message) where T : class, ICommand;
 
         Envelope CreateEnvelope<T>(EventMessage<T> message) where T : class, IEvent;
@@ -24,8 +26,7 @@ namespace Nybus.InMemory
             _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
         }
 
-        public Envelope CreateEnvelope<T>(CommandMessage<T> message)
-            where T : class, ICommand
+        public Envelope CreateEnvelope(Message message)
         {
             if (message == null)
             {
@@ -35,29 +36,23 @@ namespace Nybus.InMemory
             return new Envelope
             {
                 Headers = message.Headers,
-                Content = _serializer.SerializeObject(message.Command),
-                MessageType = MessageType.Command,
+                MessageType = message.MessageType,
                 MessageId = message.MessageId,
-                Type = message.Type
+                Type = message.Type,
+                Content = _serializer.SerializeObject(message.Item)
             };
+        }
+
+        public Envelope CreateEnvelope<T>(CommandMessage<T> message)
+            where T : class, ICommand
+        {
+            return CreateEnvelope(message as Message);
         }
 
         public Envelope CreateEnvelope<T>(EventMessage<T> message)
             where T : class, IEvent
         {
-            if (message == null)
-            {
-                throw new ArgumentNullException(nameof(message));
-            }
-
-            return new Envelope
-            {
-                Headers = message.Headers,
-                Content = _serializer.SerializeObject(message.Event),
-                MessageType = MessageType.Event,
-                MessageId = message.MessageId,
-                Type = message.Type
-            };
+            return CreateEnvelope(message as Message);
         }
 
         public CommandMessage CreateCommandMessage(Envelope envelope, Type commandType)

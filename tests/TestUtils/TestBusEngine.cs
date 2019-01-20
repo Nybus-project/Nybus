@@ -42,6 +42,11 @@ namespace Tests
             throw new NotImplementedException();
         }
 
+        public Task SendMessageAsync(Message message)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task NotifySuccessAsync(Message message)
         {
             throw new NotImplementedException();

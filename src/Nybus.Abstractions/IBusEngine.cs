@@ -5,10 +5,6 @@ namespace Nybus
 {
     public interface IBusEngine
     {
-        Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand;
-
-        Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent;
-
         Task<IObservable<Message>> StartAsync();
 
         Task StopAsync();
@@ -17,10 +13,10 @@ namespace Nybus
 
         void SubscribeToEvent<TEvent>() where TEvent : class, IEvent;
 
+        Task SendMessageAsync(Message message);
+
         Task NotifySuccessAsync(Message message);
 
         Task NotifyFailAsync(Message message);
     }
-
-    public delegate Task MessageReceived(Message message);
 }

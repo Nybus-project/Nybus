@@ -16,7 +16,7 @@ namespace Nybus
 
         public MessageDescriptor Descriptor => new MessageDescriptor(Type);
 
-        protected object Item { get; set; }
+        public object Item { get; protected set; }
     }
 
     public enum MessageType

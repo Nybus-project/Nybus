@@ -91,28 +91,6 @@ namespace Nybus.InMemory
             return Task.CompletedTask;
         }
 
-        public Task SendCommandAsync<TCommand>(CommandMessage<TCommand> message) where TCommand : class, ICommand
-        {
-            if (_isStarted)
-            {
-                var envelope = _envelopeService.CreateEnvelope(message);
-                _sequenceOfMessages.OnNext(envelope);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        public Task SendEventAsync<TEvent>(EventMessage<TEvent> message) where TEvent : class, IEvent
-        {
-            if (_isStarted)
-            {
-                var envelope = _envelopeService.CreateEnvelope(message);
-                _sequenceOfMessages.OnNext(envelope);
-            }
-
-            return Task.CompletedTask;
-        }
-
         public void SubscribeToCommand<TCommand>() where TCommand : class, ICommand
         {
             _messageDescriptorStore.RegisterCommandType<TCommand>();
@@ -123,6 +101,17 @@ namespace Nybus.InMemory
         {
             _messageDescriptorStore.RegisterEventType<TEvent>();
             _acceptedTypes.Add(typeof(TEvent));
+        }
+
+        public Task SendMessageAsync(Message message)
+        {
+            if (_isStarted)
+            {
+                var envelope = _envelopeService.CreateEnvelope(message);
+                _sequenceOfMessages.OnNext(envelope);
+            }
+
+            return Task.CompletedTask;
         }
 
         public Task NotifySuccessAsync(Message message)

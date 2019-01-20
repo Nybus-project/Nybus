@@ -52,7 +52,7 @@ namespace Tests
         {
             await sut.InvokeCommandAsync(testCommand, correlationId);
 
-            Mock.Get(engine).Verify(p => p.SendCommandAsync(It.Is<CommandMessage<FirstTestCommand>>(m => ReferenceEquals(m.Command, testCommand) && m.Headers.CorrelationId == correlationId)), Times.Once);
+            Mock.Get(engine).Verify(p => p.SendMessageAsync(It.Is<CommandMessage<FirstTestCommand>>(m => ReferenceEquals(m.Command, testCommand) && m.Headers.CorrelationId == correlationId)), Times.Once);
         }
 
         [Test, CustomAutoMoqData]
@@ -60,7 +60,7 @@ namespace Tests
         {
             await sut.RaiseEventAsync(testEvent, correlationId);
 
-            Mock.Get(engine).Verify(p => p.SendEventAsync(It.Is<EventMessage<FirstTestEvent>>(m => ReferenceEquals(m.Event, testEvent) && m.Headers.CorrelationId == correlationId)), Times.Once);
+            Mock.Get(engine).Verify(p => p.SendMessageAsync(It.Is<EventMessage<FirstTestEvent>>(m => ReferenceEquals(m.Event, testEvent) && m.Headers.CorrelationId == correlationId)), Times.Once);
         }
 
         [Test, CustomAutoMoqData]
