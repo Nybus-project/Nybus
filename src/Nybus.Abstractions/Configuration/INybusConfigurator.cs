@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nybus.Filters;
-using Nybus.Policies;
 
 namespace Nybus.Configuration
 {
@@ -22,7 +21,7 @@ namespace Nybus.Configuration
 
     public interface INybusConfiguration
     {
-        IErrorPolicy ErrorPolicy { get; set; }
+        IErrorFilter FallbackErrorFilter { get; }
 
         IReadOnlyList<IErrorFilter> CommandErrorFilters { get; set; }
 

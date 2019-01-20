@@ -2,41 +2,163 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AutoFixture.Idioms;
 using AutoFixture.NUnit3;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
 using Nybus.Configuration;
-using Nybus.Policies;
+using Nybus.Filters;
 
 namespace Tests.Configuration
 {
     [TestFixture]
     public class NybusHostConfigurationFactoryTests
     {
-        [Test]
-        public void ErrorPolicyProviders_are_required()
+        [Test, AutoMoqData]
+        public void Constructor_is_guarded(GuardClauseAssertion assertion)
         {
-            Assert.Throws<ArgumentNullException>(() => new NybusHostConfigurationFactory(null));
+            assertion.Verify(typeof(NybusHostConfigurationFactory).GetConstructors());
         }
 
         [Test, CustomAutoMoqData]
-        public void CreateConfiguration_uses_NoopErrorPolicy_if_no_policy_is_specified(NybusHostConfigurationFactory sut, NybusHostOptions options)
+        public void CreateConfiguration_uses_selected_provider_to_create_Command_filters([Frozen] IEnumerable<IErrorFilterProvider> errorFilterProviders, NybusHostConfigurationFactory sut)
         {
+            var providers = errorFilterProviders.ToArray();
+            var selectedProviders = providers.Take(providers.Length - 1);
+
+            var settings = new Dictionary<string, string>();
+
+            var i = 0;
+            foreach (var provider in selectedProviders)
+            {
+                settings.Add($"CommandErrorFilters:{i}:type", provider.ProviderName);
+                i++;
+            }
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+
+            var options = new NybusHostOptions();
+
+            config.Bind(options);
+
             var configuration = sut.CreateConfiguration(options);
 
-            Assert.That(configuration.ErrorPolicy, Is.InstanceOf<NoopErrorPolicy>());
+            Assert.True(selectedProviders.All(p =>
+            {
+                Mock.Get(p).Verify(o => o.CreateErrorFilter(It.IsAny<IConfigurationSection>()));
+                return true;
+            }));
+        }
+
+
+        [Test, CustomAutoMoqData]
+        public void CreateConfiguration_discards_unused_selected_provider_to_create_Command_filters([Frozen] IEnumerable<IErrorFilterProvider> errorFilterProviders, NybusHostConfigurationFactory sut)
+        {
+            var providers = errorFilterProviders.ToArray();
+            var selectedProviders = providers.Take(providers.Length - 1);
+            var unusedProviders = providers.Skip(providers.Length - 1);
+
+            var settings = new Dictionary<string, string>();
+
+            var i = 0;
+            foreach (var provider in selectedProviders)
+            {
+                settings.Add($"CommandErrorFilters:{i}:type", provider.ProviderName);
+                i++;
+            }
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+
+            var options = new NybusHostOptions();
+
+            config.Bind(options);
+
+            var configuration = sut.CreateConfiguration(options);
+
+            Assert.True(unusedProviders.All(p =>
+            {
+                Mock.Get(p).Verify(o => o.CreateErrorFilter(It.IsAny<IConfigurationSection>()), Times.Never);
+                return true;
+            }));
         }
 
         [Test, CustomAutoMoqData]
-        public void CreateConfiguration_uses_selected_provider([Frozen] IEnumerable<IErrorPolicyProvider> errorPolicyProviders, NybusHostConfigurationFactory sut, NybusHostOptions options)
+        public void CreateConfiguration_ignores_unregistered_providers_when_creating_command_filters(NybusHostConfigurationFactory sut, NybusHostOptions options)
         {
-            Mock.Get(options.ErrorPolicy.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(errorPolicyProviders.First().ProviderName);
+            var configuration = sut.CreateConfiguration(options);
+
+            Assert.That(configuration.CommandErrorFilters, Is.Empty);
+        }
+
+        [Test, CustomAutoMoqData]
+        public void CreateConfiguration_uses_selected_provider_to_create_Event_filters([Frozen] IEnumerable<IErrorFilterProvider> errorFilterProviders, NybusHostConfigurationFactory sut)
+        {
+            var providers = errorFilterProviders.ToArray();
+            var selectedProviders = providers.Take(providers.Length - 1);
+
+            var settings = new Dictionary<string, string>();
+
+            var i = 0;
+            foreach (var provider in selectedProviders)
+            {
+                settings.Add($"EventErrorFilters:{i}:type", provider.ProviderName);
+                i++;
+            }
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+
+            var options = new NybusHostOptions();
+
+            config.Bind(options);
 
             var configuration = sut.CreateConfiguration(options);
 
-            Mock.Get(errorPolicyProviders.First()).Verify(p => p.CreatePolicy(options.ErrorPolicy), Times.Once);
-            Assert.That(configuration.ErrorPolicy, Is.SameAs(errorPolicyProviders.First().CreatePolicy(options.ErrorPolicy)));
+            Assert.True(selectedProviders.All(p =>
+            {
+                Mock.Get(p).Verify(o => o.CreateErrorFilter(It.IsAny<IConfigurationSection>()));
+                return true;
+            }));
+        }
+
+
+        [Test, CustomAutoMoqData]
+        public void CreateConfiguration_discards_unused_selected_provider_to_create_Event_filters([Frozen] IEnumerable<IErrorFilterProvider> errorFilterProviders, NybusHostConfigurationFactory sut)
+        {
+            var providers = errorFilterProviders.ToArray();
+            var selectedProviders = providers.Take(providers.Length - 1);
+            var unusedProviders = providers.Skip(providers.Length - 1);
+
+            var settings = new Dictionary<string, string>();
+
+            var i = 0;
+            foreach (var provider in selectedProviders)
+            {
+                settings.Add($"EventErrorFilters:{i}:type", provider.ProviderName);
+                i++;
+            }
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+
+            var options = new NybusHostOptions();
+
+            config.Bind(options);
+
+            var configuration = sut.CreateConfiguration(options);
+
+            Assert.True(unusedProviders.All(p =>
+            {
+                Mock.Get(p).Verify(o => o.CreateErrorFilter(It.IsAny<IConfigurationSection>()), Times.Never);
+                return true;
+            }));
+        }
+
+        [Test, CustomAutoMoqData]
+        public void CreateConfiguration_ignores_unregistered_providers_when_creating_event_filters(NybusHostConfigurationFactory sut, NybusHostOptions options)
+        {
+            var configuration = sut.CreateConfiguration(options);
+
+            Assert.That(configuration.EventErrorFilters, Is.Empty);
         }
     }
 }

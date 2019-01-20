@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Nybus.Filters
 {
@@ -13,4 +14,11 @@ namespace Nybus.Filters
     public delegate Task CommandErrorDelegate<TCommand>(ICommandContext<TCommand> context, Exception exception) where TCommand : class, ICommand;
 
     public delegate Task EventErrorDelegate<TEvent>(IEventContext<TEvent> context, Exception exception) where TEvent : class, IEvent;
+
+    public interface IErrorFilterProvider
+    {
+        string ProviderName { get; }
+
+        IErrorFilter CreateErrorFilter(IConfigurationSection settings);
+    }
 }

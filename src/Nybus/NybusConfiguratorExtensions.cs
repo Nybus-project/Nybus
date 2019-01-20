@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
-using Nybus.Policies;
+using Nybus.Filters;
 
 namespace Nybus
 {
@@ -75,12 +75,11 @@ namespace Nybus
             configurator.AddServiceConfiguration(services => services.AddSingleton(handler));
         }
 
-        public static void RegisterErrorPolicyProvider<TProvider>(this INybusConfigurator configurator, Func<IServiceProvider, IErrorPolicyProvider> factory = null)
-            where TProvider: class, IErrorPolicyProvider
+        public static void RegisterErrorFilterProvider<TProvider>(this INybusConfigurator configurator, Func<IServiceProvider, IErrorFilterProvider> factory = null) where TProvider : class, IErrorFilterProvider
         {
             if (factory == null)
             {
-                configurator.AddServiceConfiguration(sc => sc.AddSingleton<IErrorPolicyProvider, TProvider>());
+                configurator.AddServiceConfiguration(sc => sc.AddSingleton<IErrorFilterProvider, TProvider>());
             }
             else
             {

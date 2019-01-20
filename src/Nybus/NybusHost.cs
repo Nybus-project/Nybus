@@ -221,16 +221,9 @@ namespace Nybus
         private Func<IContext, Exception, Task> CreateCommandErrorDelegate<TCommand>()
             where TCommand : class, ICommand
         {
-            CommandErrorDelegate<TCommand> final = (c, ex) => Task.CompletedTask;
-
-            if (_configuration.ErrorPolicy != null)
-            {
-                final = (c, ex) => _configuration.ErrorPolicy.HandleErrorAsync(_engine, ex, c.Message as CommandMessage<TCommand>);
-            }
-
             var chain = new List<CommandErrorDelegate<TCommand>>
             {
-                final
+                (c, ex) => _configuration.FallbackErrorFilter.HandleErrorAsync(c, ex, null)
             };
 
             foreach (var filter in _configuration.CommandErrorFilters.Reverse())
@@ -260,16 +253,9 @@ namespace Nybus
         private Func<IContext, Exception, Task> CreateEventErrorDelegate<TEvent>()
             where TEvent : class, IEvent
         {
-            EventErrorDelegate<TEvent> final = (c, ex) => Task.CompletedTask;
-
-            if (_configuration.ErrorPolicy != null)
-            {
-                final = (c, ex) => _configuration.ErrorPolicy.HandleErrorAsync(_engine, ex, c.Message as EventMessage<TEvent>);
-            }
-
             var chain = new List<EventErrorDelegate<TEvent>>
             {
-                final
+                (c, ex) => _configuration.FallbackErrorFilter.HandleErrorAsync(c, ex, null)
             };
 
             foreach (var filter in _configuration.EventErrorFilters.Reverse())

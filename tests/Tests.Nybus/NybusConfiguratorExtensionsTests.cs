@@ -5,7 +5,7 @@ using Moq;
 using NUnit.Framework;
 using Nybus;
 using Nybus.Configuration;
-using Nybus.Policies;
+using Nybus.Filters;
 using NybusConfiguratorExtensions = Nybus.NybusConfiguratorExtensions;
 
 // ReSharper disable InvokeAsExtensionMethod
@@ -164,35 +164,36 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void RegisterErrorPolicyProvider_adds_provider_with_default_setup(TestNybusConfigurator nybus, IServiceCollection services)
+        public void RegisterErrorFilterProvider_adds_provider_with_default_setup(TestNybusConfigurator nybus, IServiceCollection services)
         {
-            NybusConfiguratorExtensions.RegisterErrorPolicyProvider<TestErrorPolicyProvider>(nybus);
+            NybusConfiguratorExtensions.RegisterErrorFilterProvider<TestErrorFilterProvider>(nybus);
 
             nybus.ApplyServiceConfigurations(services);
 
-            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IErrorPolicyProvider) && sd.ImplementationType == typeof(TestErrorPolicyProvider))));
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IErrorFilterProvider) && sd.ImplementationType == typeof(TestErrorFilterProvider))));
         }
 
         [Test, CustomAutoMoqData]
-        public void RegisterErrorPolicyProvider_adds_provider_with_custom_setup(TestNybusConfigurator nybus, IServiceCollection services)
+        public void RegisterErrorFilterProvider_adds_provider_with_custom_setup(TestNybusConfigurator nybus, IServiceCollection services)
         {
-            var providerFactory = Mock.Of<Func<IServiceProvider, IErrorPolicyProvider>>();
+            var providerFactory = Mock.Of<Func<IServiceProvider, IErrorFilterProvider>>();
 
-            NybusConfiguratorExtensions.RegisterErrorPolicyProvider<TestErrorPolicyProvider>(nybus, providerFactory);
+            NybusConfiguratorExtensions.RegisterErrorFilterProvider<TestErrorFilterProvider>(nybus, providerFactory);
 
             nybus.ApplyServiceConfigurations(services);
 
-            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IErrorPolicyProvider) && sd.ImplementationFactory == providerFactory)));
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IErrorFilterProvider) && sd.ImplementationFactory == providerFactory)));
         }
 
     }
 
-    public class TestErrorPolicyProvider : IErrorPolicyProvider
+    public class TestErrorFilterProvider : IErrorFilterProvider
     {
         public string ProviderName { get; }
-        public IErrorPolicy CreatePolicy(IConfigurationSection configuration)
+
+        public IErrorFilter CreateErrorFilter(IConfigurationSection settings)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

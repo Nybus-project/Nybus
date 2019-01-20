@@ -233,9 +233,9 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task ExecuteCommandHandlerAsync_executed_error_policy_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler, Exception error)
+        public async Task ExecuteCommandHandlerAsync_executed_error_filter_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler, Exception error, IErrorFilter errorFilter)
         {
-            configuration.CommandErrorFilters = new IErrorFilter[0];
+            configuration.CommandErrorFilters = new[] { errorFilter };
 
             var handlerType = handler.GetType();
 
@@ -249,7 +249,7 @@ namespace Tests
 
             await sut.ExecuteCommandHandlerAsync(dispatcher, context, handlerType);
 
-            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleErrorAsync(It.IsAny<IBusEngine>(), error, commandMessage));
+            Mock.Get(errorFilter).Verify(p => p.HandleErrorAsync(context, error, It.IsAny<CommandErrorDelegate<FirstTestCommand>>()));
         }
 
         [Test, CustomAutoMoqData]
@@ -309,9 +309,9 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task ExecuteEventHandlerAsync_executed_error_policy_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler, Exception error)
+        public async Task ExecuteEventHandlerAsync_executed_error_filter_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler, Exception error, IErrorFilter errorFilter)
         {
-            configuration.EventErrorFilters = new IErrorFilter[0];
+            configuration.EventErrorFilters = new[] { errorFilter };
 
             var handlerType = handler.GetType();
 
@@ -325,7 +325,7 @@ namespace Tests
 
             await sut.ExecuteEventHandlerAsync(dispatcher, context, handlerType);
 
-            Mock.Get(configuration.ErrorPolicy).Verify(p => p.HandleErrorAsync(It.IsAny<IBusEngine>(), error, eventMessage));
+            Mock.Get(errorFilter).Verify(p => p.HandleErrorAsync(context, error, It.IsAny<EventErrorDelegate<FirstTestEvent>>()));
         }
     }
 }
