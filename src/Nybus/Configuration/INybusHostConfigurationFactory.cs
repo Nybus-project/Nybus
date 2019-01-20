@@ -69,8 +69,8 @@ namespace Nybus.Configuration
     {
         public IErrorPolicy ErrorPolicy { get; set; }
 
-        public IReadOnlyList<ICommandErrorFilter> CommandErrorFilters { get; set; } = new ICommandErrorFilter[0];
+        public IReadOnlyList<IErrorFilter> CommandErrorFilters { get; set; } = new IErrorFilter[0];
 
-        public IReadOnlyList<IEventErrorFilter> EventErrorFilters { get; set; } = new IEventErrorFilter[0];
+        public IReadOnlyList<IErrorFilter> EventErrorFilters { get; set; } = new IErrorFilter[0];
     }
 }

@@ -24,9 +24,9 @@ namespace Nybus.Configuration
     {
         IErrorPolicy ErrorPolicy { get; set; }
 
-        IReadOnlyList<ICommandErrorFilter> CommandErrorFilters { get; set; }
+        IReadOnlyList<IErrorFilter> CommandErrorFilters { get; set; }
 
-        IReadOnlyList<IEventErrorFilter> EventErrorFilters { get; set; }
+        IReadOnlyList<IErrorFilter> EventErrorFilters { get; set; }
     }
 
     public static class NybusConfiguratorExtensions

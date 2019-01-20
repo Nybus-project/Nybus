@@ -235,7 +235,7 @@ namespace Tests
         [Test, CustomAutoMoqData]
         public async Task ExecuteCommandHandlerAsync_executed_error_policy_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, CommandMessage<FirstTestCommand> commandMessage, IServiceScopeFactory scopeFactory, ICommandHandler<FirstTestCommand> handler, Exception error)
         {
-            configuration.CommandErrorFilters = new ICommandErrorFilter[0];
+            configuration.CommandErrorFilters = new IErrorFilter[0];
 
             var handlerType = handler.GetType();
 
@@ -311,7 +311,7 @@ namespace Tests
         [Test, CustomAutoMoqData]
         public async Task ExecuteEventHandlerAsync_executed_error_policy_on_fail([Frozen] IServiceProvider serviceProvider, [Frozen] IBusEngine engine, [Frozen] INybusConfiguration configuration, NybusHost sut, IDispatcher dispatcher, EventMessage<FirstTestEvent> eventMessage, IServiceScopeFactory scopeFactory, IEventHandler<FirstTestEvent> handler, Exception error)
         {
-            configuration.EventErrorFilters = new IEventErrorFilter[0];
+            configuration.EventErrorFilters = new IErrorFilter[0];
 
             var handlerType = handler.GetType();
 
