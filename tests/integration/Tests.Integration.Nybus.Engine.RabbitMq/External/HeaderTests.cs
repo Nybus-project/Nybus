@@ -9,7 +9,7 @@ using RabbitMQ.Client;
 
 namespace Tests.External
 {
-    [TestFixture]
+    [ExternalTestFixture]
     public class HeaderTests
     {
         [TearDown]
