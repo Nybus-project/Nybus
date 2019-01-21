@@ -64,6 +64,34 @@ namespace Tests.InMemory
         }
 
         [Test, CustomAutoMoqData]
+        public async Task Sent_commands_are_received([Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage, IFixture fixture, string headerKey, string headerValue)
+        {
+            fixture.Customize<Envelope>(c => c
+                                             .With(p => p.Type, testMessage.Type)
+                                             .With(p => p.Headers, testMessage.Headers)
+                                             .With(p => p.Content)
+                                             .With(p => p.MessageId, testMessage.MessageId)
+                                             .With(p => p.MessageType, testMessage.MessageType)
+            );
+
+            Mock.Get(envelopeService).Setup(p => p.CreateEnvelope(It.IsAny<CommandMessage<FirstTestCommand>>())).ReturnsUsingFixture(fixture);
+            Mock.Get(envelopeService).Setup(p => p.CreateCommandMessage(It.IsAny<Envelope>(), It.IsAny<Type>())).Returns(testMessage);
+
+            testMessage.Headers[headerKey] = headerValue;
+
+            sut.SubscribeToCommand<FirstTestCommand>();
+
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
+
+            var items = sequence.DumpInList();
+
+            await sut.SendMessageAsync(testMessage);
+
+            Assert.That(items.First().Headers, Contains.Key(headerKey));
+            Assert.That(items.First().Headers[headerKey], Is.EqualTo(headerValue));
+        }
+
+        [Test, CustomAutoMoqData]
         public async Task Sent_events_are_received([Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage, IFixture fixture)
         {
             fixture.Customize<Envelope>(c => c
@@ -86,6 +114,34 @@ namespace Tests.InMemory
             await sut.SendMessageAsync(testMessage);
 
             Assert.That(items.First(), Is.EqualTo(testMessage).Using<EventMessage<FirstTestEvent>>((x, y) => x.MessageId == y.MessageId));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task Sent_events_are_received([Frozen] IEnvelopeService envelopeService, InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage, IFixture fixture, string headerKey, string headerValue)
+        {
+            fixture.Customize<Envelope>(c => c
+                                             .With(p => p.Type, testMessage.Type)
+                                             .With(p => p.Headers, testMessage.Headers)
+                                             .With(p => p.Content)
+                                             .With(p => p.MessageId, testMessage.MessageId)
+                                             .With(p => p.MessageType, testMessage.MessageType)
+            );
+
+            Mock.Get(envelopeService).Setup(p => p.CreateEnvelope(It.IsAny<EventMessage<FirstTestEvent>>())).ReturnsUsingFixture(fixture);
+            Mock.Get(envelopeService).Setup(p => p.CreateEventMessage(It.IsAny<Envelope>(), It.IsAny<Type>())).Returns(testMessage);
+
+            testMessage.Headers[headerKey] = headerValue;
+
+            sut.SubscribeToEvent<FirstTestEvent>();
+
+            var sequence = await sut.StartAsync().ConfigureAwait(false);
+
+            var items = sequence.DumpInList();
+
+            await sut.SendMessageAsync(testMessage);
+
+            Assert.That(items.First().Headers, Contains.Key(headerKey));
+            Assert.That(items.First().Headers[headerKey], Is.EqualTo(headerValue));
         }
 
         [Test, CustomAutoMoqData]

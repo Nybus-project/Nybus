@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Nybus.Utils;
 
 namespace Nybus
@@ -26,6 +27,10 @@ namespace Nybus
 
     public class HeaderBag : Dictionary<string, string>
     {
+        public HeaderBag(IDictionary<string, string> headers) : base(headers, StringComparer.Ordinal) { }
+
+        public HeaderBag() : this (new Dictionary<string, string>()) { }
+
         public DateTimeOffset SentOn
         {
             get => DateTimeOffset.Parse(this[Headers.SentOn]);
@@ -46,6 +51,10 @@ namespace Nybus
         public static readonly string CorrelationId = nameof(CorrelationId);
         public static readonly string SentOn = nameof(SentOn);
         public static readonly string RetryCount = nameof(RetryCount);
+
+        private static readonly string[] ValidHeaders = { MessageId, MessageType, CorrelationId, SentOn, RetryCount };
+
+        public static bool IsNybus(string header) => ValidHeaders.Contains(header);
     }
 
     public abstract class CommandMessage : Message

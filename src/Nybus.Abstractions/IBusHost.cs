@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -6,9 +7,9 @@ namespace Nybus
 {
     public interface IBus
     {
-        Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId) where TCommand : class, ICommand;
+        Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId, IDictionary<string, string> headers) where TCommand : class, ICommand;
 
-        Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId) where TEvent : class, IEvent;
+        Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId, IDictionary<string, string> headers) where TEvent : class, IEvent;
     }
 
     public interface IBusHost
@@ -26,9 +27,9 @@ namespace Nybus
 
     public interface IDispatcher
     {
-        Task InvokeCommandAsync<TCommand>(TCommand command) where TCommand : class, ICommand;
+        Task InvokeCommandAsync<TCommand>(TCommand command, IDictionary<string, string> headers) where TCommand : class, ICommand;
 
-        Task RaiseEventAsync<TEvent>(TEvent @event) where TEvent : class, IEvent;
+        Task RaiseEventAsync<TEvent>(TEvent @event, IDictionary<string, string> headers) where TEvent : class, IEvent;
 
     }
 

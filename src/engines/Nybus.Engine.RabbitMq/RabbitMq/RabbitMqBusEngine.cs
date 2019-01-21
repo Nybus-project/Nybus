@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
@@ -118,7 +119,7 @@ namespace Nybus.RabbitMq
                 }
 
                 if (_messageDescriptorStore.FindCommandTypeForDescriptor(descriptor, out var commandType))
-                    {
+                {
                     var command = _configuration.Serializer.DeserializeObject(args.Body, commandType, encoding) as ICommand;
                     message = CreateCommandMessage(command);
                 }
@@ -142,6 +143,14 @@ namespace Nybus.RabbitMq
                     [RabbitMqHeaders.DeliveryTag] = args.DeliveryTag.ToString(),
                     [RabbitMqHeaders.MessageId] = args.BasicProperties.MessageId
                 };
+
+                foreach (var header in args.BasicProperties.Headers.Where(k => k.Key.StartsWith("Custom:")))
+                {
+                    var headerKey = ParseCustom(header.Key);
+                    var value = args.BasicProperties.GetHeader(header.Key, encoding);
+                    
+                    message.Headers.Add(headerKey, value);
+                }
 
                 return message;
             }
@@ -204,7 +213,8 @@ namespace Nybus.RabbitMq
 
             foreach (var header in message.Headers)
             {
-                properties.Headers.Add(Nybus(header.Key), header.Value);
+                var headerKey = Headers.IsNybus(header.Key) ? Nybus(header.Key) : Custom(header.Key);
+                properties.Headers.Add(headerKey, header.Value);
             }
 
             var exchangeName = MessageDescriptor.CreateFromType(type);
@@ -271,5 +281,9 @@ namespace Nybus.RabbitMq
         }
 
         private static string Nybus(string key) => $"Nybus:{key}";
+
+        private static string Custom(string key) => $"Custom:{key}";
+
+        private static string ParseCustom(string custom) => custom.Substring(custom.IndexOf(':') + 1);
     }
 }

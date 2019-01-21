@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture.Idioms;
 using AutoFixture.NUnit3;
@@ -18,19 +19,19 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Command_is_invoked_with_given_correlationId([Frozen] IBus bus, [Frozen] Message message, NybusDispatcher sut, FirstTestCommand testCommand)
+        public async Task Command_is_invoked_with_given_correlationId([Frozen] IBus bus, [Frozen] Message message, NybusDispatcher sut, FirstTestCommand testCommand, IDictionary<string, string> headers)
         {
-            await sut.InvokeCommandAsync(testCommand);
+            await sut.InvokeCommandAsync(testCommand, headers);
 
-            Mock.Get(bus).Verify(p => p.InvokeCommandAsync(testCommand, message.Headers.CorrelationId), Times.Once);
+            Mock.Get(bus).Verify(p => p.InvokeCommandAsync(testCommand, message.Headers.CorrelationId, It.IsAny<IDictionary<string, string>>()), Times.Once);
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Event_is_raised_with_given_correlationId([Frozen] IBus bus, [Frozen] Message message, NybusDispatcher sut, FirstTestEvent testEvent)
+        public async Task Event_is_raised_with_given_correlationId([Frozen] IBus bus, [Frozen] Message message, NybusDispatcher sut, FirstTestEvent testEvent, IDictionary<string, string> headers)
         {
-            await sut.RaiseEventAsync(testEvent);
+            await sut.RaiseEventAsync(testEvent, headers);
 
-            Mock.Get(bus).Verify(p => p.RaiseEventAsync(testEvent, message.Headers.CorrelationId), Times.Once);
+            Mock.Get(bus).Verify(p => p.RaiseEventAsync(testEvent, message.Headers.CorrelationId, It.IsAny<IDictionary<string, string>>()), Times.Once);
         }
     }
 }

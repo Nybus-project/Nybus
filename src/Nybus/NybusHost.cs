@@ -32,13 +32,13 @@ namespace Nybus
 
         public IBus Bus => this;
 
-        public Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId)
+        public Task InvokeCommandAsync<TCommand>(TCommand command, Guid correlationId, IDictionary<string, string> headers)
             where TCommand : class, ICommand
         {
             var message = new CommandMessage<TCommand>
             {
                 MessageId = Guid.NewGuid().Stringfy(),
-                Headers = new HeaderBag
+                Headers = new HeaderBag(headers)
                 {
                     CorrelationId = correlationId,
                     SentOn = Clock.Default.Now
@@ -46,17 +46,17 @@ namespace Nybus
                 Command = command
             };
 
-            _logger.LogTrace(new { type = typeof(TCommand).FullName, correlationId = correlationId, command }, arg => $"Invoking command of type {arg.type} with correlationId {arg.correlationId}. Command: {arg.command.ToString()}");
+            _logger.LogTrace(new { type = typeof(TCommand).FullName, correlationId = correlationId, message }, arg => $"Invoking command of type {arg.type} with correlationId {arg.correlationId}. Command: {arg.message.Command.ToString()}");
             return _engine.SendMessageAsync(message);
         }
 
-        public Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId)
+        public Task RaiseEventAsync<TEvent>(TEvent @event, Guid correlationId, IDictionary<string, string> headers)
             where TEvent : class, IEvent
         {
             var message = new EventMessage<TEvent>
             {
                 MessageId = Guid.NewGuid().Stringfy(),
-                Headers = new HeaderBag
+                Headers = new HeaderBag(headers)
                 {
                     CorrelationId = correlationId,
                     SentOn = Clock.Default.Now
@@ -64,7 +64,7 @@ namespace Nybus
                 Event = @event
             };
 
-            _logger.LogTrace(new { type = typeof(TEvent).FullName, correlationId = correlationId, @event }, arg => $"Raising event of type {arg.type} with correlationId {arg.correlationId}. Event: {arg.@event.ToString()}");
+            _logger.LogTrace(new { type = typeof(TEvent).FullName, correlationId = correlationId, message }, arg => $"Raising event of type {arg.type} with correlationId {arg.correlationId}. Event: {arg.message.Event.ToString()}");
             return _engine.SendMessageAsync(message);
         }
 
