@@ -84,15 +84,15 @@ Currently, in the pipeline there are the following engines
 * An engine based on ActiveMQ to be used in conjunction with the ActiveMQ managed service offered by Amazon.
 * An engine based on MassTransit + RabbitMQ: this will make possible the cooperation between applications written in Nybus v1 and those written in Nybus v0.
 
-### Plugins
+### Execution filters
 
-Support for plugins will be added in Nybus 1.1. The idea is to have the possibility to intercept the handlers' execution so to minimize the risk of cross-cutting concerns to pollute the handlers.
+Support for execution filters will be added in Nybus 1.1. The idea is to have the possibility to intercept the handlers' execution so to minimize the risk of cross-cutting concerns to pollute the handlers.
 
-Two concrete examples of plugins could be the integration with services like AWS CloudWatch and AWS X-Ray to properly push metrics and traces.
+Two concrete examples of execution filters could be the integration with services like AWS CloudWatch and AWS X-Ray to properly push metrics and traces.
 
 ### Templates
 
-Once few patterns of usage will be established, it would be conveniente for the developers to create a new Nybus application by simply typing `dotnet new nybus` in their console of choice.
+Once few patterns of usage will be established, it would be convenient for the developers to create a new Nybus application by simply typing `dotnet new nybus` in their console of choice.
 
 ## Previous versions
 
@@ -120,11 +120,7 @@ Nybus uses [CAKE](https://cakebuild.net/) as a build engine.
 
 If you would like to build Nybus locally, just execute the `build.cake` script.
 
-You can do it by running the Powershell bootstrapper in the root of the repository.
-```powershell
-.\build.ps1
-```
-Alternatively, you can install the .NET tool created by CAKE authors and use it to execute the build script.
+You can do it by using the .NET tool created by CAKE authors and use it to execute the build script.
 ```powershell
 dotnet tool install -g Cake.Tool
 dotnet cake
