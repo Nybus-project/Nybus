@@ -4,7 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Nybus</RootNamespace>
     <AssemblyName>Nybus.Engine.InMemory</AssemblyName>
-    <Description />
+    <Description>In-memory engine for Nybus.</Description>
+    <PackageTags>dotnet-standard;framework;queue;rx;nybus</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

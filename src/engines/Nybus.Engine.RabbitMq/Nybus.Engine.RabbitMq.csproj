@@ -4,7 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Nybus</RootNamespace>
     <AssemblyName>Nybus.Engine.RabbitMq</AssemblyName>
-    <Description />
+    <Description>Engine for Nybus based on RabbitMQ.</Description>
+    <PackageTags>dotnet-standard;framework;queue;rx;nybus;rabbitmq</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
