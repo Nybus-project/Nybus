@@ -13,7 +13,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Host_can_loopback_commands(ServiceCollection services, FirstTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             services.AddLogging(l => l.AddDebug());
 
@@ -42,7 +42,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             services.AddLogging(l => l.AddDebug());
 

@@ -33,7 +33,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Commands_are_matched_via_MessageAttribute(ThirdTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<AttributeTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
 
             var host = TestUtils.CreateNybusHost(nybus =>
             {
@@ -59,7 +59,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Events_are_matched_via_MessageAttribute(ThirdTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<AttributeTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
 
             var host = TestUtils.CreateNybusHost(nybus =>
             {
@@ -85,7 +85,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Commands_are_correctly_converted(ThirdTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<AttributeTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
 
             var host = TestUtils.CreateNybusHost(nybus =>
             {
@@ -111,7 +111,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Events_are_correctly_converted(ThirdTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<AttributeTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
 
             var host = TestUtils.CreateNybusHost(nybus =>
             {

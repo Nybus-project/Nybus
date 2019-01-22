@@ -14,7 +14,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Commands_are_matched_via_MessageAttribute(ServiceCollection services, ThirdTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<AttributeTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
 
             services.AddLogging(l => l.AddDebug());
 
@@ -43,7 +43,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Events_are_matched_via_MessageAttribute(ServiceCollection services, ThirdTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<AttributeTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
 
             services.AddLogging(l => l.AddDebug());
 
@@ -72,7 +72,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Commands_are_correctly_converted(ServiceCollection services, ThirdTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<AttributeTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
 
             services.AddLogging(l => l.AddDebug());
 
@@ -101,7 +101,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Events_are_correctly_converted(ServiceCollection services, ThirdTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<AttributeTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
 
             services.AddLogging(l => l.AddDebug());
 

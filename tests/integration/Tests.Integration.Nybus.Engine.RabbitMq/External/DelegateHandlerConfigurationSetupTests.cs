@@ -35,7 +35,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Host_can_loopback_commands(FirstTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             var settings = new Dictionary<string, string>
             {
@@ -81,7 +81,7 @@ namespace Tests.External
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
 
-            var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             var host = CreateNybusHost(nybus =>
             {

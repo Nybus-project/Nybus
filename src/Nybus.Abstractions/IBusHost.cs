@@ -21,9 +21,13 @@ namespace Nybus
         IBus Bus { get; }
     }
 
-    public delegate Task CommandReceived<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context) where TCommand : class, ICommand;
+    public delegate Task CommandReceivedAsync<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context) where TCommand : class, ICommand;
 
-    public delegate Task EventReceived<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context) where TEvent : class, IEvent;
+    public delegate void CommandReceived<TCommand>(IDispatcher dispatcher, ICommandContext<TCommand> context) where TCommand : class, ICommand;
+
+    public delegate Task EventReceivedAsync<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context) where TEvent : class, IEvent;
+
+    public delegate void EventReceived<TEvent>(IDispatcher dispatcher, IEventContext<TEvent> context) where TEvent : class, IEvent;
 
     public interface IDispatcher
     {

@@ -105,7 +105,7 @@ namespace Nybus
 
         private readonly IList<MessagePipeline> _messagePipelines = new List<MessagePipeline>();
 
-        public void SubscribeToCommand<TCommand>(CommandReceived<TCommand> commandReceived)
+        public void SubscribeToCommand<TCommand>(CommandReceivedAsync<TCommand> commandReceived)
             where TCommand : class, ICommand
         {
             _engine.SubscribeToCommand<TCommand>();
@@ -123,7 +123,7 @@ namespace Nybus
             });
         }
 
-        public void SubscribeToEvent<TEvent>(EventReceived<TEvent> eventReceived)
+        public void SubscribeToEvent<TEvent>(EventReceivedAsync<TEvent> eventReceived)
             where TEvent : class, IEvent
         {
             _engine.SubscribeToEvent<TEvent>();

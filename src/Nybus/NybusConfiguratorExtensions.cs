@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
 using Nybus.Filters;
@@ -18,7 +19,17 @@ namespace Nybus
             configurator.AddServiceConfiguration(services => services.AddTransient<TCommandHandler>());
         }
 
-        public static void SubscribeToCommand<TCommand>(this INybusConfigurator configurator, CommandReceived<TCommand> commandReceived)
+        public static void SubscribeToCommand<TCommand>(this INybusConfigurator configurator, CommandReceived<TCommand> commandReceived) where TCommand : class, ICommand
+        {
+            SubscribeToCommand<TCommand>(configurator, (dispatcher, context) =>
+            {
+                commandReceived(dispatcher, context);
+
+                return Task.CompletedTask;
+            });
+        }
+
+        public static void SubscribeToCommand<TCommand>(this INybusConfigurator configurator, CommandReceivedAsync<TCommand> commandReceived)
             where TCommand : class, ICommand
         {
             var handler = new DelegateWrapperCommandHandler<TCommand>(commandReceived);
@@ -53,7 +64,16 @@ namespace Nybus
             configurator.AddServiceConfiguration(services => services.AddTransient<TEventHandler>());
         }
 
-        public static void SubscribeToEvent<TEvent>(this INybusConfigurator configurator, EventReceived<TEvent> eventReceived)
+        public static void SubscribeToEvent<TEvent>(this INybusConfigurator configurator, EventReceived<TEvent> eventReceived) where TEvent : class, IEvent
+        {
+            SubscribeToEvent<TEvent>(configurator, (dispatcher, context) =>
+            {
+                eventReceived(dispatcher, context);
+                return Task.CompletedTask;
+            });
+        }
+
+        public static void SubscribeToEvent<TEvent>(this INybusConfigurator configurator, EventReceivedAsync<TEvent> eventReceived)
             where TEvent : class, IEvent
         {
             var handler = new DelegateWrapperEventHandler<TEvent>(eventReceived);

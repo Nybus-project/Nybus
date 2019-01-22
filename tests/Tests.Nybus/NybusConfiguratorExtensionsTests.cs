@@ -36,6 +36,18 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
+        public void SubscribeToCommand_registers_async_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
+        {
+            var testHandler = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
+
+            NybusConfiguratorExtensions.SubscribeToCommand(nybus, testHandler);
+
+            nybus.ApplySubscriptions(subscriptionBuilder);
+
+            Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToCommand<FirstTestCommand>(typeof(DelegateWrapperCommandHandler<FirstTestCommand>)));
+        }
+
+        [Test, CustomAutoMoqData]
         public void SubscribeToCommand_registers_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             var testHandler = Mock.Of<CommandReceived<FirstTestCommand>>();
@@ -50,7 +62,7 @@ namespace Tests
         [Test, CustomAutoMoqData]
         public void SubscribeToCommand_registers_delegate_handler_type(TestNybusConfigurator nybus, IServiceCollection services)
         {
-            var testHandler = Mock.Of<CommandReceived<FirstTestCommand>>();
+            var testHandler = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             NybusConfiguratorExtensions.SubscribeToCommand(nybus, testHandler);
 
@@ -110,6 +122,18 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
+        public void SubscribeToEvent_registers_async_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
+        {
+            var testHandler = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
+
+            NybusConfiguratorExtensions.SubscribeToEvent(nybus, testHandler);
+
+            nybus.ApplySubscriptions(subscriptionBuilder);
+
+            Mock.Get(subscriptionBuilder).Verify(p => p.SubscribeToEvent<FirstTestEvent>(typeof(DelegateWrapperEventHandler<FirstTestEvent>)));
+        }
+
+        [Test, CustomAutoMoqData]
         public void SubscribeToEvent_registers_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
         {
             var testHandler = Mock.Of<EventReceived<FirstTestEvent>>();
@@ -124,7 +148,7 @@ namespace Tests
         [Test, CustomAutoMoqData]
         public void SubscribeToEvent_registers_delegate_handler_type(TestNybusConfigurator nybus, IServiceCollection services)
         {
-            var testHandler = Mock.Of<EventReceived<FirstTestEvent>>();
+            var testHandler = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             NybusConfiguratorExtensions.SubscribeToEvent(nybus, testHandler);
 

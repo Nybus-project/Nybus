@@ -6,9 +6,9 @@ namespace Nybus.Configuration
     public class DelegateWrapperEventHandler<TEvent> : IEventHandler<TEvent>
         where TEvent : class, IEvent
     {
-        private readonly EventReceived<TEvent> _handler;
+        private readonly EventReceivedAsync<TEvent> _handler;
 
-        public DelegateWrapperEventHandler(EventReceived<TEvent> handler)
+        public DelegateWrapperEventHandler(EventReceivedAsync<TEvent> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }

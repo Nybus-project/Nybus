@@ -14,7 +14,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Commands_are_matched_via_MessageAttribute(FakeServer server, ThirdTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<AttributeTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
 
             var host = CreateNybusHost(nybus =>
             {
@@ -38,7 +38,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Events_are_matched_via_MessageAttribute(FakeServer server, ThirdTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<AttributeTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
 
             var host = CreateNybusHost(nybus =>
             {
@@ -62,7 +62,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Commands_are_correctly_converted(FakeServer server, ThirdTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<AttributeTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
 
             var host = CreateNybusHost(nybus =>
             {
@@ -86,7 +86,7 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Events_are_correctly_converted(FakeServer server, ThirdTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<AttributeTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
 
             var host = CreateNybusHost(nybus =>
             {

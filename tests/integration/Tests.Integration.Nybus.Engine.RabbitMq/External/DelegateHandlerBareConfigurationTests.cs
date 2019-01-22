@@ -47,7 +47,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Host_can_loopback_commands(FirstTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             var host = CreateNybusHost(nybus =>
             {
@@ -73,7 +73,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Host_can_loopback_events(FirstTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             var host = CreateNybusHost(nybus =>
             {
@@ -107,7 +107,7 @@ namespace Tests.External
                 });
             });
 
-            var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             var receiver = CreateNybusHost(nybus =>
             {
@@ -145,7 +145,7 @@ namespace Tests.External
                 });
             });
 
-            var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             var receiver = CreateNybusHost(nybus =>
             {

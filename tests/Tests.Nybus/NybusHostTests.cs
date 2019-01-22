@@ -124,7 +124,7 @@ namespace Tests
 
             Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
-            var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
+            var receivedMessage = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             sut.SubscribeToCommand(receivedMessage);
 
@@ -144,7 +144,7 @@ namespace Tests
 
             Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
-            var receivedMessage = Mock.Of<CommandReceived<FirstTestCommand>>();
+            var receivedMessage = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             sut.SubscribeToCommand(receivedMessage);
 
@@ -164,7 +164,7 @@ namespace Tests
 
             Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
-            var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
+            var receivedMessage = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             sut.SubscribeToEvent(receivedMessage);
 
@@ -184,7 +184,7 @@ namespace Tests
 
             Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
 
-            var receivedMessage = Mock.Of<EventReceived<FirstTestEvent>>();
+            var receivedMessage = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             sut.SubscribeToEvent(receivedMessage);
 

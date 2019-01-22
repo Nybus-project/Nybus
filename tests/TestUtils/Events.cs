@@ -21,9 +21,9 @@ namespace Tests
 
     public class SecondTestEventHandler : IEventHandler<SecondTestEvent>
     {
-        private readonly EventReceived<SecondTestEvent> _eventReceived;
+        private readonly EventReceivedAsync<SecondTestEvent> _eventReceived;
 
-        public SecondTestEventHandler(EventReceived<SecondTestEvent> eventReceived)
+        public SecondTestEventHandler(EventReceivedAsync<SecondTestEvent> eventReceived)
         {
             _eventReceived = eventReceived ?? throw new ArgumentNullException(nameof(eventReceived));
         }

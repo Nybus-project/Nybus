@@ -33,7 +33,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Host_can_loopback_commands(SecondTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceived<SecondTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
             var mockHandler = new Mock<SecondTestCommandHandler>(commandReceived);
             var handler = mockHandler.Object;
 
@@ -68,7 +68,7 @@ namespace Tests.External
         [Test, AutoMoqData]
         public async Task Host_can_loopback_events(SecondTestEvent testEvent)
         {
-            var eventReceived = Mock.Of<EventReceived<SecondTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
             var mockHandler = new Mock<SecondTestEventHandler>(eventReceived);
             var handler = mockHandler.Object;
 

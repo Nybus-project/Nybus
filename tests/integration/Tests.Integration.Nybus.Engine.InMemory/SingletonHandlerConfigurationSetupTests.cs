@@ -10,13 +10,11 @@ using Nybus;
 namespace Tests
 {
     [TestFixture]
-    public class DelegateHandlerConfigurationSetupTests
+    public class SingletonHandlerConfigurationSetupTests
     {
         [Test, AutoMoqData]
         public async Task Host_can_loopback_commands(ServiceCollection services, FirstTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
             var settings = new Dictionary<string, string>
             {
                 ["Nybus:ErrorPolicy:ProviderName"] = "retry",
@@ -26,6 +24,8 @@ namespace Tests
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
 
+            var handler = Mock.Of<FirstTestCommandHandler>();
+
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
@@ -34,7 +34,7 @@ namespace Tests
 
                 nybus.UseConfiguration(configuration);
 
-                nybus.SubscribeToCommand(commandReceived);
+                nybus.SubscribeToCommand<FirstTestCommand, FirstTestCommandHandler>(handler);
             });
 
             var serviceProvider = services.BuildServiceProvider();
@@ -49,7 +49,7 @@ namespace Tests
 
             await host.StopAsync();
 
-            Mock.Get(commandReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>()), Times.Once);
+            Mock.Get(handler).Verify(p => p.HandleAsync(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>()), Times.Once);
         }
 
         [Test, AutoMoqData]
@@ -64,7 +64,7 @@ namespace Tests
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
 
-            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
+            var handler = Mock.Of<FirstTestEventHandler>();
 
             services.AddLogging(l => l.AddDebug());
 
@@ -74,7 +74,7 @@ namespace Tests
 
                 nybus.UseConfiguration(configuration);
 
-                nybus.SubscribeToEvent(eventReceived);
+                nybus.SubscribeToEvent<FirstTestEvent, FirstTestEventHandler>(handler);
             });
 
             var serviceProvider = services.BuildServiceProvider();
@@ -89,7 +89,7 @@ namespace Tests
 
             await host.StopAsync();
 
-            Mock.Get(eventReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>()), Times.Once);
+            Mock.Get(handler).Verify(p => p.HandleAsync(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>()), Times.Once);
         }
 
     }
