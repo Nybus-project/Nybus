@@ -96,10 +96,10 @@ namespace Nybus
     [AttributeUsage(AttributeTargets.Class)]
     public class MessageAttribute : Attribute
     {
-        public MessageAttribute(string name, string @namespace)
+        public MessageAttribute(string name, string @namespace = null)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Namespace = @namespace ?? throw new ArgumentNullException(nameof(@namespace));
+            Namespace = @namespace ?? MessageDescriptor.NamespaceFallback;
         }
 
         public string Name { get; }
