@@ -1,6 +1,7 @@
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -10,29 +11,18 @@ using Nybus;
 namespace Tests
 {
     [TestFixture]
-    public class DelegateHandlerConfigurationSetupTests
+    public class SynchronousDelegateHandlerTests
     {
         [Test, AutoMoqData]
         public async Task Host_can_loopback_commands(ServiceCollection services, FirstTestCommand testCommand)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
-            var settings = new Dictionary<string, string>
-            {
-                ["Nybus:ErrorPolicy:ProviderName"] = "retry",
-                ["Nybus:ErrorPolicy:MaxRetries"] = "5",
-            };
-
-            var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
-            var configuration = configurationBuilder.Build();
+            var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
 
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
             {
                 nybus.UseInMemoryBusEngine();
-
-                nybus.UseConfiguration(configuration);
 
                 nybus.SubscribeToCommand(commandReceived);
             });
@@ -55,24 +45,13 @@ namespace Tests
         [Test, AutoMoqData]
         public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent)
         {
-            var settings = new Dictionary<string, string>
-            {
-                ["Nybus:ErrorPolicy:ProviderName"] = "retry",
-                ["Nybus:ErrorPolicy:MaxRetries"] = "5",
-            };
-
-            var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
-            var configuration = configurationBuilder.Build();
-
-            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
+            var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
 
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
             {
                 nybus.UseInMemoryBusEngine();
-
-                nybus.UseConfiguration(configuration);
 
                 nybus.SubscribeToEvent(eventReceived);
             });
@@ -91,6 +70,5 @@ namespace Tests
 
             Mock.Get(eventReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>()), Times.Once);
         }
-
     }
 }

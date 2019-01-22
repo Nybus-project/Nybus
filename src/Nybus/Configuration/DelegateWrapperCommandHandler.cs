@@ -6,9 +6,9 @@ namespace Nybus.Configuration
     public class DelegateWrapperCommandHandler<TCommand> : ICommandHandler<TCommand>
         where TCommand : class, ICommand
     {
-        private readonly CommandReceived<TCommand> _handler;
+        private readonly CommandReceivedAsync<TCommand> _handler;
 
-        public DelegateWrapperCommandHandler(CommandReceived<TCommand> handler)
+        public DelegateWrapperCommandHandler(CommandReceivedAsync<TCommand> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }

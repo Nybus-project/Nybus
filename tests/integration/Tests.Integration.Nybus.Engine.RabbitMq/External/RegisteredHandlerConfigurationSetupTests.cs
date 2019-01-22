@@ -44,7 +44,7 @@ namespace Tests.External
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
 
-            var commandReceived = Mock.Of<CommandReceived<SecondTestCommand>>();
+            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
             var mockHandler = new Mock<SecondTestCommandHandler>(commandReceived);
             var handler = mockHandler.Object;
 
@@ -88,7 +88,7 @@ namespace Tests.External
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
 
-            var eventReceived = Mock.Of<EventReceived<SecondTestEvent>>();
+            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
             var mockHandler = new Mock<SecondTestEventHandler>(eventReceived);
             var handler = mockHandler.Object;
 

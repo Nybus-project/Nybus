@@ -67,8 +67,6 @@ namespace ReceiverConfig
                 nybus.SubscribeToEvent<TestEvent>((d, msg) =>
                 {
                     Console.WriteLine($"Processed event {msg.Event.Message}");
-
-                    return Task.CompletedTask;
                 });
             });
 

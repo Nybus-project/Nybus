@@ -23,9 +23,9 @@ namespace Tests
 
     public class SecondTestCommandHandler : ICommandHandler<SecondTestCommand>
     {
-        private readonly CommandReceived<SecondTestCommand> _commandReceived;
+        private readonly CommandReceivedAsync<SecondTestCommand> _commandReceived;
 
-        public SecondTestCommandHandler(CommandReceived<SecondTestCommand> commandReceived)
+        public SecondTestCommandHandler(CommandReceivedAsync<SecondTestCommand> commandReceived)
         {
             _commandReceived = commandReceived ?? throw new ArgumentNullException(nameof(commandReceived));
         }
