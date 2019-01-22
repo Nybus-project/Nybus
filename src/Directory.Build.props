@@ -9,7 +9,6 @@
 
     <NoWarn>NU5105</NoWarn>
   </PropertyGroup>
-  
 
   <PropertyGroup>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

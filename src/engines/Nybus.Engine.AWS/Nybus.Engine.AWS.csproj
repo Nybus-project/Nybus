@@ -4,7 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Nybus</RootNamespace>
     <AssemblyName>Nybus.Engine.AWS</AssemblyName>
-    <Description />
+    <Description>Engine for Nybus based on AWS SNS and SQS.</Description>
+    <PackageTags>dotnet-standard;framework;queue;rx;nybus;aws-sns;aws-sqs</PackageTags>
 
     <!-- Disable the generation of a package until it's ready -->
     <IsPackable>false</IsPackable>
