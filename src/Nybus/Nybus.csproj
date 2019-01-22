@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Nybus</RootNamespace>
-    <Description />
+    <Description>Nybus is an application framework that allows you to build message-based applications.</Description>
+    <PackageTags>dotnet-standard;framework;queue;rx;nybus</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
