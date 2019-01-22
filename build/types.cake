@@ -33,9 +33,9 @@ public class BuildPaths
 
 public class VersionInfo
 {
-    public string SemVer { get; set; }
+    public string PackageVersion { get; set; }
 
-    public string FullSemVer { get; set; }
+    public string BuildVersion {get; set; }
 }
 
 [Flags]
