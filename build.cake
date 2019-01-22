@@ -26,18 +26,22 @@ Task("Version")
 {
     var version = GitVersion();
 
+    var packageVersion = version.SemVer;
+    var buildVersion = $"{version.FullSemVer}+{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
+
     state.Version = new VersionInfo
     {
-        SemVer = version.SemVer,
-        FullSemVer = version.FullSemVer
+        PackageVersion = packageVersion,
+        BuildVersion = buildVersion
     };
 
-    Information($"Package version: {version.SemVer}");
-    Information($"Build version: {version.FullSemVer}");
+
+    Information($"Package version: {state.Version.PackageVersion}");
+    Information($"Build version: {state.Version.BuildVersion}");
 
     if (BuildSystem.IsRunningOnAppVeyor)
     {
-        AppVeyor.UpdateBuildVersion(state.Version.FullSemVer);
+        AppVeyor.UpdateBuildVersion(state.Version.BuildVersion);
     }
 });
 
@@ -178,7 +182,7 @@ Task("Pack")
         NoRestore = true,
         OutputDirectory = state.Paths.OutputFolder,
         IncludeSymbols = true,
-        ArgumentCustomization = args => args.Append($"-p:SymbolPackageFormat=snupkg -p:Version={state.Version.SemVer}")
+        ArgumentCustomization = args => args.Append($"-p:SymbolPackageFormat=snupkg -p:Version={state.Version.PackageVersion}")
     };
 
     DotNetCorePack(state.Paths.SolutionFile.ToString(), settings);
