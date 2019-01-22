@@ -27,6 +27,8 @@ namespace Nybus.Utils
 
     public class MessageDescriptor
     {
+        public const string NamespaceFallback = "$";
+
         public static MessageDescriptor CreateFromType(Type type)
         {
             if (type == null)
@@ -73,7 +75,7 @@ namespace Nybus.Utils
         public MessageDescriptor(string name, string @namespace)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
-            Namespace = @namespace ?? throw new ArgumentNullException(nameof(@namespace));
+            Namespace = @namespace ?? NamespaceFallback;
         }
 
         public string Name { get; }

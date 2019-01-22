@@ -48,3 +48,8 @@ namespace Samples
         public string Message { get; set; }
     }
 }
+
+public class NoNamespaceEvent : IEvent
+{
+    public string Message { get; set; }
+}
