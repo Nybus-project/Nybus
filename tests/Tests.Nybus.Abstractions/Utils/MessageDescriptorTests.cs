@@ -38,6 +38,19 @@ namespace Tests.Utils
             Assert.That(messageDescriptor.Namespace, Is.EqualTo(type.Namespace));
         }
 
+        [Test]
+        [InlineAutoMoqData(typeof(NoNamespaceCommand))]
+        [InlineAutoMoqData(typeof(NoNamespaceEvent))]
+        public void MessageDescriptor_can_be_created_from_type_with_no_namespace(Type type)
+        {
+            Assume.That(type.Namespace, Is.Null);
+
+            var messageDescriptor = new MessageDescriptor(type);
+
+            Assert.That(messageDescriptor.Name, Is.EqualTo(type.Name));
+            Assert.That(messageDescriptor.Namespace, Is.EqualTo(MessageDescriptor.NamespaceFallback));
+        }
+
         [Test, AutoMoqData]
         public void MessageDescriptor_can_be_created_from_MessageAttribute(MessageAttribute attribute)
         {
@@ -45,6 +58,16 @@ namespace Tests.Utils
 
             Assert.That(messageDescriptor.Name, Is.EqualTo(attribute.Name));
             Assert.That(messageDescriptor.Namespace, Is.EqualTo(attribute.Namespace));
+        }
+
+        [Test, AutoMoqData]
+        public void MessageDescriptor_can_be_created_from_MessageAttribute_with_no_namespace(string name)
+        {
+            var attribute = new MessageAttribute(name);
+            var messageDescriptor = new MessageDescriptor(attribute);
+
+            Assert.That(messageDescriptor.Name, Is.EqualTo(attribute.Name));
+            Assert.That(messageDescriptor.Namespace, Is.EqualTo(MessageDescriptor.NamespaceFallback));
         }
 
         [Test, CustomAutoMoqData]

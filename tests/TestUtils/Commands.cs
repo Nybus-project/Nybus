@@ -51,3 +51,8 @@ namespace Samples
         public string Message { get; set; }
     }
 }
+
+public class NoNamespaceCommand : ICommand
+{
+    public string Message { get; set; }
+}
