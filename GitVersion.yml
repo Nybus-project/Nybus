@@ -1,5 +1,6 @@
 next-version: 1.0.0
 mode: ContinuousDeployment
+continuous-delivery-fallback-tag: preview
 
 # branches:
 #   master:
