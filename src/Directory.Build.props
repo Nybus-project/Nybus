@@ -3,12 +3,14 @@
     <Authors>Renato Golia</Authors>
     <Company>Nybus Project</Company>
     <Product>Nybus</Product>
-    <license>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</license>
-    <projectUrl>https://github.com/Nybus-project/Nybus</projectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    
+    <PackageLicenseUrl>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Nybus-project/Nybus</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/Nybus-project/Nybus/master/assets/nybus128x128.png</PackageIconUrl>
-    <NoWarn>NU5105</NoWarn>
+    <NoWarn>NU5105,NU5125</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
