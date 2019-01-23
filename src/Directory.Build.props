@@ -6,7 +6,8 @@
     <license>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</license>
     <projectUrl>https://github.com/Nybus-project/Nybus</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-
+    
+    <PackageIconUrl>https://raw.githubusercontent.com/Nybus-project/Nybus/master/assets/nybus128x128.png</PackageIconUrl>
     <NoWarn>NU5105</NoWarn>
   </PropertyGroup>
 
