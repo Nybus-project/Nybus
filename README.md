@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/x8o0xh40cdf6a67l?svg=true)](https://ci.appveyor.com/project/Kralizek/nybus) [![Coverage Status](https://coveralls.io/repos/github/Nybus-project/Nybus/badge.svg?branch=master)](https://coveralls.io/github/Nybus-project/Nybus?branch=master) ![Nybus](https://img.shields.io/nuget/v/Nybus.svg)
+[![Build status](https://ci.appveyor.com/api/projects/status/x8o0xh40cdf6a67l?svg=true)](https://ci.appveyor.com/project/Kralizek/nybus) [![Coverage Status](https://coveralls.io/repos/github/Nybus-project/Nybus/badge.svg?branch=master)](https://coveralls.io/github/Nybus-project/Nybus?branch=master) [![Nybus](https://img.shields.io/nuget/v/Nybus.svg)](https://www.nuget.org/packages/nybus)
 
 # Nybus
 
