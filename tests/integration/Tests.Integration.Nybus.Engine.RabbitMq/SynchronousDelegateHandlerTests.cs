@@ -31,7 +31,7 @@ namespace Tests {
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
+        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent, EventReceived<FirstTestEvent> eventReceived)
         {
             var host = TestUtils.CreateNybusHost(nybus =>
             {

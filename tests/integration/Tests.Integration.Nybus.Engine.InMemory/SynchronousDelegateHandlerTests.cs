@@ -41,7 +41,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
+        public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent, EventReceived<FirstTestEvent> eventReceived)
         {
             services.AddLogging(l => l.AddDebug());
 
