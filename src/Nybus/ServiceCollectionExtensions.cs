@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Nybus.Configuration;
 using System;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Nybus.Filters;
@@ -70,6 +71,62 @@ namespace Nybus
             services.AddSingleton<IBusHost>(sp => sp.GetRequiredService<NybusHost>());
 
             services.AddSingleton<IBus>(sp => sp.GetRequiredService<NybusHost>());
+
+            return services;
+        }
+
+        public static IServiceCollection AddCommandHandler<TCommand, THandler>(this IServiceCollection services)
+            where TCommand : class, ICommand
+            where THandler : class, ICommandHandler<TCommand>
+        {
+            return services.AddTransient<ICommandHandler<TCommand>, THandler>();
+        }
+
+        public static IServiceCollection AddCommandHandler<T>(this IServiceCollection services)
+        {
+            return AddCommandHandler(services, typeof(T));
+        }
+
+        public static IServiceCollection AddCommandHandler(this IServiceCollection services, Type handlerType)
+        {
+            var interfaces = from i in handlerType.GetInterfaces()
+                             where i.IsGenericType
+                             let definition = i.GetGenericTypeDefinition()
+                             where definition == typeof(ICommandHandler<>)
+                             select i;
+
+            foreach (var i in interfaces)
+            {
+                services.AddTransient(i, handlerType);
+            }
+
+            return services;
+        }
+
+        public static IServiceCollection AddEventHandler<TEvent, THandler>(this IServiceCollection services)
+            where TEvent : class, IEvent
+            where THandler : class, IEventHandler<TEvent>
+        {
+            return services.AddTransient<IEventHandler<TEvent>, THandler>();
+        }
+
+        public static IServiceCollection AddEventHandler<T>(this IServiceCollection services)
+        {
+            return AddEventHandler(services, typeof(T));
+        }
+
+        public static IServiceCollection AddEventHandler(this IServiceCollection services, Type handlerType)
+        {
+            var interfaces = from i in handlerType.GetInterfaces()
+                             where i.IsGenericType
+                             let definition = i.GetGenericTypeDefinition()
+                             where definition == typeof(IEventHandler<>)
+                             select i;
+
+            foreach (var i in interfaces)
+            {
+                services.AddTransient(i, handlerType);
+            }
 
             return services;
         }

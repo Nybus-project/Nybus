@@ -56,5 +56,73 @@ namespace Tests
 
             Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(NybusHostOptions))));
         }
+
+        [Test, AutoMoqData]
+        public void AddCommandHandler_registers_handler_generic_syntax(IServiceCollection services)
+        {
+            ServiceCollectionExtensions.AddCommandHandler<FirstTestCommand, FirstTestCommandHandler>(services);
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(ICommandHandler<FirstTestCommand>) && sd.ImplementationType == typeof(FirstTestCommandHandler))));
+        }
+
+        [Test, AutoMoqData]
+        public void AddCommandHandler_registers_handler_by_its_type(IServiceCollection services)
+        {
+            ServiceCollectionExtensions.AddCommandHandler(services, typeof(FirstTestCommandHandler));
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(ICommandHandler<FirstTestCommand>) && sd.ImplementationType == typeof(FirstTestCommandHandler))));
+        }
+
+        [Test, AutoMoqData]
+        public void AddCommandHandler_can_handle_type_handling_multiple_commands(IServiceCollection services)
+        {
+            ServiceCollectionExtensions.AddCommandHandler(services, typeof(MixedTestCommandHandler));
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(ICommandHandler<FirstTestCommand>) && sd.ImplementationType == typeof(MixedTestCommandHandler))));
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(ICommandHandler<SecondTestCommand>) && sd.ImplementationType == typeof(MixedTestCommandHandler))));
+        }
+
+        [Test, AutoMoqData]
+        public void AddCommandHandler_registers_handler_by_its_type_generic_syntax(IServiceCollection services)
+        {
+            ServiceCollectionExtensions.AddCommandHandler<FirstTestCommandHandler>(services);
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(ICommandHandler<FirstTestCommand>) && sd.ImplementationType == typeof(FirstTestCommandHandler))));
+        }
+
+        [Test, AutoMoqData]
+        public void AddEventHandler_registers_handler_generic_syntax(IServiceCollection services)
+        {
+            ServiceCollectionExtensions.AddEventHandler<FirstTestEvent, FirstTestEventHandler>(services);
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IEventHandler<FirstTestEvent>) && sd.ImplementationType == typeof(FirstTestEventHandler))));
+        }
+
+        [Test, AutoMoqData]
+        public void AddEventHandler_registers_handler_by_its_type(IServiceCollection services)
+        {
+            ServiceCollectionExtensions.AddEventHandler(services, typeof(FirstTestEventHandler));
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IEventHandler<FirstTestEvent>) && sd.ImplementationType == typeof(FirstTestEventHandler))));
+        }
+
+        [Test, AutoMoqData]
+        public void AddEventHandler_can_handle_type_handling_multiple_Events(IServiceCollection services)
+        {
+            ServiceCollectionExtensions.AddEventHandler(services, typeof(MixedTestEventHandler));
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IEventHandler<FirstTestEvent>) && sd.ImplementationType == typeof(MixedTestEventHandler))));
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IEventHandler<SecondTestEvent>) && sd.ImplementationType == typeof(MixedTestEventHandler))));
+        }
+
+        [Test, AutoMoqData]
+        public void AddEventHandler_registers_handler_by_its_type_generic_syntax(IServiceCollection services)
+        {
+            ServiceCollectionExtensions.AddEventHandler<FirstTestEventHandler>(services);
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IEventHandler<FirstTestEvent>) && sd.ImplementationType == typeof(FirstTestEventHandler))));
+        }
     }
 }

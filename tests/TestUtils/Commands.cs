@@ -36,6 +36,18 @@ namespace Tests
         }
     }
 
+    public class MixedTestCommandHandler : ICommandHandler<FirstTestCommand>, ICommandHandler<SecondTestCommand>
+    {
+        public Task HandleAsync(IDispatcher dispatcher, ICommandContext<FirstTestCommand> incomingCommand)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task HandleAsync(IDispatcher dispatcher, ICommandContext<SecondTestCommand> incomingCommand)
+        {
+            throw new NotImplementedException();
+        }
+    }
     
     public class ThirdTestCommand : ICommand
     {
