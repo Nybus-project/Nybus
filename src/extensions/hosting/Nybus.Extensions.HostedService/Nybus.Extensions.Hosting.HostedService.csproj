@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Nybus</RootNamespace>
+    <AssemblyName>Nybus.Extensions.Hosting.HostedService</AssemblyName>
+    <Description>Implementation of IHostedService interface for Nybus</Description>
+    <PackageTags>dotnet-standard;framework;queue;rx;nybus;hosted service</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Nybus.Abstractions\Nybus.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="2.1.0" />
+  </ItemGroup>
+
+</Project>
