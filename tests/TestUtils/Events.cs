@@ -34,6 +34,19 @@ namespace Tests
         }
     }
 
+    public class MixedTestEventHandler : IEventHandler<FirstTestEvent>, IEventHandler<SecondTestEvent>
+    {
+        public Task HandleAsync(IDispatcher dispatcher, IEventContext<FirstTestEvent> incomingEvent)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task HandleAsync(IDispatcher dispatcher, IEventContext<SecondTestEvent> incomingEvent)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class ThirdTestEvent : IEvent
     {
         public string Message { get; set; }
