@@ -13,9 +13,9 @@ namespace Nybus.Configuration
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
         }
 
-        public Task HandleAsync(IDispatcher dispatcher, IEventContext<TEvent> incomingEvent)
+        public Task HandleAsync(IDispatcher dispatcher, IEventContext<TEvent> context)
         {
-            return _handler.Invoke(dispatcher, incomingEvent);
+            return _handler.Invoke(dispatcher, context);
         }
     }
 }

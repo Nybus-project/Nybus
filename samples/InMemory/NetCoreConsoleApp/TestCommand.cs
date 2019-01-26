@@ -13,11 +13,11 @@ namespace NetCoreConsoleApp
 
     public class TestCommandHandler : ICommandHandler<TestCommand>
     {
-        public async Task HandleAsync(IDispatcher dispatcher, ICommandContext<TestCommand> incomingCommand)
+        public async Task HandleAsync(IDispatcher dispatcher, ICommandContext<TestCommand> context)
         {
             await dispatcher.RaiseEventAsync(new TestEvent
             {
-                Message = $"Received: {incomingCommand.Command.Message}"
+                Message = $"Received: {context.Command.Message}"
             });
         }
     }

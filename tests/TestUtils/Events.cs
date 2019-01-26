@@ -11,7 +11,7 @@ namespace Tests
 
     public class FirstTestEventHandler : IEventHandler<FirstTestEvent>
     {
-        public virtual Task HandleAsync(IDispatcher dispatcher, IEventContext<FirstTestEvent> incomingEvent)
+        public virtual Task HandleAsync(IDispatcher dispatcher, IEventContext<FirstTestEvent> context)
         {
             throw new NotImplementedException();
         }
@@ -28,20 +28,20 @@ namespace Tests
             _eventReceived = eventReceived ?? throw new ArgumentNullException(nameof(eventReceived));
         }
 
-        public virtual Task HandleAsync(IDispatcher dispatcher, IEventContext<SecondTestEvent> incomingEvent)
+        public virtual Task HandleAsync(IDispatcher dispatcher, IEventContext<SecondTestEvent> context)
         {
-            return _eventReceived(dispatcher, incomingEvent);
+            return _eventReceived(dispatcher, context);
         }
     }
 
     public class MixedTestEventHandler : IEventHandler<FirstTestEvent>, IEventHandler<SecondTestEvent>
     {
-        public Task HandleAsync(IDispatcher dispatcher, IEventContext<FirstTestEvent> incomingEvent)
+        public Task HandleAsync(IDispatcher dispatcher, IEventContext<FirstTestEvent> context)
         {
             throw new NotImplementedException();
         }
 
-        public Task HandleAsync(IDispatcher dispatcher, IEventContext<SecondTestEvent> incomingEvent)
+        public Task HandleAsync(IDispatcher dispatcher, IEventContext<SecondTestEvent> context)
         {
             throw new NotImplementedException();
         }
