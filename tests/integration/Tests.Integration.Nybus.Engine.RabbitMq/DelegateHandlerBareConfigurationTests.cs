@@ -15,10 +15,8 @@ namespace Tests
     public class DelegateHandlerBareConfigurationTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(FakeServer server, FirstTestCommand testCommand)
+        public async Task Host_can_loopback_commands(FakeServer server, FirstTestCommand testCommand, CommandReceivedAsync<FirstTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
             var host = CreateNybusHost(nybus =>
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
@@ -39,10 +37,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent)
+        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
-
             var host = CreateNybusHost(nybus =>
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
@@ -63,7 +59,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Hosts_can_exchange_commands(FakeServer server, FirstTestCommand testCommand)
+        public async Task Hosts_can_exchange_commands(FakeServer server, FirstTestCommand testCommand, CommandReceivedAsync<FirstTestCommand> commandReceived)
         {
             var sender = CreateNybusHost(nybus =>
             {
@@ -72,8 +68,6 @@ namespace Tests
                     rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
                 });
             });
-
-            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             var receiver = CreateNybusHost(nybus =>
             {
@@ -99,7 +93,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Hosts_can_exchange_events(FakeServer server, FirstTestEvent testEvent)
+        public async Task Hosts_can_exchange_events(FakeServer server, FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
         {
             var sender = CreateNybusHost(nybus =>
             {
@@ -108,8 +102,6 @@ namespace Tests
                     rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
                 });
             });
-
-            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             var receiver = CreateNybusHost(nybus =>
             {

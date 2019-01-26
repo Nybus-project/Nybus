@@ -14,10 +14,8 @@ namespace Tests
     public class SynchronousDelegateHandlerTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(ServiceCollection services, FirstTestCommand testCommand)
+        public async Task Host_can_loopback_commands(ServiceCollection services, FirstTestCommand testCommand, CommandReceived<FirstTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
@@ -43,10 +41,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent)
+        public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>

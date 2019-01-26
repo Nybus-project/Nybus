@@ -12,16 +12,8 @@ namespace Tests
     [TestFixture]
     public class ServiceCollectionExtensionsTests
     {
-        private Action<INybusConfigurator> configuratorDelegate;
-
-        [SetUp]
-        public void Initialize()
-        {
-            configuratorDelegate = Mock.Of<Action<INybusConfigurator>>();
-        }
-
         [Test, CustomAutoMoqData]
-        public void ServiceCollection_is_returned(IServiceCollection services)
+        public void ServiceCollection_is_returned(IServiceCollection services, Action<INybusConfigurator> configuratorDelegate)
         {
             var result = ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);
 
@@ -29,7 +21,7 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void AddNybus_invokes_configuratorDelegate(IServiceCollection services)
+        public void AddNybus_invokes_configuratorDelegate(IServiceCollection services, Action<INybusConfigurator> configuratorDelegate)
         {
             ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);
 
@@ -42,7 +34,7 @@ namespace Tests
         [InlineAutoMoqData(typeof(NybusHost))]
         [InlineAutoMoqData(typeof(IBusHost))]
         [InlineAutoMoqData(typeof(IBus))]
-        public void AddNybus_registers_services(Type serviceType, IServiceCollection services)
+        public void AddNybus_registers_services(Type serviceType, IServiceCollection services, Action<INybusConfigurator> configuratorDelegate)
         {
             ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);
 
@@ -50,7 +42,7 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void AddNybus_registers_NybusHostOptions(IServiceCollection services, IConfigurationSection configuration)
+        public void AddNybus_registers_NybusHostOptions(IServiceCollection services, IConfigurationSection configuration, Action<INybusConfigurator> configuratorDelegate)
         {
             ServiceCollectionExtensions.AddNybus(services, configuratorDelegate);
 

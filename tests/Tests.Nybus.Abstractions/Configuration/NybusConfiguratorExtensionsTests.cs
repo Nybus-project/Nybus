@@ -29,10 +29,8 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
-        public void ServiceConfigurator_delegate_is_registered(INybusConfigurator configurator, TestBusEngine engine)
+        public void ServiceConfigurator_delegate_is_registered(INybusConfigurator configurator, TestBusEngine engine, Action<IServiceCollection> serviceConfigurator)
         {
-            var serviceConfigurator = Mock.Of<Action<IServiceCollection>>();
-
             NybusConfiguratorExtensions.UseBusEngine<TestBusEngine>(configurator, serviceConfigurator);
 
             Mock.Get(configurator).Verify(p => p.AddServiceConfiguration(serviceConfigurator));

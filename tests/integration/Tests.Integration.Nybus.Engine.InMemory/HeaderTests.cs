@@ -12,10 +12,8 @@ namespace Tests
     public class HeaderTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(ServiceCollection services, SecondTestCommand testCommand, string headerKey, string headerValue)
+        public async Task Host_can_loopback_commands(ServiceCollection services, SecondTestCommand testCommand, CommandReceivedAsync<SecondTestCommand> commandReceived, string headerKey, string headerValue)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddSingleton(commandReceived);
@@ -49,10 +47,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(ServiceCollection services, SecondTestEvent testEvent, string headerKey, string headerValue)
+        public async Task Host_can_loopback_events(ServiceCollection services, SecondTestEvent testEvent, EventReceivedAsync<SecondTestEvent> eventReceived, string headerKey, string headerValue)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddSingleton(eventReceived);

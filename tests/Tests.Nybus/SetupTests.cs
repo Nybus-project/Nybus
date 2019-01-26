@@ -46,10 +46,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void Configuration_delegate_is_invoked_when_assembling_the_host(ILoggerFactory loggerFactory)
+        public void Configuration_delegate_is_invoked_when_assembling_the_host(ILoggerFactory loggerFactory, Action<INybusConfiguration> configurationDelegate)
         {
-            var configurationDelegate = Mock.Of<Action<INybusConfiguration>>();
-
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory);
 

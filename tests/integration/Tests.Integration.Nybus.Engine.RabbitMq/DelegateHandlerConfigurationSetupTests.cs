@@ -13,10 +13,8 @@ namespace Tests
     public class DelegateHandlerConfigurationSetupTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(FakeServer server, FirstTestCommand testCommand)
+        public async Task Host_can_loopback_commands(FakeServer server, FirstTestCommand testCommand, CommandReceivedAsync<FirstTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
             var settings = new Dictionary<string, string>
             {
                 ["Nybus:ErrorPolicy:ProviderName"] = "retry",
@@ -48,7 +46,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent)
+        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
         {
             var settings = new Dictionary<string, string>
             {
@@ -58,8 +56,6 @@ namespace Tests
 
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
-
-            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             var host = CreateNybusHost(nybus =>
             {

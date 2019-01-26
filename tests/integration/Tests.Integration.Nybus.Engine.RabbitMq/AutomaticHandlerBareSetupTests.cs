@@ -12,10 +12,8 @@ namespace Tests
     public class AutomaticHandlerBareSetupTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(FakeServer server, SecondTestCommand testCommand)
+        public async Task Host_can_loopback_commands(FakeServer server, SecondTestCommand testCommand, CommandReceivedAsync<SecondTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
-
             var host = CreateNybusHost(nybus =>
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
@@ -41,10 +39,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FakeServer server, SecondTestEvent testEvent)
+        public async Task Host_can_loopback_events(FakeServer server, SecondTestEvent testEvent, EventReceivedAsync<SecondTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
-
             var host = CreateNybusHost(nybus =>
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>

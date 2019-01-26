@@ -21,10 +21,8 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
-        public void AddServiceConfiguration_invokes_configuration_delegate(NybusConfigurator sut, IServiceCollection services)
+        public void AddServiceConfiguration_invokes_configuration_delegate(NybusConfigurator sut, IServiceCollection services, Action<IServiceCollection> configurationDelegate)
         {
-            var configurationDelegate = Mock.Of<Action<IServiceCollection>>();
-
             sut.AddServiceConfiguration(configurationDelegate);
 
             sut.ConfigureServices(services);
@@ -39,10 +37,8 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
-        public void AddSubscription_configures(NybusConfigurator sut, ISubscriptionBuilder subscriptionBuilder)
+        public void AddSubscription_configures(NybusConfigurator sut, ISubscriptionBuilder subscriptionBuilder, Action<ISubscriptionBuilder> subscriptionDelegate)
         {
-            var subscriptionDelegate = Mock.Of<Action<ISubscriptionBuilder>>();
-
             sut.AddSubscription(subscriptionDelegate);
 
             sut.ConfigureBuilder(subscriptionBuilder);
@@ -87,10 +83,8 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
-        public void Configure_(NybusConfigurator sut, IServiceProvider serviceProvider, INybusConfiguration configuration)
+        public void Configure_(NybusConfigurator sut, IServiceProvider serviceProvider, INybusConfiguration configuration, Action<INybusConfiguration> configurationDelegate)
         {
-            var configurationDelegate = Mock.Of<Action<INybusConfiguration>>();
-
             sut.Configure(configurationDelegate);
 
             sut.CustomizeConfiguration(serviceProvider, configuration);

@@ -17,10 +17,8 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Handler_is_executed(IDispatcher dispatcher, ICommandContext<FirstTestCommand> context)
+        public async Task Handler_is_executed(IDispatcher dispatcher, ICommandContext<FirstTestCommand> context, CommandReceivedAsync<FirstTestCommand> handler)
         {
-            var handler = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
             var sut = new DelegateWrapperCommandHandler<FirstTestCommand>(handler);
 
             await sut.HandleAsync(dispatcher, context);
@@ -29,9 +27,8 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
-        public void Handler_errors_are_not_caught(IDispatcher dispatcher, ICommandContext<FirstTestCommand> context, Exception error)
+        public void Handler_errors_are_not_caught(IDispatcher dispatcher, ICommandContext<FirstTestCommand> context, Exception error, CommandReceivedAsync<FirstTestCommand> handler)
         {
-            var handler = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
             Mock.Get(handler).Setup(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<FirstTestCommand>>())).Throws(error);
 
             var sut = new DelegateWrapperCommandHandler<FirstTestCommand>(handler);

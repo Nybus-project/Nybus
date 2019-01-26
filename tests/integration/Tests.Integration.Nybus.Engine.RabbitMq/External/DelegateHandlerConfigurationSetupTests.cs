@@ -33,10 +33,8 @@ namespace Tests.External
         private string ExchangeName(Type type) => $"{type.Namespace}:{type.Name}";
         
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(FirstTestCommand testCommand)
+        public async Task Host_can_loopback_commands(FirstTestCommand testCommand, CommandReceivedAsync<FirstTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
             var settings = new Dictionary<string, string>
             {
                 ["Nybus:ErrorPolicy:ProviderName"] = "retry",
@@ -70,7 +68,7 @@ namespace Tests.External
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FirstTestEvent testEvent)
+        public async Task Host_can_loopback_events(FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
         {
             var settings = new Dictionary<string, string>
             {
@@ -80,9 +78,7 @@ namespace Tests.External
 
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
-
-            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
-
+            
             var host = CreateNybusHost(nybus =>
             {
                 nybus.UseConfiguration(configuration);

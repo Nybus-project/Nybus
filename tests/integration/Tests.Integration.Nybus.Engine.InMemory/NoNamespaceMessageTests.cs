@@ -11,10 +11,8 @@ namespace Tests
     public class NoNamespaceMessageTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(ServiceCollection services, NoNamespaceCommand testCommand)
+        public async Task Host_can_loopback_commands(ServiceCollection services, NoNamespaceCommand testCommand, CommandReceivedAsync<NoNamespaceCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<NoNamespaceCommand>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
@@ -40,10 +38,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(ServiceCollection services, NoNamespaceEvent testEvent)
+        public async Task Host_can_loopback_events(ServiceCollection services, NoNamespaceEvent testEvent, EventReceivedAsync<NoNamespaceEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<NoNamespaceEvent>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>

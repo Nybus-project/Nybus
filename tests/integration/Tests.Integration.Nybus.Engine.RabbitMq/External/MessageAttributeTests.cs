@@ -31,10 +31,8 @@ namespace Tests.External
         private string ExchangeName(Type type) => $"{type.Namespace}:{type.Name}";
 
         [Test, AutoMoqData]
-        public async Task Commands_are_matched_via_MessageAttribute(ThirdTestCommand testCommand)
+        public async Task Commands_are_matched_via_MessageAttribute(ThirdTestCommand testCommand, CommandReceivedAsync<AttributeTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
-
             var host = TestUtils.CreateNybusHost(nybus =>
             {
                 nybus.SubscribeToCommand(commandReceived);
@@ -57,10 +55,8 @@ namespace Tests.External
         }
 
         [Test, AutoMoqData]
-        public async Task Events_are_matched_via_MessageAttribute(ThirdTestEvent testEvent)
+        public async Task Events_are_matched_via_MessageAttribute(ThirdTestEvent testEvent, EventReceivedAsync<AttributeTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
-
             var host = TestUtils.CreateNybusHost(nybus =>
             {
                 nybus.SubscribeToEvent(eventReceived);
@@ -83,10 +79,8 @@ namespace Tests.External
         }
 
         [Test, AutoMoqData]
-        public async Task Commands_are_correctly_converted(ThirdTestCommand testCommand)
+        public async Task Commands_are_correctly_converted(ThirdTestCommand testCommand, CommandReceivedAsync<AttributeTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
-
             var host = TestUtils.CreateNybusHost(nybus =>
             {
                 nybus.SubscribeToCommand(commandReceived);
@@ -109,10 +103,8 @@ namespace Tests.External
         }
 
         [Test, AutoMoqData]
-        public async Task Events_are_correctly_converted(ThirdTestEvent testEvent)
+        public async Task Events_are_correctly_converted(ThirdTestEvent testEvent, EventReceivedAsync<AttributeTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
-
             var host = TestUtils.CreateNybusHost(nybus =>
             {
                 nybus.SubscribeToEvent(eventReceived);

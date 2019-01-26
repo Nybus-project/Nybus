@@ -33,7 +33,7 @@ namespace Tests.External
         private string ExchangeName(Type type) => $"{type.Namespace}:{type.Name}";
                 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(SecondTestCommand testCommand)
+        public async Task Host_can_loopback_commands(SecondTestCommand testCommand, CommandReceivedAsync<SecondTestCommand> commandReceived)
         {
             var settings = new Dictionary<string, string>
             {
@@ -43,8 +43,6 @@ namespace Tests.External
 
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
-
-            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
 
             var host = TestUtils.CreateNybusHost(nybus =>
             {
@@ -75,7 +73,7 @@ namespace Tests.External
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(SecondTestEvent testEvent)
+        public async Task Host_can_loopback_events(SecondTestEvent testEvent, EventReceivedAsync<SecondTestEvent> eventReceived)
         {
             var settings = new Dictionary<string, string>
             {
@@ -85,8 +83,6 @@ namespace Tests.External
 
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
-
-            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
 
             var host = TestUtils.CreateNybusHost(nybus =>
             {
