@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using AutoFixture.NUnit3;
 using FakeRabbitMQ;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -12,12 +13,8 @@ namespace Tests
     public class RegisteredHandlerBareSetupTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(FakeServer server, SecondTestCommand testCommand)
+        public async Task Host_can_loopback_commands(FakeServer server, SecondTestCommand testCommand, [Frozen] CommandReceivedAsync<SecondTestCommand> commandReceived, SecondTestCommandHandler handler)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
-            var mockHandler = new Mock<SecondTestCommandHandler>(commandReceived);
-            var handler = mockHandler.Object;
-
             var host = CreateNybusHost(nybus =>
             {
                 nybus.SubscribeToCommand(commandReceived);
@@ -42,12 +39,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FakeServer server, SecondTestEvent testEvent)
+        public async Task Host_can_loopback_events(FakeServer server, SecondTestEvent testEvent, [Frozen] EventReceivedAsync<SecondTestEvent> eventReceived, SecondTestEventHandler handler)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
-            var mockHandler = new Mock<SecondTestEventHandler>(eventReceived);
-            var handler = mockHandler.Object;
-
             var host = CreateNybusHost(nybus =>
             {
                 nybus.SubscribeToEvent(eventReceived);

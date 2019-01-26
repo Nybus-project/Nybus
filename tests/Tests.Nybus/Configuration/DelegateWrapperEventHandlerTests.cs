@@ -17,10 +17,8 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Handler_is_executed(IDispatcher dispatcher, IEventContext<FirstTestEvent> context)
+        public async Task Handler_is_executed(IDispatcher dispatcher, IEventContext<FirstTestEvent> context, EventReceivedAsync<FirstTestEvent> handler)
         {
-            var handler = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
-
             var sut = new DelegateWrapperEventHandler<FirstTestEvent>(handler);
 
             await sut.HandleAsync(dispatcher, context);
@@ -29,9 +27,8 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
-        public void Handler_errors_are_not_caught(IDispatcher dispatcher, IEventContext<FirstTestEvent> context, Exception error)
+        public void Handler_errors_are_not_caught(IDispatcher dispatcher, IEventContext<FirstTestEvent> context, Exception error, EventReceivedAsync<FirstTestEvent> handler)
         {
-            var handler = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
             Mock.Get(handler).Setup(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<FirstTestEvent>>())).Throws(error);
 
             var sut = new DelegateWrapperEventHandler<FirstTestEvent>(handler);

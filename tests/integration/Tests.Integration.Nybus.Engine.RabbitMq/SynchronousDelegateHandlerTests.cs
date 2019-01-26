@@ -9,19 +9,16 @@ namespace Tests {
     public class SynchronousDelegateHandlerTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(FakeServer server, FirstTestCommand testCommand)
+        public async Task Host_can_loopback_commands(FakeServer server, FirstTestCommand testCommand, CommandReceived<FirstTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceived<FirstTestCommand>>();
-
             var host = TestUtils.CreateNybusHost(nybus =>
             {
-                RabbitMqConfiguratorExtensions.UseRabbitMqBusEngine(nybus,
-                    rabbitMq =>
+                nybus.UseRabbitMqBusEngine(rabbitMq =>
                 {
                     rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
                 });
 
-                NybusConfiguratorExtensions.SubscribeToCommand(nybus, commandReceived);
+                nybus.SubscribeToCommand(commandReceived);
             });
 
             await host.StartAsync();
@@ -34,19 +31,16 @@ namespace Tests {
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent)
+        public async Task Host_can_loopback_events(FakeServer server, FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceived<FirstTestEvent>>();
-
             var host = TestUtils.CreateNybusHost(nybus =>
             {
-                RabbitMqConfiguratorExtensions.UseRabbitMqBusEngine(nybus,
-                    rabbitMq =>
+                nybus.UseRabbitMqBusEngine(rabbitMq =>
                 {
                     rabbitMq.Configure(configuration => configuration.ConnectionFactory = server.CreateConnectionFactory());
                 });
 
-                NybusConfiguratorExtensions.SubscribeToEvent(nybus, eventReceived);
+                nybus.SubscribeToEvent(eventReceived);
             });
 
             await host.StartAsync();

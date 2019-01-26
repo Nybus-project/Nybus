@@ -11,10 +11,8 @@ namespace Tests
     public class DelegateHandlerBareSetupTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(ServiceCollection services, FirstTestCommand testCommand)
+        public async Task Host_can_loopback_commands(ServiceCollection services, FirstTestCommand testCommand, CommandReceivedAsync<FirstTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
@@ -40,10 +38,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent)
+        public async Task Host_can_loopback_events(ServiceCollection services, FirstTestEvent testEvent, EventReceivedAsync<FirstTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>

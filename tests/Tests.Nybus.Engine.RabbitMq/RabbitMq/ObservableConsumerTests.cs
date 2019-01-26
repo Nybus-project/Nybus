@@ -110,10 +110,8 @@ namespace Tests.RabbitMq
         }
 
         [Test, CustomAutoMoqData]
-        public void HandleBasicCancel_raise_ConsumerCancelled_event(ObservableConsumer sut, string consumerTag)
+        public void HandleBasicCancel_raise_ConsumerCancelled_event(ObservableConsumer sut, string consumerTag, EventHandler<ConsumerEventArgs> eventHandler)
         {
-            var eventHandler = Mock.Of<EventHandler<ConsumerEventArgs>>();
-
             sut.HandleBasicConsumeOk(consumerTag);
 
             sut.ConsumerCancelled += eventHandler;
@@ -134,10 +132,8 @@ namespace Tests.RabbitMq
         }
 
         [Test, CustomAutoMoqData]
-        public void HandleBasicCancelOk_raise_ConsumerCancelled_event(ObservableConsumer sut, string consumerTag)
+        public void HandleBasicCancelOk_raise_ConsumerCancelled_event(ObservableConsumer sut, string consumerTag, EventHandler<ConsumerEventArgs> eventHandler)
         {
-            var eventHandler = Mock.Of<EventHandler<ConsumerEventArgs>>();
-
             sut.HandleBasicConsumeOk(consumerTag);
 
             sut.ConsumerCancelled += eventHandler;

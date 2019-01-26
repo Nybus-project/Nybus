@@ -175,9 +175,8 @@ namespace Tests.InMemory
         }
 
         [Test, CustomAutoMoqData]
-        public void NotifySuccess_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
+        public void NotifySuccess_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage, EventHandler<MessageEventArgs> handler)
         {
-            var handler = Mock.Of <EventHandler<MessageEventArgs>>();
             sut.OnMessageNotifySuccess += handler;
 
             sut.NotifySuccessAsync(testMessage);
@@ -188,9 +187,8 @@ namespace Tests.InMemory
         }
 
         [Test, CustomAutoMoqData]
-        public void NotifySuccess_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
+        public void NotifySuccess_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage, EventHandler<MessageEventArgs> handler)
         {
-            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
             sut.OnMessageNotifySuccess += handler;
 
             sut.NotifySuccessAsync(testMessage);
@@ -219,9 +217,8 @@ namespace Tests.InMemory
         }
 
         [Test, CustomAutoMoqData]
-        public void NotifyFail_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage)
+        public void NotifyFail_raises_event(InMemoryBusEngine sut, CommandMessage<FirstTestCommand> testMessage, EventHandler<MessageEventArgs> handler)
         {
-            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
             sut.OnMessageNotifyFail += handler;
 
             sut.NotifyFailAsync(testMessage);
@@ -232,9 +229,8 @@ namespace Tests.InMemory
         }
 
         [Test, CustomAutoMoqData]
-        public void NotifyFail_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage)
+        public void NotifyFail_raises_event(InMemoryBusEngine sut, EventMessage<FirstTestEvent> testMessage, EventHandler<MessageEventArgs> handler)
         {
-            var handler = Mock.Of<EventHandler<MessageEventArgs>>();
             sut.OnMessageNotifyFail += handler;
 
             sut.NotifyFailAsync(testMessage);

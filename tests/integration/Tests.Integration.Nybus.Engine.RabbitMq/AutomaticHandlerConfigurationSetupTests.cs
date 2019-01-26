@@ -13,7 +13,7 @@ namespace Tests
     public class AutomaticHandlerConfigurationSetupTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(FakeServer server, SecondTestCommand testCommand)
+        public async Task Host_can_loopback_commands(FakeServer server, SecondTestCommand testCommand, CommandReceivedAsync<SecondTestCommand> commandReceived)
         {
             var settings = new Dictionary<string, string>
             {
@@ -23,8 +23,6 @@ namespace Tests
 
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
-
-            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
 
             var host = TestUtils.CreateNybusHost(nybus =>
             {
@@ -53,7 +51,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(FakeServer server, SecondTestEvent testEvent)
+        public async Task Host_can_loopback_events(FakeServer server, SecondTestEvent testEvent, EventReceivedAsync<SecondTestEvent> eventReceived)
         {
             var settings = new Dictionary<string, string>
             {
@@ -63,8 +61,6 @@ namespace Tests
 
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
-
-            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
 
             var host = TestUtils.CreateNybusHost(nybus =>
             {

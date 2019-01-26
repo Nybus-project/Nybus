@@ -36,10 +36,8 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void SubscribeToCommand_registers_async_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
+        public void SubscribeToCommand_registers_async_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder, CommandReceivedAsync<FirstTestCommand> testHandler)
         {
-            var testHandler = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
             NybusConfiguratorExtensions.SubscribeToCommand(nybus, testHandler);
 
             nybus.ApplySubscriptions(subscriptionBuilder);
@@ -48,10 +46,8 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void SubscribeToCommand_registers_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
+        public void SubscribeToCommand_registers_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder, CommandReceivedAsync<FirstTestCommand> testHandler)
         {
-            var testHandler = Mock.Of<CommandReceived<FirstTestCommand>>();
-
             NybusConfiguratorExtensions.SubscribeToCommand(nybus, testHandler);
 
             nybus.ApplySubscriptions(subscriptionBuilder);
@@ -60,10 +56,8 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void SubscribeToCommand_registers_delegate_handler_type(TestNybusConfigurator nybus, IServiceCollection services)
+        public void SubscribeToCommand_registers_delegate_handler_type(TestNybusConfigurator nybus, IServiceCollection services, CommandReceivedAsync<FirstTestCommand> testHandler)
         {
-            var testHandler = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
-
             NybusConfiguratorExtensions.SubscribeToCommand(nybus, testHandler);
 
             nybus.ApplyServiceConfigurations(services);
@@ -122,10 +116,8 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void SubscribeToEvent_registers_async_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
+        public void SubscribeToEvent_registers_async_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder, EventReceivedAsync<FirstTestEvent> testHandler)
         {
-            var testHandler = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
-
             NybusConfiguratorExtensions.SubscribeToEvent(nybus, testHandler);
 
             nybus.ApplySubscriptions(subscriptionBuilder);
@@ -134,10 +126,8 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void SubscribeToEvent_registers_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder)
+        public void SubscribeToEvent_registers_delegate_handler_for_command(TestNybusConfigurator nybus, ISubscriptionBuilder subscriptionBuilder, EventReceivedAsync<FirstTestEvent> testHandler)
         {
-            var testHandler = Mock.Of<EventReceived<FirstTestEvent>>();
-
             NybusConfiguratorExtensions.SubscribeToEvent(nybus, testHandler);
 
             nybus.ApplySubscriptions(subscriptionBuilder);
@@ -146,10 +136,8 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void SubscribeToEvent_registers_delegate_handler_type(TestNybusConfigurator nybus, IServiceCollection services)
+        public void SubscribeToEvent_registers_delegate_handler_type(TestNybusConfigurator nybus, IServiceCollection services, EventReceivedAsync<FirstTestEvent> testHandler)
         {
-            var testHandler = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
-
             NybusConfiguratorExtensions.SubscribeToEvent(nybus, testHandler);
 
             nybus.ApplyServiceConfigurations(services);
@@ -198,10 +186,8 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public void RegisterErrorFilterProvider_adds_provider_with_custom_setup(TestNybusConfigurator nybus, IServiceCollection services)
+        public void RegisterErrorFilterProvider_adds_provider_with_custom_setup(TestNybusConfigurator nybus, IServiceCollection services, Func<IServiceProvider, IErrorFilterProvider> providerFactory)
         {
-            var providerFactory = Mock.Of<Func<IServiceProvider, IErrorFilterProvider>>();
-
             NybusConfiguratorExtensions.RegisterErrorFilterProvider<TestErrorFilterProvider>(nybus, providerFactory);
 
             nybus.ApplyServiceConfigurations(services);

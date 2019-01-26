@@ -31,10 +31,8 @@ namespace Tests.External
         private string ExchangeName(Type type) => $"{type.Namespace}:{type.Name}";
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(SecondTestCommand testCommand)
+        public async Task Host_can_loopback_commands(SecondTestCommand testCommand, CommandReceivedAsync<SecondTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
-
             var host = TestUtils.CreateNybusHost(nybus =>
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>
@@ -62,10 +60,8 @@ namespace Tests.External
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(SecondTestEvent testEvent)
+        public async Task Host_can_loopback_events(SecondTestEvent testEvent, EventReceivedAsync<SecondTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
-
             var host = TestUtils.CreateNybusHost(nybus =>
             {
                 nybus.UseRabbitMqBusEngine(rabbitMq =>

@@ -19,20 +19,16 @@ namespace Tests.Filters
         }
 
         [Test, AutoMoqData]
-        public async Task HandleErrorAsync_notifies_engine_on_Command([Frozen] IBusEngine engine, FallbackErrorFilter sut, ICommandContext<FirstTestCommand> context, Exception exception)
+        public async Task HandleErrorAsync_notifies_engine_on_Command([Frozen] IBusEngine engine, FallbackErrorFilter sut, ICommandContext<FirstTestCommand> context, Exception exception, CommandErrorDelegate<FirstTestCommand> next)
         {
-            var next = Mock.Of<CommandErrorDelegate<FirstTestCommand>>();
-
             await sut.HandleErrorAsync(context, exception, next);
 
             Mock.Get(engine).Verify(p => p.NotifyFailAsync(context.Message));
         }
 
         [Test, AutoMoqData]
-        public async Task HandleErrorAsync_notifies_engine_on_Event([Frozen] IBusEngine engine, FallbackErrorFilter sut, IEventContext<FirstTestEvent> context, Exception exception)
+        public async Task HandleErrorAsync_notifies_engine_on_Event([Frozen] IBusEngine engine, FallbackErrorFilter sut, IEventContext<FirstTestEvent> context, Exception exception, EventErrorDelegate<FirstTestEvent> next)
         {
-            var next = Mock.Of<EventErrorDelegate<FirstTestEvent>>();
-
             await sut.HandleErrorAsync(context, exception, next);
 
             Mock.Get(engine).Verify(p => p.NotifyFailAsync(context.Message));

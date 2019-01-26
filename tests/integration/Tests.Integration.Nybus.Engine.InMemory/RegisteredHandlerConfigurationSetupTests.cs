@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoFixture.NUnit3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,7 @@ namespace Tests
     public class RegisteredHandlerConfigurationSetupTests
     {
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_commands(ServiceCollection services, SecondTestCommand testCommand)
+        public async Task Host_can_loopback_commands(ServiceCollection services, SecondTestCommand testCommand, [Frozen] CommandReceivedAsync<SecondTestCommand> commandReceived, SecondTestCommandHandler handler)
         {
             var settings = new Dictionary<string, string>
             {
@@ -23,10 +24,6 @@ namespace Tests
 
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
-
-            var commandReceived = Mock.Of<CommandReceivedAsync<SecondTestCommand>>();
-            var mockHandler = new Mock<SecondTestCommandHandler>(commandReceived);
-            var handler = mockHandler.Object;
 
             services.AddLogging(l => l.AddDebug());
 
@@ -58,7 +55,7 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Host_can_loopback_events(ServiceCollection services, SecondTestEvent testEvent)
+        public async Task Host_can_loopback_events(ServiceCollection services, SecondTestEvent testEvent, [Frozen] EventReceivedAsync<SecondTestEvent> eventReceived, SecondTestEventHandler handler)
         {
             var settings = new Dictionary<string, string>
             {
@@ -68,10 +65,6 @@ namespace Tests
 
             var configurationBuilder = new ConfigurationBuilder().AddInMemoryCollection(settings);
             var configuration = configurationBuilder.Build();
-
-            var eventReceived = Mock.Of<EventReceivedAsync<SecondTestEvent>>();
-            var mockHandler = new Mock<SecondTestEventHandler>(eventReceived);
-            var handler = mockHandler.Object;
 
             services.AddLogging(l => l.AddDebug());
 

@@ -118,13 +118,11 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Handler_is_executed_when_commandMessages_are_processed([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
+        public async Task Handler_is_executed_when_commandMessages_are_processed([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage, CommandReceivedAsync<FirstTestCommand> receivedMessage)
         {
             var subject = new Subject<Message>();
 
             Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
-
-            var receivedMessage = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             sut.SubscribeToCommand(receivedMessage);
 
@@ -138,13 +136,11 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage)
+        public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, CommandMessage<FirstTestCommand> testMessage, CommandReceivedAsync<FirstTestCommand> receivedMessage)
         {
             var subject = new Subject<Message>();
 
             Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
-
-            var receivedMessage = Mock.Of<CommandReceivedAsync<FirstTestCommand>>();
 
             sut.SubscribeToCommand(receivedMessage);
 
@@ -158,13 +154,11 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Handler_is_executed_when_eventMessages_are_processed([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
+        public async Task Handler_is_executed_when_eventMessages_are_processed([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage, EventReceivedAsync<FirstTestEvent> receivedMessage)
         {
             var subject = new Subject<Message>();
 
             Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
-
-            var receivedMessage = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             sut.SubscribeToEvent(receivedMessage);
 
@@ -178,13 +172,11 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
-        public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage)
+        public async Task Null_messages_delivered_from_engine_are_discarded([Frozen] IBusEngine engine, NybusHost sut, EventMessage<FirstTestEvent> testMessage, EventReceivedAsync<FirstTestEvent> receivedMessage)
         {
             var subject = new Subject<Message>();
 
             Mock.Get(engine).Setup(p => p.StartAsync()).ReturnsAsync(subject);
-
-            var receivedMessage = Mock.Of<EventReceivedAsync<FirstTestEvent>>();
 
             sut.SubscribeToEvent(receivedMessage);
 

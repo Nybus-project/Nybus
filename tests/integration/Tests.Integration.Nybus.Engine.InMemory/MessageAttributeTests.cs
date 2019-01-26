@@ -12,10 +12,8 @@ namespace Tests
     public class MessageAttributeTests
     {
         [Test, AutoMoqData]
-        public async Task Commands_are_matched_via_MessageAttribute(ServiceCollection services, ThirdTestCommand testCommand)
+        public async Task Commands_are_matched_via_MessageAttribute(ServiceCollection services, ThirdTestCommand testCommand, CommandReceivedAsync<AttributeTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
@@ -41,10 +39,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Events_are_matched_via_MessageAttribute(ServiceCollection services, ThirdTestEvent testEvent)
+        public async Task Events_are_matched_via_MessageAttribute(ServiceCollection services, ThirdTestEvent testEvent, EventReceivedAsync<AttributeTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
@@ -70,10 +66,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Commands_are_correctly_converted(ServiceCollection services, ThirdTestCommand testCommand)
+        public async Task Commands_are_correctly_converted(ServiceCollection services, ThirdTestCommand testCommand, CommandReceivedAsync<AttributeTestCommand> commandReceived)
         {
-            var commandReceived = Mock.Of<CommandReceivedAsync<AttributeTestCommand>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
@@ -99,10 +93,8 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public async Task Events_are_correctly_converted(ServiceCollection services, ThirdTestEvent testEvent)
+        public async Task Events_are_correctly_converted(ServiceCollection services, ThirdTestEvent testEvent, EventReceivedAsync<AttributeTestEvent> eventReceived)
         {
-            var eventReceived = Mock.Of<EventReceivedAsync<AttributeTestEvent>>();
-
             services.AddLogging(l => l.AddDebug());
 
             services.AddNybus(nybus =>
