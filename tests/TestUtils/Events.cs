@@ -49,12 +49,12 @@ namespace Tests
 
     public class MixedTestEventHandler : IEventHandler<FirstTestEvent>, IEventHandler<SecondTestEvent>
     {
-        public Task HandleAsync(IDispatcher dispatcher, IEventContext<FirstTestEvent> incomingEvent)
+        public Task HandleAsync(IDispatcher dispatcher, IEventContext<FirstTestEvent> context)
         {
             throw new NotImplementedException();
         }
 
-        public Task HandleAsync(IDispatcher dispatcher, IEventContext<SecondTestEvent> incomingEvent)
+        public Task HandleAsync(IDispatcher dispatcher, IEventContext<SecondTestEvent> context)
         {
             throw new NotImplementedException();
         }
