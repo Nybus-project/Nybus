@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <PackageLicenseUrl>https://github.com/Nybus-project/Nybus/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/Nybus-project/Nybus</PackageProjectUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/Nybus-project/Nybus/master/assets/nybus128x128.png</PackageIconUrl>
     <NoWarn>NU5105,NU5125</NoWarn>
