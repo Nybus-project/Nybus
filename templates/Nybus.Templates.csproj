@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>Nybus.Templates</PackageId>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Nybus is an application framework that allows you to build message-based applications. This package contains templates that can be used to quickly create new applicaitons.</Description>
+    <PackageTags>dotnet-standard;dotnet-new;template;framework;queue;rx;nybus</PackageTags>
+
+    <Authors>Renato Golia</Authors>
+    <Company>Nybus Project</Company>
+    <Product>Nybus</Product>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Nybus-project/Nybus</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/Nybus-project/Nybus/master/assets/nybus128x128.png</PackageIconUrl>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="content/**/*.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="content/**/*.cs" />
+  </ItemGroup>
+</Project>
