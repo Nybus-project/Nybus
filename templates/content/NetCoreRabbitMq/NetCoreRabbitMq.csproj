@@ -13,9 +13,9 @@
 
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
 
-    <PackageReference Include="Nybus" Version="1.1.0-vnext.3" />
-    <PackageReference Include="Nybus.Engine.RabbitMq" Version="1.1.0-vnext.3" />
-    <PackageReference Include="Nybus.Extensions.Hosting.HostedService" Version="1.1.0-vnext.3" />
+    <PackageReference Include="Nybus" Version="1.1.0" />
+    <PackageReference Include="Nybus.Engine.RabbitMq" Version="1.1.0" />
+    <PackageReference Include="Nybus.Extensions.Hosting.HostedService" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
