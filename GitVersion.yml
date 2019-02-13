@@ -6,4 +6,4 @@ branches:
   # master:
   #   tag: beta
   develop:
-    tag: preview
+    tag: vnext
