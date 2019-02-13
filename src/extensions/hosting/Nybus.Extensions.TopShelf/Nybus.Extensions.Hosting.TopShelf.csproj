@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Nybus</RootNamespace>
+    <AssemblyName>Nybus.Extensions.Hosting.TopShelf</AssemblyName>
+    <Description>TopShelf helper classes for Nybus</Description>
+    <PackageTags>dotnet-standard;framework;queue;rx;nybus;topshelf</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TopShelf" Version="4.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Nybus.Abstractions\Nybus.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

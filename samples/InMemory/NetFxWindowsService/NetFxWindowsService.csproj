@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -6,10 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TopShelf" Version="4.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\engines\Nybus.Engine.InMemory\Nybus.Engine.InMemory.csproj" />
+    <ProjectReference Include="..\..\..\src\extensions\hosting\Nybus.Extensions.TopShelf\Nybus.Extensions.Hosting.TopShelf.csproj" />
     <ProjectReference Include="..\..\..\src\Nybus\Nybus.csproj" />
   </ItemGroup>
 

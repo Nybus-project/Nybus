@@ -3,7 +3,5 @@ mode: ContinuousDeployment
 continuous-delivery-fallback-tag: preview
 
 branches:
-  # master:
-  #   tag: beta
   develop:
     tag: vnext
