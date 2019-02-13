@@ -63,6 +63,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hosting", "hosting", "{D745
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nybus.Extensions.Hosting.HostedService", "src\extensions\hosting\Nybus.Extensions.HostedService\Nybus.Extensions.Hosting.HostedService.csproj", "{E8A9484F-3CC5-4E45-AF2E-A4C9D7B1A397}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.Extensions.Hosting.HostedService", "tests\Tests.Nybus.Extensions.Hosting.HostedService\Tests.Nybus.Extensions.Hosting.HostedService.csproj", "{F2B59608-223F-43F0-9E57-3DAF01665B00}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "extensions", "extensions", "{FE67922E-AF4A-44B0-8D49-BB1702C5FA60}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "hosting", "hosting", "{D745AFE1-B1E6-47F2-B6FB-CAAF011F863E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.Extensions.Hosting.HostedService", "src\extensions\hosting\Nybus.Extensions.HostedService\Nybus.Extensions.Hosting.HostedService.csproj", "{E8A9484F-3CC5-4E45-AF2E-A4C9D7B1A397}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
