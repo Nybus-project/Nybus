@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Nybus.Templates</id>
+    <version>1.0.0</version>
+    <authors>Renato Golia</authors>
+    <owners>Renato Golia</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Nybus-project/Nybus</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/Nybus-project/Nybus/master/assets/nybus128x128.png</iconUrl>
+    <description>Nybus is an application framework that allows you to build message-based applications. This package contains templates that can be used to quickly create new applicaitons.</description>
+    <tags>dotnet-standard dotnet-new template framework queue rx nybus</tags>
+    <packageTypes>
+      <packageType name="Template" />
+    </packageTypes>
+  </metadata>
+  <files>
+    <file src="content/**" target="content" exclude="**\bin\**;**\obj\**;**\.vs\**;**\*.user;" />
+  </files>
+</package>

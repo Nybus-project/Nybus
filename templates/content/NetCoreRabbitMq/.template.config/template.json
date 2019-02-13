@@ -1,0 +1,24 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Renato Golia",
+    "classifications": [
+        "Nybus",
+        "Console",
+        "RabbitMQ"
+    ],
+    "name": "Nybus Console App with RabbitMQ",
+    "identity": "Nybus.Templates.NetCoreApp.RabbitMQ.CSharp",
+    "groupIdentity": "Nybus.Templates.NetCoreApp.RabbitMQ",
+    "shortName": "nybus-rabbitmq-console",
+    "tags":{
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "NetCoreRabbitMq",
+    "preferNameDirectory": true,
+    "primaryOutputs": [
+        {
+            "path": "./NetCoreRabbitMq.csproj"
+        }
+    ]
+}
