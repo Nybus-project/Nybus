@@ -13,7 +13,7 @@ namespace Tests
 
     public class FirstTestCommandHandler : ICommandHandler<FirstTestCommand>
     {
-        public virtual Task HandleAsync(IDispatcher dispatcher, ICommandContext<FirstTestCommand> incomingCommand)
+        public virtual Task HandleAsync(IDispatcher dispatcher, ICommandContext<FirstTestCommand> context)
         {
             throw new NotImplementedException();
         }
@@ -30,12 +30,24 @@ namespace Tests
             _commandReceived = commandReceived ?? throw new ArgumentNullException(nameof(commandReceived));
         }
 
-        public virtual Task HandleAsync(IDispatcher dispatcher, ICommandContext<SecondTestCommand> incomingCommand)
+        public virtual Task HandleAsync(IDispatcher dispatcher, ICommandContext<SecondTestCommand> context)
         {
-            return _commandReceived(dispatcher, incomingCommand);
+            return _commandReceived(dispatcher, context);
         }
     }
 
+    public class MixedTestCommandHandler : ICommandHandler<FirstTestCommand>, ICommandHandler<SecondTestCommand>
+    {
+        public Task HandleAsync(IDispatcher dispatcher, ICommandContext<FirstTestCommand> context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task HandleAsync(IDispatcher dispatcher, ICommandContext<SecondTestCommand> context)
+        {
+            throw new NotImplementedException();
+        }
+    }
     
     public class ThirdTestCommand : ICommand
     {

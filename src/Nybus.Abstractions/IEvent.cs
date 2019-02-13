@@ -9,7 +9,7 @@ namespace Nybus
 
     public interface IEventHandler<TEvent> where TEvent : class, IEvent
     {
-        Task HandleAsync(IDispatcher dispatcher, IEventContext<TEvent> incomingEvent);
+        Task HandleAsync(IDispatcher dispatcher, IEventContext<TEvent> context);
     }
     
     public interface IEventContext<TEvent> : IContext where TEvent : class, IEvent

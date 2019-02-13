@@ -1,8 +1,11 @@
 #tool "nuget:?package=ReportGenerator&version=4.0.5"
 #tool "nuget:?package=JetBrains.dotCover.CommandLineTools&version=2018.3.1"
 #tool "nuget:?package=GitVersion.CommandLine&version=4.0.0"
+#tool "nuget:?package=NuGet.CommandLine&version=4.9.2"
 
+#addin "Cake.FileHelpers"
 #load "./build/types.cake"
+
 
 var target = Argument("Target", "Full");
 
@@ -171,7 +174,7 @@ Task("Test")
     .IsDependentOn("GenerateHtmlReport")
     .IsDependentOn("UploadTestsToAppVeyor");
 
-Task("Pack")
+Task("PackLibraries")
     .IsDependentOn("Version")
     .IsDependentOn("Restore")
     .Does<BuildState>(state =>
@@ -188,8 +191,28 @@ Task("Pack")
     DotNetCorePack(state.Paths.SolutionFile.ToString(), settings);
 });
 
+Task("PackTemplates")
+    .IsDependentOn("Version")
+    .Does<BuildState>(state => 
+{
+    ReplaceRegexInFiles("./templates/content/**/*.csproj", @"<PackageReference Include=""(Nybus[\w\.]*)"" Version="".+"" />", $@"<PackageReference Include=""$1"" Version=""{state.Version.PackageVersion}"" />");
+
+    var settings = new NuGetPackSettings
+    {
+        Version = state.Version.PackageVersion,
+        OutputDirectory = state.Paths.OutputFolder
+    };
+
+    NuGetPack("./templates/Nybus.Templates.nuspec", settings);
+});
+
+Task("Pack")
+    .IsDependentOn("PackLibraries")
+    .IsDependentOn("PackTemplates");
+
 Task("UploadPackagesToAppVeyor")
     .IsDependentOn("Pack")
+    .IsDependentOn("PackTemplates")
     .WithCriteria(BuildSystem.IsRunningOnAppVeyor)
     .Does<BuildState>(state => 
 {
