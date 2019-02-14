@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Topshelf;
 using Topshelf.HostConfigurators;
+using Topshelf.Runtime;
 using Topshelf.ServiceConfigurators;
 
 namespace Nybus
@@ -19,31 +20,33 @@ namespace Nybus
         {
             var startup = new TStartup();
 
-            configurator.ConstructUsing(settings =>
-            {
-                var configurationBuilder = new ConfigurationBuilder();
-
-                startup.ConfigureAppConfiguration(configurationBuilder);
-
-                var configuration = configurationBuilder.Build();
-
-                var context = new StartupContext(settings, configuration);
-
-                var services = new ServiceCollection();
-                services.AddSingleton(configuration);
-
-                startup.ConfigureServices(context, services);
-
-                services.AddLogging(builder => startup.ConfigureLogging(context, builder));
-
-                var serviceProvider = services.BuildServiceProvider();
-
-                return startup.ConstructService(context, serviceProvider);
-            });
+            configurator.ConstructUsing(settings => startup.BuildHost(settings));
 
             configurator.WhenStarted(startup.OnStart);
 
             configurator.WhenStopped(startup.OnStop);
+        }
+
+        public static IBusHost BuildHost<TStartup>(this TStartup startup, HostSettings settings) where TStartup : Startup
+        {
+            var configurationBuilder = new ConfigurationBuilder();
+
+            startup.ConfigureAppConfiguration(configurationBuilder);
+
+            var configuration = configurationBuilder.Build();
+
+            var context = new StartupContext(settings, configuration);
+
+            var services = new ServiceCollection();
+            services.AddSingleton(configuration);
+
+            startup.ConfigureServices(context, services);
+
+            services.AddLogging(builder => startup.ConfigureLogging(context, builder));
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            return startup.ConstructService(context, serviceProvider);
         }
     }
 }
