@@ -46,7 +46,7 @@ namespace Nybus.RabbitMq
         {
             if (IsRunning)
             {
-                if (HasObservers)
+                if (HasObservers && _subject.HasObservers)
                 {
                     _subject.OnNext(value);
                 }
