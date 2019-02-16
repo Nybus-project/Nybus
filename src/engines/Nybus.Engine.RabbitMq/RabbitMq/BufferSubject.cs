@@ -46,7 +46,7 @@ namespace Nybus.RabbitMq
         {
             if (IsRunning)
             {
-                if (HasObservers && _subject.HasObservers)
+                if (HasObservers)
                 {
                     _subject.OnNext(value);
                 }
@@ -61,12 +61,14 @@ namespace Nybus.RabbitMq
 
         public IDisposable Subscribe(IObserver<T> observer)
         {
-            Interlocked.Increment(ref _refCount);
-
-            return new CompositeDisposable(
+            var disposable = new CompositeDisposable(
                 Observable.Create<T>(o => ConsumeActions(o)).Concat(_subject).Subscribe(observer),
                 Disposable.Create(() => Interlocked.Decrement(ref _refCount))
             );
+
+            Interlocked.Increment(ref _refCount);
+
+            return disposable;
         }
 
         private IDisposable ConsumeActions(IObserver<T> observable)
