@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -82,12 +81,11 @@ namespace Nybus.RabbitMq
                 queueToConsume.Add(commandQueue.QueueName);
             }
 
-
-            var sequence = Observable.Defer(() => from queue in queueToConsume.ToObservable()
-                                                  from args in SubscribeMessages(_channel, queue)
-                                                  let message = GetMessage(args)
-                                                  where message != null
-                                                  select message);
+            var sequence = from queue in queueToConsume.ToObservable()
+                           from args in SubscribeMessages(_channel, queue)
+                           let message = GetMessage(args)
+                           where message != null
+                           select message;
 
             return Task.FromResult(sequence);
 
@@ -233,8 +231,7 @@ namespace Nybus.RabbitMq
             {
                 try
                 {
-                    _channel.BasicAck(deliveryTag, false);
-                    _processingMessages.TryRemoveItem(deliveryTag);
+                    AckMessage(deliveryTag);
                 }
                 catch (AlreadyClosedException ex)
                 {
@@ -247,8 +244,14 @@ namespace Nybus.RabbitMq
                     _logger.LogWarning(state, ex, (s,e) => $"Unable to ack message {s.MessageId} (delivery tag: {s.DeliveryTag})");
                 }
             }
-            
+
             return Task.CompletedTask;
+        }
+
+        private void AckMessage(ulong deliveryTag)
+        {
+            _channel.BasicAck(deliveryTag, false);
+            _processingMessages.TryRemoveItem(deliveryTag);
         }
 
         public Task NotifyFailAsync(Message message)
