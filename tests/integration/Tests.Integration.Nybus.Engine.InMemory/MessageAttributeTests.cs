@@ -39,6 +39,34 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
+        public async Task Outgoing_commands_are_marked_via_MessageAttribute(ServiceCollection services, AttributeTestCommand testCommand, CommandReceivedAsync<ThirdTestCommand> commandReceived)
+        {
+            services.AddLogging(l => l.AddDebug());
+
+            services.AddNybus(nybus =>
+            {
+                nybus.UseInMemoryBusEngine();
+
+                nybus.SubscribeToCommand(commandReceived);
+            });
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var host = serviceProvider.GetRequiredService<IBusHost>();
+
+            var bus = serviceProvider.GetRequiredService<IBus>();
+
+            await host.StartAsync();
+
+            await bus.InvokeCommandAsync(testCommand);
+
+            await host.StopAsync();
+
+            Mock.Get(commandReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<ThirdTestCommand>>()), Times.Once);
+
+        }
+
+        [Test, AutoMoqData]
         public async Task Events_are_matched_via_MessageAttribute(ServiceCollection services, ThirdTestEvent testEvent, EventReceivedAsync<AttributeTestEvent> eventReceived)
         {
             services.AddLogging(l => l.AddDebug());
@@ -63,6 +91,34 @@ namespace Tests
             await host.StopAsync();
 
             Mock.Get(eventReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<AttributeTestEvent>>()), Times.Once);
+        }
+
+        [Test, AutoMoqData]
+        public async Task Outgoing_events_are_marked_via_MessageAttribute(ServiceCollection services, AttributeTestEvent testEvent, EventReceivedAsync<ThirdTestEvent> eventReceived)
+        {
+            services.AddLogging(l => l.AddDebug());
+
+            services.AddNybus(nybus =>
+            {
+                nybus.UseInMemoryBusEngine();
+
+                nybus.SubscribeToEvent(eventReceived);
+            });
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            var host = serviceProvider.GetRequiredService<IBusHost>();
+
+            var bus = serviceProvider.GetRequiredService<IBus>();
+
+            await host.StartAsync();
+
+            await bus.RaiseEventAsync(testEvent);
+
+            await host.StopAsync();
+
+            Mock.Get(eventReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<ThirdTestEvent>>()), Times.Once);
+
         }
 
         [Test, AutoMoqData]

@@ -34,6 +34,28 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
+        public async Task Outgoing_commands_are_marked_via_MessageAttribute(FakeServer server, AttributeTestCommand testCommand, CommandReceivedAsync<ThirdTestCommand> commandReceived)
+        {
+            var host = CreateNybusHost(nybus =>
+            {
+                nybus.SubscribeToCommand(commandReceived);
+
+                nybus.UseRabbitMqBusEngine(rabbitMq =>
+                {
+                    rabbitMq.Configure(c => c.ConnectionFactory = server.CreateConnectionFactory());
+                });
+            });
+
+            await host.StartAsync();
+
+            await host.Bus.InvokeCommandAsync(testCommand);
+
+            await host.StopAsync();
+
+            Mock.Get(commandReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<ICommandContext<ThirdTestCommand>>()), Times.Once);
+        }
+
+        [Test, AutoMoqData]
         public async Task Events_are_matched_via_MessageAttribute(FakeServer server, ThirdTestEvent testEvent, EventReceivedAsync<AttributeTestEvent> eventReceived)
         {
             var host = CreateNybusHost(nybus =>
@@ -53,6 +75,28 @@ namespace Tests
             await host.StopAsync();
 
             Mock.Get(eventReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<AttributeTestEvent>>()), Times.Once);
+        }
+
+        [Test, AutoMoqData]
+        public async Task Outgoing_Events_are_marked_via_MessageAttribute(FakeServer server, AttributeTestEvent testEvent, EventReceivedAsync<ThirdTestEvent> eventReceived)
+        {
+            var host = CreateNybusHost(nybus =>
+            {
+                nybus.SubscribeToEvent(eventReceived);
+
+                nybus.UseRabbitMqBusEngine(rabbitMq =>
+                {
+                    rabbitMq.Configure(c => c.ConnectionFactory = server.CreateConnectionFactory());
+                });
+            });
+
+            await host.StartAsync();
+
+            await host.Bus.RaiseEventAsync(testEvent);
+
+            await host.StopAsync();
+
+            Mock.Get(eventReceived).Verify(p => p(It.IsAny<IDispatcher>(), It.IsAny<IEventContext<ThirdTestEvent>>()), Times.Once);
         }
 
         [Test, AutoMoqData]

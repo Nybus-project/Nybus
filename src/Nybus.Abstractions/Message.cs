@@ -15,7 +15,7 @@ namespace Nybus
 
         public abstract Type Type { get; }
 
-        public MessageDescriptor Descriptor => new MessageDescriptor(Type);
+        public MessageDescriptor Descriptor => MessageDescriptor.CreateFromType(Type);
 
         public object Item { get; protected set; }
     }
