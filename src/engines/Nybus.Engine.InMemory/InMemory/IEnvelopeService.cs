@@ -114,7 +114,7 @@ namespace Nybus.InMemory
 
         public Type Type { get; set; }
 
-        public MessageDescriptor Descriptor => new MessageDescriptor(Type);
+        public MessageDescriptor Descriptor => MessageDescriptor.CreateFromType(Type);
 
         public string Content { get; set; }
     }
