@@ -34,11 +34,16 @@ namespace Nybus.Configuration
             }
         }
 
-        private Action<IRabbitMqConfiguration> _configurationAction;
+        private readonly List<Action<IRabbitMqConfiguration>> _configurationActions = new List<Action<IRabbitMqConfiguration>>();
 
         public void Configure(Action<IRabbitMqConfiguration> configure)
         {
-            _configurationAction = configure ?? throw new ArgumentNullException(nameof(configure));
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            _configurationActions.Add(configure);
         }
 
         private string _configurationSectionName;
@@ -67,7 +72,10 @@ namespace Nybus.Configuration
 
                 var configuration = factory.Create(op);
 
-                _configurationAction?.Invoke(configuration);
+                foreach (var configurationAction in _configurationActions)
+                {
+                    configurationAction?.Invoke(configuration);
+                }
 
                 return configuration;
             }));
