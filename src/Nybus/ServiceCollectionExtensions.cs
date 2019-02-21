@@ -82,9 +82,10 @@ namespace Nybus
             return services.AddTransient<ICommandHandler<TCommand>, THandler>();
         }
 
-        public static IServiceCollection AddCommandHandler<T>(this IServiceCollection services)
+        public static IServiceCollection AddCommandHandler<THandler>(this IServiceCollection services)
+            where THandler : class, ICommandHandler
         {
-            return AddCommandHandler(services, typeof(T));
+            return AddCommandHandler(services, typeof(THandler));
         }
 
         public static IServiceCollection AddCommandHandler(this IServiceCollection services, Type handlerType)
@@ -110,9 +111,10 @@ namespace Nybus
             return services.AddTransient<IEventHandler<TEvent>, THandler>();
         }
 
-        public static IServiceCollection AddEventHandler<T>(this IServiceCollection services)
+        public static IServiceCollection AddEventHandler<THandler>(this IServiceCollection services)
+            where THandler : class, IEventHandler
         {
-            return AddEventHandler(services, typeof(T));
+            return AddEventHandler(services, typeof(THandler));
         }
 
         public static IServiceCollection AddEventHandler(this IServiceCollection services, Type handlerType)

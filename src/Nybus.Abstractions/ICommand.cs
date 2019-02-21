@@ -7,7 +7,9 @@ namespace Nybus
 
     public interface ICommand { }
 
-    public interface ICommandHandler<TCommand> where TCommand : class, ICommand
+    public interface ICommandHandler { }
+
+    public interface ICommandHandler<TCommand> : ICommandHandler where TCommand : class, ICommand
     {
         Task HandleAsync(IDispatcher dispatcher, ICommandContext<TCommand> context);
     }
