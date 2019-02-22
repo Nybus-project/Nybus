@@ -14,6 +14,8 @@ namespace Nybus.Configuration
         Encoding OutboundEncoding { get; set; }
 
         ISerializer Serializer { get; set; }
+        IExchangeManager CommandExchangeManager { get; set; }
+        IExchangeManager EventExchangeManager { get; set; }
     }
 
     public class RabbitMqConfiguration : IRabbitMqConfiguration
@@ -27,5 +29,10 @@ namespace Nybus.Configuration
         public Encoding OutboundEncoding { get; set; }
 
         public ISerializer Serializer { get; set; } = new JsonSerializer();
+
+        public IExchangeManager CommandExchangeManager { get; set; }
+
+        public IExchangeManager EventExchangeManager { get; set; }
+
     }
 }

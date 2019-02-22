@@ -57,7 +57,7 @@ namespace Nybus.RabbitMq
                 {
                     var exchangeName = MessageDescriptor.CreateFromType(type);
 
-                    _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
+                    _configuration.EventExchangeManager.EnsureExchangeExists(_channel, exchangeName, FanOutExchangeType);
 
                     _channel.QueueBind(queue: eventQueue.QueueName, exchange: exchangeName, routingKey: string.Empty);
                 }
@@ -73,7 +73,7 @@ namespace Nybus.RabbitMq
                 {
                     var exchangeName = MessageDescriptor.CreateFromType(type);
 
-                    _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
+                    _configuration.CommandExchangeManager.EnsureExchangeExists(_channel, exchangeName, FanOutExchangeType);
 
                     _channel.QueueBind(queue: commandQueue.QueueName, exchange: exchangeName, routingKey: string.Empty);
                 }
@@ -217,12 +217,27 @@ namespace Nybus.RabbitMq
 
             var exchangeName = MessageDescriptor.CreateFromType(type);
 
-            _channel.ExchangeDeclare(exchange: exchangeName, type: FanOutExchangeType);
+            var exchangeManager = GetExchangeManager();
+            exchangeManager.EnsureExchangeExists(_channel, exchangeName, FanOutExchangeType);
 
             _channel.BasicPublish(exchange: exchangeName, routingKey: string.Empty, body: body, basicProperties: properties);
 
             return Task.CompletedTask;
 
+            IExchangeManager GetExchangeManager()
+            {
+                if (message.MessageType == MessageType.Command)
+                {
+                    return _configuration.CommandExchangeManager;
+                }
+
+                if (message.MessageType == MessageType.Event)
+                {
+                    return _configuration.EventExchangeManager;
+                }
+
+                throw new NotSupportedException();
+            }
         }
 
         public Task NotifySuccessAsync(Message message)

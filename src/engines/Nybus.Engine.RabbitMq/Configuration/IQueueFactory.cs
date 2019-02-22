@@ -1,5 +1,6 @@
 ﻿using System;
 using RabbitMQ.Client;
+using QueueDeclareOk = RabbitMQ.Client.QueueDeclareOk;
 
 namespace Nybus.Configuration
 {
