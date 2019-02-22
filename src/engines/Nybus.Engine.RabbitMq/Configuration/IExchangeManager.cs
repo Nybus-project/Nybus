@@ -9,11 +9,11 @@ namespace Nybus.Configuration
         void EnsureExchangeExists(IModel model, string name, string exchangeType);
     }
 
-    public class DefaultExchangeManager : IExchangeManager
+    public class ExchangeManager : IExchangeManager
     {
         private readonly ExchangeOptions _options;
 
-        public DefaultExchangeManager(ExchangeOptions options)
+        public ExchangeManager(ExchangeOptions options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }

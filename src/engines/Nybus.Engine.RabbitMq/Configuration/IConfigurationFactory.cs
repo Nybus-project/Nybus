@@ -79,7 +79,7 @@ namespace Nybus.Configuration
 
             IExchangeManager GetExchangeManager(ExchangeOptions exchangeOptions)
             {
-                return new DefaultExchangeManager(exchangeOptions ?? new ExchangeOptions());
+                return new ExchangeManager(exchangeOptions ?? new ExchangeOptions());
             }
 
             IQueueFactory GetQueueFactory(IConfigurationSection section)
