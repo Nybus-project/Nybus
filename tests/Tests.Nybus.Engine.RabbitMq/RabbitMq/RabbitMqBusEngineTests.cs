@@ -145,7 +145,7 @@ namespace Tests.RabbitMq
 
             var sequence = await sut.StartAsync();
 
-            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
+            Mock.Get(configuration.EventExchangeManager).Verify(p => p.EnsureExchangeExists(It.IsAny<IModel>(), It.IsAny<string>(), It.IsAny<string>()));
         }
 
         [Test, CustomAutoMoqData]
@@ -155,7 +155,7 @@ namespace Tests.RabbitMq
 
             var sequence = await sut.StartAsync();
 
-            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.ExchangeDeclare(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<IDictionary<string, object>>()));
+            Mock.Get(configuration.CommandExchangeManager).Verify(p => p.EnsureExchangeExists(It.IsAny<IModel>(), It.IsAny<string>(), It.IsAny<string>()));
         }
 
         [Test, CustomAutoMoqData]

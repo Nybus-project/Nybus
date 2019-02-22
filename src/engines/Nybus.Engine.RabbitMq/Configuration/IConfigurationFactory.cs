@@ -24,6 +24,10 @@ namespace Nybus.Configuration
         public IConfigurationSection CommandQueue { get; set; }
 
         public IConfigurationSection EventQueue { get; set; }
+
+        public ExchangeOptions CommandExchange { get; set; }
+
+        public ExchangeOptions EventExchange { get; set; }
     }
 
     public class ConfigurationFactory : IConfigurationFactory
@@ -60,14 +64,23 @@ namespace Nybus.Configuration
             var commandQueueFactory = GetQueueFactory(options.CommandQueue);
             var eventQueueFactory = GetQueueFactory(options.EventQueue);
             var connectionFactory = GetConnectionFactory();
+            var commandExchangeManager = GetExchangeManager(options.CommandExchange);
+            var eventExchangeManager = GetExchangeManager(options.EventExchange);
 
             return new RabbitMqConfiguration
             {
                 OutboundEncoding = outboundEncoding,
                 CommandQueueFactory = commandQueueFactory,
                 EventQueueFactory = eventQueueFactory,
-                ConnectionFactory = connectionFactory
+                ConnectionFactory = connectionFactory,
+                CommandExchangeManager = commandExchangeManager,
+                EventExchangeManager = eventExchangeManager
             };
+
+            IExchangeManager GetExchangeManager(ExchangeOptions exchangeOptions)
+            {
+                return new ExchangeManager(exchangeOptions ?? new ExchangeOptions());
+            }
 
             IQueueFactory GetQueueFactory(IConfigurationSection section)
             {
