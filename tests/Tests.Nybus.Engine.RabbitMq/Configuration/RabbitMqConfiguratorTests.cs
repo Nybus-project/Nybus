@@ -98,6 +98,12 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
+        public void Configure_does_not_accept_null_delegates(RabbitMqConfigurator sut, TestNybusConfigurator configurator, IConfigurationFactory configurationFactory, RabbitMqOptions options)
+        {
+            Assert.Throws<ArgumentNullException>(() => sut.Configure(null));
+        }
+
+        [Test, CustomAutoMoqData]
         public void UseConfiguration_binds_values_to_options(RabbitMqConfigurator sut, TestNybusConfigurator configurator, IConfigurationFactory configurationFactory, string nybusSectionName, string rabbitMqSectionName)
         {
             var values = new Dictionary<string, string>
