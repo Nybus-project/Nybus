@@ -39,6 +39,11 @@ namespace Nybus.RabbitMq
             _connection = _configuration.ConnectionFactory.CreateConnection();
             _channel = _connection.CreateModel();
 
+            if (_configuration.UnackedMessageCountLimit.HasValue)
+            {
+                _channel.BasicQos(0, _configuration.UnackedMessageCountLimit.Value, true);
+            }
+
             var hasEvents = _messageDescriptorStore.HasEvents();
             var hasCommands = _messageDescriptorStore.HasCommands();
 
