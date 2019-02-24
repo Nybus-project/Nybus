@@ -37,18 +37,13 @@ artifacts:
     type: zip
 
 deploy:
-  provider: NuGet
-  server: https://www.myget.org/F/nybus/api/v2/package
-  api_key:
-    secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
-  artifact: packages
-
-# for:
-#   -
-#     branches:
-#       only:
-#         - master
-#     only_commits:
-#       message: /build/    
-#       files:
-#         - src/
+  - provider: NuGet
+    server: https://www.myget.org/F/nybus/api/v2/package
+    api_key:
+      secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
+    artifact: packages
+  - provider: Environment
+    name: NuGet
+    on:
+      branch: master
+      appveyor_repo_tag: true
