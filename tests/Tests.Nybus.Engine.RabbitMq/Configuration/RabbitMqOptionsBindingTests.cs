@@ -145,5 +145,39 @@ namespace Tests.Configuration
             Assert.That(sut.Connection["HostName"], Is.EqualTo(hostName));
             Assert.That(sut.Connection["VirtualHost"], Is.EqualTo(vhost));
         }
+
+        [Test, AutoMoqData]
+        public void UnackedMessageCountLimit_is_correctly_bound_when_value_is_provided(ushort limit)
+        {
+            var settings = new Dictionary<string, string>
+            {
+                [$"{nameof(RabbitMqOptions.UnackedMessageCountLimit)}"] = limit.ToString()
+            };
+
+            var configuration = CreateConfiguration(settings);
+
+            var sut = new RabbitMqOptions();
+
+            configuration.Bind(sut);
+
+            Assert.That(sut.UnackedMessageCountLimit, Is.EqualTo(limit));
+        }
+
+        [Test, AutoMoqData]
+        public void UnackedMessageCountLimit_is_correctly_bound_when_no_value_is_provided()
+        {
+            var settings = new Dictionary<string, string>
+            {
+                [$"{nameof(RabbitMqOptions.UnackedMessageCountLimit)}"] = null
+            };
+
+            var configuration = CreateConfiguration(settings);
+
+            var sut = new RabbitMqOptions();
+
+            configuration.Bind(sut);
+
+            Assert.That(sut.UnackedMessageCountLimit, Is.Null);
+        }
     }
 }

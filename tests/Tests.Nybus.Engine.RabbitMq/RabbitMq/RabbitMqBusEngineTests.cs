@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoFixture.Idioms;
 using AutoFixture.NUnit3;
-using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using Nybus;
@@ -736,6 +735,30 @@ namespace Tests.RabbitMq
             await sut.NotifyFailAsync(incomingMessages.First());
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), It.IsAny<bool>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task Global_QoS_is_sent_if_value_is_set([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, ushort limit)
+        {
+            Mock.Get(configuration).SetupGet(p => p.UnackedMessageCountLimit).Returns(limit);
+
+            await sut.StartAsync();
+
+            await sut.StopAsync();
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicQos(0, limit, true));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task No_QoS_is_sent_if_no_value_is_set([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut)
+        {
+            Mock.Get(configuration).SetupGet(p => p.UnackedMessageCountLimit).Returns(null as ushort?);
+
+            await sut.StartAsync();
+
+            await sut.StopAsync();
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicQos(It.IsAny<uint>(), It.IsAny<ushort>(), It.IsAny<bool>()), Times.Never);
         }
     }
 }

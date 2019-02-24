@@ -28,6 +28,8 @@ namespace Nybus.Configuration
         public ExchangeOptions CommandExchange { get; set; }
 
         public ExchangeOptions EventExchange { get; set; }
+
+        public ushort? UnackedMessageCountLimit { get; set; }
     }
 
     public class ConfigurationFactory : IConfigurationFactory
@@ -69,12 +71,14 @@ namespace Nybus.Configuration
 
             return new RabbitMqConfiguration
             {
+                Options = options,
                 OutboundEncoding = outboundEncoding,
                 CommandQueueFactory = commandQueueFactory,
                 EventQueueFactory = eventQueueFactory,
                 ConnectionFactory = connectionFactory,
                 CommandExchangeManager = commandExchangeManager,
-                EventExchangeManager = eventExchangeManager
+                EventExchangeManager = eventExchangeManager,
+                UnackedMessageCountLimit = options.UnackedMessageCountLimit
             };
 
             IExchangeManager GetExchangeManager(ExchangeOptions exchangeOptions)
