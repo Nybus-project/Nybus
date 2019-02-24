@@ -76,41 +76,48 @@ Task("RunTests")
 {
     var projectFiles = GetFiles($"{state.Paths.TestFolder}/**/Tests.*.csproj");
 
+    var frameworks = new[]{"netcoreapp2.2", "net472"};
+
     bool success = true;
 
-    foreach (var file in projectFiles)
+    foreach (var framework in frameworks)
     {
-        try
+        var frameworkFriendlyName = framework.Replace(".", "-");
+
+        foreach (var file in projectFiles)
         {
-            Information($"Testing {file.GetFilenameWithoutExtension()}");
-
-            var testResultFile = state.Paths.TestOutputFolder.CombineWithFilePath(file.GetFilenameWithoutExtension() + ".trx");
-            var coverageResultFile = state.Paths.TestOutputFolder.CombineWithFilePath(file.GetFilenameWithoutExtension() + ".dcvr");
-
-            var projectFile = MakeAbsolute(file).ToString();
-
-            var dotCoverSettings = new DotCoverCoverSettings()
-                                    .WithFilter("+:Nybus*")
-                                    .WithFilter("-:Tests*")
-                                    .WithFilter("-:TestUtils");
-
-            var settings = new DotNetCoreTestSettings
+            try
             {
-                NoBuild = true,
-                NoRestore = true,
-                Logger = $"trx;LogFileName={testResultFile.FullPath}",
-                Filter = "TestCategory!=External"
-            };
+                Information($"Testing {file.GetFilenameWithoutExtension()}");
 
-            DotCoverCover(c => c.DotNetCoreTest(projectFile, settings), coverageResultFile, dotCoverSettings);
-        }
-        catch (Exception ex)
-        {
-            Error($"There was an error while executing the tests: {file.GetFilenameWithoutExtension()}", ex);
-            success = false;
-        }
+                var testResultFile = state.Paths.TestOutputFolder.CombineWithFilePath($"{file.GetFilenameWithoutExtension()}-{frameworkFriendlyName}.trx");
+                var coverageResultFile = state.Paths.TestOutputFolder.CombineWithFilePath($"{file.GetFilenameWithoutExtension()}-{frameworkFriendlyName}.dcvr");
 
-        Information("");
+                var projectFile = MakeAbsolute(file).ToString();
+
+                var dotCoverSettings = new DotCoverCoverSettings()
+                                        .WithFilter("+:Nybus*")
+                                        .WithFilter("-:Tests*")
+                                        .WithFilter("-:TestUtils");
+
+                var settings = new DotNetCoreTestSettings
+                {
+                    NoBuild = true,
+                    NoRestore = true,
+                    Logger = $"trx;LogFileName={testResultFile.FullPath}",
+                    Filter = "TestCategory!=External"
+                };
+
+                DotCoverCover(c => c.DotNetCoreTest(projectFile, settings), coverageResultFile, dotCoverSettings);
+            }
+            catch (Exception ex)
+            {
+                Error($"There was an error while executing the tests: {file.GetFilenameWithoutExtension()}", ex);
+                success = false;
+            }
+
+            Information("");
+        }
     }
     
     if (!success)
@@ -140,7 +147,7 @@ Task("GenerateXmlReport")
     });
 });
 
-Task("GenerateHtmlReport")
+Task("ExportReport")
     .IsDependentOn("GenerateXmlReport")
     .Does<BuildState>(state =>
 {
@@ -169,7 +176,7 @@ Task("Test")
     .IsDependentOn("RunTests")
     .IsDependentOn("MergeCoverageResults")
     .IsDependentOn("GenerateXmlReport")
-    .IsDependentOn("GenerateHtmlReport")
+    .IsDependentOn("ExportReport")
     .IsDependentOn("UploadTestsToAppVeyor");
 
 Task("PackLibraries")

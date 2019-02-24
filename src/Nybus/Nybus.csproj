@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <RootNamespace>Nybus</RootNamespace>
     <Description>Nybus is an application framework that allows you to build message-based applications.</Description>
     <PackageTags>dotnet-standard;framework;queue;rx;nybus</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Kralizek.Extensions.Logging" Version="1.0.1" />
+    <PackageReference Include="Kralizek.Extensions.Logging" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.1" />
     <PackageReference Include="System.Reactive.Linq" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.1" />
