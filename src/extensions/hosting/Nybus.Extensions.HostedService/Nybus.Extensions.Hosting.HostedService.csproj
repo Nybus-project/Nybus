@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <RootNamespace>Nybus</RootNamespace>
     <AssemblyName>Nybus.Extensions.Hosting.HostedService</AssemblyName>
     <Description>Implementation of IHostedService interface for Nybus</Description>
