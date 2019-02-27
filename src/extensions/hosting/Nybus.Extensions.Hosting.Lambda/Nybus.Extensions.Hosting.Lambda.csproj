@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Nybus</RootNamespace>
+    <AssemblyName>Nybus.Extensions.Hosting.Lambda</AssemblyName>
+
+    <Description>Nybus hosting in AWS Lambda</Description>
+    <PackageTags>dotnet-standard;queue;rx;nybus;aws-lambda;lambda</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Nybus.Abstractions\Nybus.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Kralizek.Lambda.Template" Version="3.0.0" />
+  </ItemGroup>
+
+</Project>
