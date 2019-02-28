@@ -18,23 +18,28 @@ namespace Nybus
 
         public async Task FunctionHandlerAsync(TInput input, ILambdaContext context)
         {
-            await _busHost.StartAsync().ConfigureAwait(false);
-
-            using (var scope = ServiceProvider.CreateScope())
+            try
             {
-                var handler = scope.ServiceProvider.GetService<Kralizek.Lambda.IEventHandler<TInput>>();
+                await _busHost.StartAsync().ConfigureAwait(false);
 
-                if (handler == null)
+                using (var scope = ServiceProvider.CreateScope())
                 {
-                    Logger.LogCritical($"No IEventHandler<{typeof(TInput).Name}> could be found.");
-                    throw new InvalidOperationException($"No IEventHandler<{typeof(TInput).Name}> could be found.");
+                    var handler = scope.ServiceProvider.GetService<Kralizek.Lambda.IEventHandler<TInput>>();
+
+                    if (handler == null)
+                    {
+                        Logger.LogCritical($"No IEventHandler<{typeof(TInput).Name}> could be found.");
+                        throw new InvalidOperationException($"No IEventHandler<{typeof(TInput).Name}> could be found.");
+                    }
+
+                    Logger.LogInformation("Invoking handler");
+                    await handler.HandleAsync(input, context).ConfigureAwait(false);
                 }
-
-                Logger.LogInformation("Invoking handler");
-                await handler.HandleAsync(input, context).ConfigureAwait(false);
             }
-
-            await _busHost.StopAsync().ConfigureAwait(false);
+            finally
+            { 
+                await _busHost.StopAsync().ConfigureAwait(false);
+            }
         }
 
         protected void RegisterHandler<THandler>(IServiceCollection services) where THandler : class, Kralizek.Lambda.IEventHandler<TInput>

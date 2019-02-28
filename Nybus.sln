@@ -69,6 +69,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.Extensions.Host
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nybus.Extensions.Hosting.Lambda", "src\extensions\hosting\Nybus.Extensions.Hosting.Lambda\Nybus.Extensions.Hosting.Lambda.csproj", "{D970A97C-44CB-45C5-B233-8086BE9FBC18}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Nybus.Extensions.Hosting.Lambda", "tests\Tests.Nybus.Extensions.Hosting.Lambda\Tests.Nybus.Extensions.Hosting.Lambda.csproj", "{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -370,6 +372,18 @@ Global
 		{D970A97C-44CB-45C5-B233-8086BE9FBC18}.Release|x64.Build.0 = Release|Any CPU
 		{D970A97C-44CB-45C5-B233-8086BE9FBC18}.Release|x86.ActiveCfg = Release|Any CPU
 		{D970A97C-44CB-45C5-B233-8086BE9FBC18}.Release|x86.Build.0 = Release|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Debug|x64.Build.0 = Debug|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Debug|x86.Build.0 = Debug|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Release|x64.ActiveCfg = Release|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Release|x64.Build.0 = Release|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Release|x86.ActiveCfg = Release|Any CPU
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{48BAF0EF-F200-4809-9ED7-E2B67CE8DD8A} = {BFE4A74D-7641-4C6B-8D39-14173BB82320}
@@ -402,5 +416,6 @@ Global
 		{78F69BA5-F7F0-45AB-A268-CDFCCAF93FA1} = {AF1E016D-895D-48F1-8690-C49AB8F926B2}
 		{0ADB6705-0DC9-4C01-ACB5-2DCB5C153789} = {AF1E016D-895D-48F1-8690-C49AB8F926B2}
 		{D970A97C-44CB-45C5-B233-8086BE9FBC18} = {51A43FF2-AD6A-44CB-AE93-7FC832BFA57E}
+		{DF6EDE99-73F0-4B8A-B43F-3CD75E0058AE} = {AF1E016D-895D-48F1-8690-C49AB8F926B2}
 	EndGlobalSection
 EndGlobal
