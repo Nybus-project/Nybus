@@ -80,15 +80,17 @@ Task("RunTests")
 
     bool success = true;
 
-    foreach (var framework in frameworks)
+    foreach (var file in projectFiles)
     {
-        var frameworkFriendlyName = framework.Replace(".", "-");
+        var targetFrameworks = GetTargetFrameworks(file);
 
-        foreach (var file in projectFiles)
+        foreach (var framework in targetFrameworks)
         {
+            var frameworkFriendlyName = framework.Replace(".", "-");
+
             try
             {
-                Information($"Testing {file.GetFilenameWithoutExtension()}");
+                Information($"Testing {file.GetFilenameWithoutExtension()} ({framework})");
 
                 var testResultFile = state.Paths.TestOutputFolder.CombineWithFilePath($"{file.GetFilenameWithoutExtension()}-{frameworkFriendlyName}.trx");
                 var coverageResultFile = state.Paths.TestOutputFolder.CombineWithFilePath($"{file.GetFilenameWithoutExtension()}-{frameworkFriendlyName}.dcvr");
@@ -124,6 +126,16 @@ Task("RunTests")
     if (!success)
     {
         throw new CakeException("There was an error while executing the tests");
+    }
+
+    string[] GetTargetFrameworks(FilePath file)
+    {
+        XmlPeekSettings settings = new XmlPeekSettings
+        {
+            SuppressWarning = true
+        };
+
+        return (XmlPeek(file, "/Project/PropertyGroup/TargetFrameworks", settings) ?? XmlPeek(file, "/Project/PropertyGroup/TargetFramework", settings)).Split(";");
     }
 });
 
