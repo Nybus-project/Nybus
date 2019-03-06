@@ -50,6 +50,19 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
+        public void CreateFactory_uses_default_hostName(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section)
+        {
+            var connectionStringBuilder = new DbConnectionStringBuilder();
+
+            Mock.Get(section).SetupGet(p => p.Value).Returns(connectionStringBuilder.ConnectionString);
+
+            var factory = sut.CreateFactory(section) as ConnectionFactory;
+
+            Assert.That(factory, Is.Not.Null);
+            Assert.That(factory.HostName, Is.EqualTo("localhost"));
+        }
+
+        [Test, CustomAutoMoqData]
         public void CreateFactory_uses_given_username(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section, string value)
         {
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -61,6 +74,19 @@ namespace Tests.Configuration
 
             Assert.That(factory, Is.Not.Null);
             Assert.That(factory.UserName, Is.EqualTo(value));
+        }
+
+        [Test, CustomAutoMoqData]
+        public void CreateFactory_uses_default_username(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section)
+        {
+            var connectionStringBuilder = new DbConnectionStringBuilder();
+
+            Mock.Get(section).SetupGet(p => p.Value).Returns(connectionStringBuilder.ConnectionString);
+
+            var factory = sut.CreateFactory(section) as ConnectionFactory;
+
+            Assert.That(factory, Is.Not.Null);
+            Assert.That(factory.UserName, Is.EqualTo("guest"));
         }
 
         [Test, CustomAutoMoqData]
@@ -78,6 +104,19 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
+        public void CreateFactory_uses_default_password(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section)
+        {
+            var connectionStringBuilder = new DbConnectionStringBuilder();
+
+            Mock.Get(section).SetupGet(p => p.Value).Returns(connectionStringBuilder.ConnectionString);
+
+            var factory = sut.CreateFactory(section) as ConnectionFactory;
+
+            Assert.That(factory, Is.Not.Null);
+            Assert.That(factory.Password, Is.EqualTo("guest"));
+        }
+
+        [Test, CustomAutoMoqData]
         public void CreateFactory_uses_given_virtualHost(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section, string value)
         {
             var connectionStringBuilder = new DbConnectionStringBuilder();
@@ -89,6 +128,19 @@ namespace Tests.Configuration
 
             Assert.That(factory, Is.Not.Null);
             Assert.That(factory.VirtualHost, Is.EqualTo(value));
+        }
+
+        [Test, CustomAutoMoqData]
+        public void CreateFactory_uses_default_virtualHost(ConnectionStringConnectionFactoryProvider sut, IConfigurationSection section)
+        {
+            var connectionStringBuilder = new DbConnectionStringBuilder();
+
+            Mock.Get(section).SetupGet(p => p.Value).Returns(connectionStringBuilder.ConnectionString);
+
+            var factory = sut.CreateFactory(section) as ConnectionFactory;
+
+            Assert.That(factory, Is.Not.Null);
+            Assert.That(factory.VirtualHost, Is.EqualTo("/"));
         }
     }
 }

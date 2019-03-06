@@ -35,10 +35,10 @@ namespace Nybus.Configuration
 
             return new ConnectionFactory
             {
-                HostName = GetValueOrNull(connectionStringBuilder, "Hostname"),
-                UserName = GetValueOrNull(connectionStringBuilder, "Username"),
-                Password = GetValueOrNull(connectionStringBuilder, "Password"),
-                VirtualHost = GetValueOrNull(connectionStringBuilder, "VirtualHost"),
+                HostName = GetValueOrNull(connectionStringBuilder, "Hostname") ?? "localhost",
+                UserName = GetValueOrNull(connectionStringBuilder, "Username") ?? "guest",
+                Password = GetValueOrNull(connectionStringBuilder, "Password") ?? "guest",
+                VirtualHost = GetValueOrNull(connectionStringBuilder, "VirtualHost") ?? "/",
             };
         }
 
