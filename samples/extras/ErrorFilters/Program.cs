@@ -37,10 +37,10 @@ namespace ErrorFilters
                 ["Nybus:RabbitMq:Connection:Username"] = Username,
                 ["Nybus:RabbitMq:Connection:Password"] = Password,
                 ["Nybus:RabbitMq:Connection:VirtualHost"] = VirtualHost,
-                ["Nybus:CommandErrorFilters:Type"] = "retry",
-                ["Nybus:CommandErrorFilters:MaxRetries"] = Retries.ToString(),
-                ["Nybus:EventErrorFilters:Type"] = "retry",
-                ["Nybus:EventErrorFilters:MaxRetries"] = Retries.ToString()
+                ["Nybus:CommandErrorFilters:0:type"] = "retry",
+                ["Nybus:CommandErrorFilters:0:maxRetries"] = Retries.ToString(),
+                ["Nybus:EventErrorFilters:0:type"] = "retry",
+                ["Nybus:EventErrorFilters:0:maxRetries"] = Retries.ToString(),
             };
 
             var configurationBuilder = new ConfigurationBuilder();
@@ -49,7 +49,7 @@ namespace ErrorFilters
             var configuration = configurationBuilder.Build();
 
             var services = new ServiceCollection();
-            services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Information));
+            services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
             services.AddNybus(nybus =>
             {
@@ -66,11 +66,15 @@ namespace ErrorFilters
                     await dispatcher.RaiseEventAsync(new TestCommandReceived { Message = $@"Received message ""{context.Command.Message}""" });
 
                     await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+                    throw new Exception("Hello world");
                 });
 
                 nybus.SubscribeToEvent<TestEvent>((d, msg) =>
                 {
                     Console.WriteLine($"Processed event {msg.Event.Message}");
+
+                    throw new Exception("Hello world");
                 });
             });
 
