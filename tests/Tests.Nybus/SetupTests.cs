@@ -15,10 +15,10 @@ namespace Tests
     public class SetupTests
     {
         [Test, AutoMoqData]
-        public void UseBusEngine_is_required(ILoggerFactory loggerFactory)
+        public void UseBusEngine_is_required()
         {
             var services = new ServiceCollection();
-            services.AddSingleton(loggerFactory);
+            services.AddLogging();
 
             services.AddNybus(nybus =>
             {
@@ -46,10 +46,10 @@ namespace Tests
         }
 
         [Test, AutoMoqData]
-        public void Configuration_delegate_is_invoked_when_assembling_the_host(ILoggerFactory loggerFactory, Action<INybusConfiguration> configurationDelegate)
+        public void Configuration_delegate_is_invoked_when_assembling_the_host(Action<INybusConfiguration> configurationDelegate)
         {
             var services = new ServiceCollection();
-            services.AddSingleton(loggerFactory);
+            services.AddLogging();
 
             services.AddNybus(nybus =>
             {

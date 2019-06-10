@@ -28,13 +28,15 @@ namespace Tests.Filters {
         }
 
         [Test, CustomAutoMoqData]
-        public async Task HandleError_notifies_engine_if_retry_count_equal_or_greater_than_maxRetries([Frozen] RetryErrorFilterOptions options, [Frozen] IBusEngine engine, RetryErrorFilter sut, Exception error, NybusCommandContext<FirstTestCommand> context, CommandErrorDelegate<FirstTestCommand> next)
+        public async Task HandleError_forwards_to_next_if_retry_count_equal_or_greater_than_maxRetries([Frozen] RetryErrorFilterOptions options, [Frozen] IBusEngine engine, RetryErrorFilter sut, Exception error, NybusCommandContext<FirstTestCommand> context, CommandErrorDelegate<FirstTestCommand> next)
         {
             context.Message.Headers[Headers.RetryCount] = options.MaxRetries.Stringfy();
 
             await sut.HandleErrorAsync(context, error, next);
 
-            Mock.Get(engine).Verify(p => p.NotifyFailAsync(context.Message));
+            Mock.Get(engine).VerifyNoOtherCalls();
+
+            Mock.Get(next).Verify(p => p(context, error));
         }
 
         [Test, CustomAutoMoqData]
@@ -85,13 +87,15 @@ namespace Tests.Filters {
         }
 
         [Test, CustomAutoMoqData]
-        public async Task HandleError_notifies_engine_if_retry_count_equal_or_greater_than_maxRetries([Frozen] RetryErrorFilterOptions options, [Frozen] IBusEngine engine, RetryErrorFilter sut, Exception error, NybusEventContext<FirstTestEvent> context, EventErrorDelegate<FirstTestEvent> next)
+        public async Task HandleError_forwards_to_next_if_retry_count_equal_or_greater_than_maxRetries([Frozen] RetryErrorFilterOptions options, [Frozen] IBusEngine engine, RetryErrorFilter sut, Exception error, NybusEventContext<FirstTestEvent> context, EventErrorDelegate<FirstTestEvent> next)
         {
             context.Message.Headers[Headers.RetryCount] = options.MaxRetries.Stringfy();
 
             await sut.HandleErrorAsync(context, error, next);
 
-            Mock.Get(engine).Verify(p => p.NotifyFailAsync(context.Message));
+            Mock.Get(engine).VerifyNoOtherCalls();
+
+            Mock.Get(next).Verify(p => p(context, error));
         }
 
         [Test, CustomAutoMoqData]
