@@ -700,7 +700,7 @@ namespace Tests.RabbitMq
 
             await sut.NotifyFailAsync(incomingMessages.First());
 
-            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), true));
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicNack(deliveryTag, It.IsAny<bool>(), false));
         }
 
         [Test, CustomAutoMoqData]

@@ -63,13 +63,15 @@ namespace Nybus.Filters
 
                     message.Headers[Headers.RetryCount] = retryCount.Stringfy();
 
+                    await _engine.NotifySuccessAsync(message).ConfigureAwait(false);
+
                     await _engine.SendMessageAsync(message).ConfigureAwait(false);
                 }
                 else
                 {
                     _logger.LogTrace($"Error {retryCount}/{_options.MaxRetries}: will not retry");
 
-                    await _engine.NotifyFailAsync(message).ConfigureAwait(false);
+                    //await _engine.NotifyFailAsync(message).ConfigureAwait(false);
 
                     await next(context, exception).ConfigureAwait(false);
                 }
@@ -89,13 +91,15 @@ namespace Nybus.Filters
 
                     message.Headers[Headers.RetryCount] = retryCount.Stringfy();
 
+                    await _engine.NotifySuccessAsync(message).ConfigureAwait(false);
+
                     await _engine.SendMessageAsync(message).ConfigureAwait(false);
                 }
                 else
                 {
                     _logger.LogTrace($"Error {retryCount}/{_options.MaxRetries}: will not retry");
 
-                    await _engine.NotifyFailAsync(message).ConfigureAwait(false);
+                    //await _engine.NotifyFailAsync(message).ConfigureAwait(false);
 
                     await next(context, exception).ConfigureAwait(false);
                 }

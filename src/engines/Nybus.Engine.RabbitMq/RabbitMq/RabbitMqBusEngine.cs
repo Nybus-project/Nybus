@@ -216,8 +216,21 @@ namespace Nybus.RabbitMq
 
             foreach (var header in message.Headers)
             {
-                var headerKey = Headers.IsNybus(header.Key) ? Nybus(header.Key) : Custom(header.Key);
-                properties.Headers.Add(headerKey, header.Value);
+                if (Headers.IsNybus(header.Key))
+                {
+                    properties.Headers.Add(Nybus(header.Key), header.Value);
+                }
+                else if (RabbitMqHeaders.IsRabbitMq(header.Key))
+                {
+                    properties.Headers.Add(header.Key, header.Value);
+                }
+                else
+                {
+                    properties.Headers.Add(Custom(header.Key), header.Value);
+                }
+
+                //var headerKey = Headers.IsNybus(header.Key) ? Nybus(header.Key) : Custom(header.Key);
+                //properties.Headers.Add(headerKey, header.Value);
             }
 
             var exchangeName = MessageDescriptor.CreateFromType(type);
@@ -299,7 +312,7 @@ namespace Nybus.RabbitMq
 
         private void NackMessage(ulong deliveryTag)
         {
-            _channel.BasicNack(deliveryTag, false, true);
+            _channel.BasicNack(deliveryTag, false, false);
             _processingMessages.TryRemoveItem(deliveryTag);
         }
 

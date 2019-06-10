@@ -26,7 +26,7 @@ namespace Nybus.Configuration
         private readonly IErrorFilter _fallbackErrorFilter;
         private readonly IReadOnlyDictionary<string, IErrorFilterProvider> _errorFilterProvidersByName;
 
-        public NybusHostConfigurationFactory(IEnumerable<IErrorFilterProvider> errorFilterProviders, FallbackErrorFilter fallbackErrorFilter)
+        public NybusHostConfigurationFactory(IEnumerable<IErrorFilterProvider> errorFilterProviders, DiscardErrorFilter fallbackErrorFilter)
         {
             _fallbackErrorFilter = fallbackErrorFilter ?? throw new ArgumentNullException(nameof(fallbackErrorFilter));
             _errorFilterProvidersByName = CreateDictionary(errorFilterProviders ?? throw new ArgumentNullException(nameof(errorFilterProviders)));
