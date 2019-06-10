@@ -147,12 +147,21 @@ namespace Nybus.RabbitMq
                     [RabbitMqHeaders.MessageId] = args.BasicProperties.MessageId
                 };
 
-                foreach (var header in args.BasicProperties.Headers.Where(k => k.Key.StartsWith("Custom:")))
+                foreach (var header in args.BasicProperties.Headers)
                 {
-                    var headerKey = ParseCustom(header.Key);
-                    var value = args.BasicProperties.GetHeader(header.Key, encoding);
-                    
-                    message.Headers.Add(headerKey, value);
+                    if (header.Key.StartsWith("Custom:"))
+                    {
+                        var headerKey = ParseCustom(header.Key);
+                        var value = args.BasicProperties.GetHeader(header.Key, encoding);
+
+                        message.Headers.Add(headerKey, value);
+                    }
+                    else if (header.Key.StartsWith("RabbitMq:"))
+                    {
+                        var value = args.BasicProperties.GetHeader(header.Key, encoding);
+
+                        message.Headers.Add(header.Key, value);
+                    }
                 }
 
                 return message;
@@ -228,9 +237,6 @@ namespace Nybus.RabbitMq
                 {
                     properties.Headers.Add(Custom(header.Key), header.Value);
                 }
-
-                //var headerKey = Headers.IsNybus(header.Key) ? Nybus(header.Key) : Custom(header.Key);
-                //properties.Headers.Add(headerKey, header.Value);
             }
 
             var exchangeName = MessageDescriptor.CreateFromType(type);

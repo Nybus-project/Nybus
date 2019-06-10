@@ -528,6 +528,18 @@ namespace Tests.RabbitMq
         }
 
         [Test, CustomAutoMoqData]
+        public async Task Arbitrary_RabbitMq_headers_are_forwarded_when_sending_commands([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message, string headerKey, string headerValue)
+        {
+            message.Headers[$"RabbitMq:{headerKey}"] = headerValue;
+
+            await sut.StartAsync();
+
+            await sut.SendMessageAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(bp => bp.Headers.ContainsKey($"RabbitMq:{headerKey}") && (string)bp.Headers[$"RabbitMq:{headerKey}"] == headerValue), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
         public async Task Arbitrary_headers_are_forwarded_when_sending_commands([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message, string headerKey, string headerValue)
         {
             message.Headers.Add(headerKey, headerValue);
@@ -571,6 +583,18 @@ namespace Tests.RabbitMq
             await sut.SendMessageAsync(message);
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Custom:{headerKey}")), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task Arbitrary_RabbitMq_headers_are_forwarded_when_sending_events([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message, string headerKey, string headerValue)
+        {
+            message.Headers[$"RabbitMq:{headerKey}"] = headerValue;
+
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(bp => bp.Headers.ContainsKey($"RabbitMq:{headerKey}") && (string)bp.Headers[$"RabbitMq:{headerKey}"] == headerValue), It.IsAny<byte[]>()));
         }
 
         [Test, CustomAutoMoqData]
@@ -759,6 +783,174 @@ namespace Tests.RabbitMq
             await sut.StopAsync();
 
             Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicQos(It.IsAny<uint>(), It.IsAny<ushort>(), It.IsAny<bool>()), Times.Never);
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task Custom_headers_are_read_from_incoming_message([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent Event, string headerKey, string headerValue)
+        {
+            sut.SubscribeToEvent<FirstTestEvent>();
+
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(Event.GetType())),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray(),
+                    [$"Custom:{headerKey}"] = headerValue
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(Event, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<EventMessage<FirstTestEvent>>());
+
+            var message = incomingMessages[0] as EventMessage<FirstTestEvent>;
+
+            Assert.That(message, Is.Not.Null);
+            Assert.That(message.MessageId, Is.EqualTo(messageId));
+            Assert.That(message.MessageType, Is.EqualTo(MessageType.Event));
+            Assert.That(message.Type, Is.EqualTo(Event.GetType()));
+            Assert.That(message.Event, Is.Not.Null);
+
+            Assert.That(message.Headers, Contains.Key(headerKey));
+            Assert.That(message.Headers[headerKey], Is.EqualTo(headerValue));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task Custom_headers_are_read_from_incoming_message([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand Command, string headerKey, string headerValue)
+        {
+            sut.SubscribeToCommand<FirstTestCommand>();
+
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(Command.GetType())),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray(),
+                    [$"Custom:{headerKey}"] = headerValue
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(Command, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<CommandMessage<FirstTestCommand>>());
+
+            var message = incomingMessages[0] as CommandMessage<FirstTestCommand>;
+
+            Assert.That(message, Is.Not.Null);
+            Assert.That(message.MessageId, Is.EqualTo(messageId));
+            Assert.That(message.MessageType, Is.EqualTo(MessageType.Command));
+            Assert.That(message.Type, Is.EqualTo(Command.GetType()));
+            Assert.That(message.Command, Is.Not.Null);
+
+            Assert.That(message.Headers, Contains.Key(headerKey));
+            Assert.That(message.Headers[headerKey], Is.EqualTo(headerValue));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task RabbitMq_headers_are_read_from_incoming_message([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestEvent Event, string headerKey, string headerValue)
+        {
+            sut.SubscribeToEvent<FirstTestEvent>();
+
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(Event.GetType())),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray(),
+                    [$"RabbitMq:{headerKey}"] = headerValue
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(Event, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<EventMessage<FirstTestEvent>>());
+
+            var message = incomingMessages[0] as EventMessage<FirstTestEvent>;
+
+            Assert.That(message, Is.Not.Null);
+            Assert.That(message.MessageId, Is.EqualTo(messageId));
+            Assert.That(message.MessageType, Is.EqualTo(MessageType.Event));
+            Assert.That(message.Type, Is.EqualTo(Event.GetType()));
+            Assert.That(message.Event, Is.Not.Null);
+
+            Assert.That(message.Headers, Contains.Key($"RabbitMq:{headerKey}"));
+            Assert.That(message.Headers[$"RabbitMq:{headerKey}"], Is.EqualTo(headerValue));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task RabbitMq_headers_are_read_from_incoming_message([Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, FirstTestCommand Command, string headerKey, string headerValue)
+        {
+            sut.SubscribeToCommand<FirstTestCommand>();
+
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(Command.GetType())),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray(),
+                    [$"RabbitMq:{headerKey}"] = headerValue
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(Command, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<CommandMessage<FirstTestCommand>>());
+
+            var message = incomingMessages[0] as CommandMessage<FirstTestCommand>;
+
+            Assert.That(message, Is.Not.Null);
+            Assert.That(message.MessageId, Is.EqualTo(messageId));
+            Assert.That(message.MessageType, Is.EqualTo(MessageType.Command));
+            Assert.That(message.Type, Is.EqualTo(Command.GetType()));
+            Assert.That(message.Command, Is.Not.Null);
+
+            Assert.That(message.Headers, Contains.Key($"RabbitMq:{headerKey}"));
+            Assert.That(message.Headers[$"RabbitMq:{headerKey}"], Is.EqualTo(headerValue));
         }
     }
 }
