@@ -952,5 +952,45 @@ namespace Tests.RabbitMq
             Assert.That(message.Headers, Contains.Key($"RabbitMq:{headerKey}"));
             Assert.That(message.Headers[$"RabbitMq:{headerKey}"], Is.EqualTo(headerValue));
         }
+
+        [Test, AutoMoqData]
+        [Description("https://github.com/Nybus-project/Nybus/issues/90")]
+        public async Task Issue90([Frozen] ISerializer serializer, [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, string consumerTag, ulong headerDeliveryTag, ulong deliveryTag, bool redelivered, string exchange, string routingKey, string messageId, Guid correlationId, DateTimeOffset sentOn, FirstTestCommand testCommand)
+        {
+            Mock.Get(serializer).Setup(p => p.DeserializeObject(It.IsAny<byte[]>(), It.IsAny<Type>(), It.IsAny<Encoding>())).Returns(testCommand);
+
+            sut.SubscribeToCommand<FirstTestCommand>();
+
+            var sequence = await sut.StartAsync();
+
+            var encoding = Encoding.UTF8;
+
+            IBasicProperties properties = new BasicProperties
+            {
+                MessageId = messageId,
+                ContentEncoding = encoding.WebName,
+                Headers = new Dictionary<string, object>
+                {
+                    ["Nybus:MessageId"] = encoding.GetBytes(messageId),
+                    ["Nybus:MessageType"] = encoding.GetBytes(DescriptorName(testCommand.GetType())),
+                    ["Nybus:CorrelationId"] = correlationId.ToByteArray(),
+                    ["RabbitMq:DeliveryTag"] = headerDeliveryTag
+                }
+            };
+
+            var body = configuration.Serializer.SerializeObject(testCommand, encoding);
+
+            var incomingMessages = sequence.DumpInList();
+
+            sut.Consumers.First().Value.HandleBasicDeliver(consumerTag, deliveryTag, redelivered, exchange, routingKey, properties, body);
+
+            Assert.That(incomingMessages, Has.Exactly(1).InstanceOf<CommandMessage<FirstTestCommand>>());
+
+            var message = incomingMessages[0] as CommandMessage<FirstTestCommand>;
+
+            Assert.That(message.Headers, Contains.Key("RabbitMq:DeliveryTag"));
+            Assert.That(message.Headers["RabbitMq:DeliveryTag"], Is.EqualTo(deliveryTag.ToString()));
+        }
+
     }
 }
