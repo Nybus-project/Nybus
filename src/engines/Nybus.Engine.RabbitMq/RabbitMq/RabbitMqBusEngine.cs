@@ -156,7 +156,7 @@ namespace Nybus.RabbitMq
 
                         message.Headers.Add(headerKey, value);
                     }
-                    else if (header.Key.StartsWith("RabbitMq:"))
+                    else if (header.Key.StartsWith("RabbitMq:") && !message.Headers.ContainsKey(header.Key))
                     {
                         var value = args.BasicProperties.GetHeader(header.Key, encoding);
 
