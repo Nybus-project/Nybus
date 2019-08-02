@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <RootNamespace>Nybus</RootNamespace>
+    <AssemblyName>Nybus.Engine.MassTransit</AssemblyName>
+    <Description>Engine for Nybus based on MassTransit.</Description>
+    <PackageTags>dotnet-standard;framework;queue;rx;nybus;masstransit</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Nybus.Abstractions\Nybus.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit" Version="5.5.4" />
+  </ItemGroup>
+
+</Project>
