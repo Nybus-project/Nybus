@@ -19,7 +19,7 @@ namespace PureSender
 
             services.AddNybus(nybus =>
             {
-                nybus.UseBusEngine<MassTransitBusEngine>();
+                nybus.UseMassTransitWithRabbitMq();
 
                 nybus.SubscribeToEvent<SomethingDoneEvent>(async (dispatcher, context) =>
                 {

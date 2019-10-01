@@ -19,7 +19,10 @@ namespace Receiver
 
             services.AddNybus(nybus =>
             {
-                nybus.UseBusEngine<MassTransitBusEngine>();
+                nybus.UseMassTransitWithRabbitMq(mt =>
+                {
+
+                });
 
                 nybus.SubscribeToCommand<DoSomethingCommand>(async (dispatcher, context) =>
                 {

@@ -7,46 +7,56 @@ using System.Threading.Tasks;
 using MassTransit;
 using MassTransit.RabbitMqTransport;
 
-namespace Nybus.MassTransit
+namespace Nybus.MassTransit.RabbitMq
 {
-    public class MassTransitBusEngine : IBusEngine
+    public interface IMassTransitRabbitMqBusBuilder
     {
-        private readonly List<Action<IRabbitMqBusFactoryConfigurator>> _busFactoryConfigurators = new List<Action<IRabbitMqBusFactoryConfigurator>>();
+        void AddConfiguration(Action<IRabbitMqBusFactoryConfigurator> configuration);
 
-        private readonly Subject<Message> _messages = new Subject<Message>();
+        IBusControl BuildBus();
 
-        private BusHandle _busHandle;
-        private IBusControl _busControl;
+        void SubscribeToCommand<TCommand>(MessageHandler<TCommand> handler)
+            where TCommand : class, ICommand;
 
-        public async Task<IObservable<Message>> StartAsync()
+        void SubscribeToEvent<TEvent>(MessageHandler<TEvent> handler)
+            where TEvent : class, IEvent;
+    }
+
+    public class MassTransitRabbitMqBusBuilder : IMassTransitRabbitMqBusBuilder
+    {
+        private readonly IList<Action<IRabbitMqBusFactoryConfigurator>> _configurations = new List<Action<IRabbitMqBusFactoryConfigurator>>();
+        private readonly IList<Action<IReceiveEndpointConfigurator>> _commandEndpointConfigurators = new List<Action<IReceiveEndpointConfigurator>>();
+        private readonly IList<Action<IReceiveEndpointConfigurator>> _eventEndpointConfigurators = new List<Action<IReceiveEndpointConfigurator>>();
+
+        public void AddConfiguration(Action<IRabbitMqBusFactoryConfigurator> configuration)
+        {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            _configurations.Add(configuration);
+        }
+
+        public IBusControl BuildBus()
         {
             if (_commandEndpointConfigurators.Any())
             {
-                _busFactoryConfigurators.Add(ConfigureCommandQueue);
+                _configurations.Add(ConfigureCommandQueue);
             }
 
             if (_eventEndpointConfigurators.Any())
             {
-                _busFactoryConfigurators.Add(ConfigureEventQueue);
+                _configurations.Add(ConfigureEventQueue);
             }
 
-            _busControl = RabbitMqBusFactory.Create(configurator =>
+            return RabbitMqBusFactory.Create(configurator =>
             {
-                configurator.Host(new Uri("rabbitmq://localhost"), host =>
-                {
-                    host.Username("guest");
-                    host.Password("guest");
-                });
-
-                foreach (var configuration in _busFactoryConfigurators)
+                foreach (var configuration in _configurations)
                 {
                     configuration(configurator);
                 }
             });
-
-            _busHandle = await _busControl.StartAsync();
-
-            return _messages;
         }
 
         private void ConfigureCommandQueue(IRabbitMqBusFactoryConfigurator configurator)
@@ -71,22 +81,59 @@ namespace Nybus.MassTransit
             });
         }
 
-        public async Task StopAsync()
+        public void SubscribeToCommand<TCommand>(MessageHandler<TCommand> handler)
+            where TCommand : class, ICommand
         {
-            await _busHandle.StopAsync();
+            _commandEndpointConfigurators.Add(item => item.Handler(handler));
         }
 
-        private readonly List<Action<IReceiveEndpointConfigurator>> _commandEndpointConfigurators = new List<Action<IReceiveEndpointConfigurator>>();
+        public void SubscribeToEvent<TEvent>(MessageHandler<TEvent> handler)
+            where TEvent : class, IEvent
+        {
+            _eventEndpointConfigurators.Add(item => item.Handler(handler));
+        }
+    }
+
+    public class MassTransitRabbitMqBusEngine : IBusEngine
+    {
+        private readonly IMassTransitRabbitMqBusBuilder _busBuilder;
+        private readonly ISubject<Message> _messages = new Subject<Message>();
+        private IBusControl _busControl;
+
+        public MassTransitRabbitMqBusEngine(IMassTransitRabbitMqBusBuilder busBuilder)
+        {
+            _busBuilder = busBuilder ?? throw new ArgumentNullException(nameof(busBuilder));
+        }
+
+        public async Task<IObservable<Message>> StartAsync()
+        {
+            _busBuilder.AddConfiguration(configurator => configurator.Host(new Uri("rabbitmq://localhost"), host =>
+            {
+                host.Username("guest");
+                host.Password("guest");
+            }));
+
+            _busControl = _busBuilder.BuildBus();
+
+            await _busControl.StartAsync();
+
+            return _messages;
+        }
+
+        public async Task StopAsync()
+        {
+            await _busControl.StopAsync();
+        }
 
         private readonly IDictionary<string, TaskCompletionSource<object>> _processingMessages = new ConcurrentDictionary<string, TaskCompletionSource<object>>();
 
         public void SubscribeToCommand<TCommand>()
             where TCommand : class, ICommand
         {
-            _commandEndpointConfigurators.Add(item => item.Handler<TCommand>(AddCommandMessage));
+            _busBuilder.SubscribeToCommand<TCommand>(ProcessCommandMessage);
         }
 
-        private async Task AddCommandMessage<TCommand>(ConsumeContext<TCommand> context)
+        private async Task ProcessCommandMessage<TCommand>(ConsumeContext<TCommand> context)
             where TCommand : class, ICommand
         {
             _messages.OnNext(CreateMessage());
@@ -110,15 +157,13 @@ namespace Nybus.MassTransit
             }
         }
 
-        private readonly List<Action<IReceiveEndpointConfigurator>> _eventEndpointConfigurators = new List<Action<IReceiveEndpointConfigurator>>();
-
         public void SubscribeToEvent<TEvent>()
             where TEvent : class, IEvent
         {
-            _eventEndpointConfigurators.Add(item => item.Handler<TEvent>(AddEventMessage));
+            _busBuilder.SubscribeToEvent<TEvent>(ProcessEventMessage);
         }
 
-        private async Task AddEventMessage<TEvent>(ConsumeContext<TEvent> context)
+        private async Task ProcessEventMessage<TEvent>(ConsumeContext<TEvent> context)
             where TEvent : class, IEvent
         {
             _messages.OnNext(CreateMessage());
