@@ -3,7 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Types\Types.csproj" />
     <ProjectReference Include="..\..\..\..\src\Nybus\Nybus.csproj" />
-    <ProjectReference Include="..\..\..\..\src\engines\Nybus.Engine.MassTransit\Nybus.Engine.MassTransit.csproj" />
+    <ProjectReference Include="..\..\..\..\src\engines\Nybus.Engine.MassTransit.RabbitMq\Nybus.Engine.MassTransit.RabbitMq.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
