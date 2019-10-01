@@ -1,5 +1,5 @@
 #tool "nuget:?package=ReportGenerator&version=4.0.5"
-#tool "nuget:?package=JetBrains.dotCover.CommandLineTools&version=2018.3.1"
+#tool "nuget:?package=JetBrains.dotCover.CommandLineTools&version=2019.2.2"
 #tool "nuget:?package=GitVersion.CommandLine&version=4.0.0"
 
 #load "./build/types.cake"
