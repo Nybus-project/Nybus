@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nybus;
@@ -19,7 +20,17 @@ namespace PureSender
 
             services.AddNybus(nybus =>
             {
-                nybus.UseMassTransitWithRabbitMq();
+                nybus.UseMassTransitWithRabbitMq(c =>
+                {
+                    c.ConfigureMassTransit(mt =>
+                    {
+                        mt.Host(new Uri("rabbitmq://localhost"), h =>
+                        {
+                            h.Username("guest");
+                            h.Password("guest");
+                        });
+                    });
+                });
 
                 nybus.SubscribeToEvent<SomethingDoneEvent>(async (dispatcher, context) =>
                 {

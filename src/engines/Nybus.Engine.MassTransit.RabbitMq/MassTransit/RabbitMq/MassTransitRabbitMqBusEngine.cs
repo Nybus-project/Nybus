@@ -107,15 +107,9 @@ namespace Nybus.MassTransit.RabbitMq
 
         public async Task<IObservable<Message>> StartAsync()
         {
-            _busBuilder.AddConfiguration(configurator => configurator.Host(new Uri("rabbitmq://localhost"), host =>
-            {
-                host.Username("guest");
-                host.Password("guest");
-            }));
-
             _busControl = _busBuilder.BuildBus();
 
-            await _busControl.StartAsync();
+            await _busControl.StartAsync().ConfigureAwait(false);
 
             return _messages;
         }

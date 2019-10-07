@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MassTransit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Nybus;
-using Nybus.Configuration;
-using Nybus.MassTransit;
 using Types;
 
 namespace Receiver
@@ -19,9 +18,16 @@ namespace Receiver
 
             services.AddNybus(nybus =>
             {
-                nybus.UseMassTransitWithRabbitMq(mt =>
+                nybus.UseMassTransitWithRabbitMq(c =>
                 {
-
+                    c.ConfigureMassTransit(mt =>
+                    {
+                        mt.Host(new Uri("rabbitmq://localhost"), h =>
+                        {
+                            h.Username("guest");
+                            h.Password("guest");
+                        });
+                    });
                 });
 
                 nybus.SubscribeToCommand<DoSomethingCommand>(async (dispatcher, context) =>
