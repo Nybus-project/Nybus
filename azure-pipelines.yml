@@ -8,7 +8,7 @@ steps:
 - task: Cake@0
   inputs:
     script: 'build.cake'
-    target: 'Default'
+    target: 'Full'
     verbosity: 'Normal'
   displayName: 'Execute Build script'
 
