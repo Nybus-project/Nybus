@@ -1,0 +1,21 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: Cake@0
+  inputs:
+    script: 'build.cake'
+    target: 'Default'
+    verbosity: 'Normal'
+  displayName: 'Execute Build script'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'VSTest'
+    testResultsFiles: '**outputs/tests/*.trx'
+    mergeTestResults: true
+    failTaskOnFailedTests: true
+  displayName: 'Publish Test Results'
