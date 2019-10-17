@@ -20,12 +20,15 @@ steps:
     failTaskOnFailedTests: true
   displayName: 'Publish Test Results'
 
-- task: PublishPipelineArtifact@1
+- task: CopyFiles@2
   inputs:
-    targetPath: 'outputs\\*.nupkg'
-    artifact: 'Packages'
+    SourceFolder: 'outputs/'
+    Contents: |
+      *.nupkg
+      *.snupkg
+    TargetFolder: 'artifacts'
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: 'outputs\\*.snupkg'
-    artifact: 'Symbols'
+    targetPath: 'artifacts'
+    artifact: 'Packages'
