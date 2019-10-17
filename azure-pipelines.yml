@@ -22,10 +22,10 @@ steps:
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: 'outputs/*.nupkg'
+    targetPath: 'outputs\\*.nupkg'
     artifact: 'Packages'
 
 - task: PublishPipelineArtifact@1
   inputs:
-    targetPath: 'outputs/*.snupkg'
+    targetPath: 'outputs\\*.snupkg'
     artifact: 'Symbols'
