@@ -15,7 +15,17 @@ steps:
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'VSTest'
-    testResultsFiles: '**outputs/tests/*.trx'
+    testResultsFiles: 'outputs/tests/*.trx'
     mergeTestResults: true
     failTaskOnFailedTests: true
   displayName: 'Publish Test Results'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: 'outputs/*.nupkg'
+    artifact: 'Packages'
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: 'outputs/*.snupkg'
+    artifact: 'Symbols'
