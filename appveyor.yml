@@ -41,7 +41,7 @@ deploy:
   - provider: NuGet
     server: https://www.myget.org/F/nybus/api/v2/package
     api_key:
-      secure: yP12k1vrHJyValU1UWnW3NySjKfXlRomR8p4qqmYs26FDztsGMlCQeT5jdCVHlz6
+      secure: QVqDkPkS9GJLUAmRBE+WUpWPddQYM3tcbtZAFAJFPgut90icXd1vt5nkb4tIwHb+
     artifact: packages
   - provider: Environment
     name: NuGet
