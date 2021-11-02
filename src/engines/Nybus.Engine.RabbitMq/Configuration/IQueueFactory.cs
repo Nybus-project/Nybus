@@ -46,4 +46,23 @@ namespace Nybus.Configuration
         public static readonly IQueueFactory Instance = new TemporaryQueueFactory();
     }
 
+    public class PrefixedTemporaryQueueFactory : IQueueFactory
+    {
+        public string Prefix { get; }
+
+        public PrefixedTemporaryQueueFactory(string prefix)
+        {
+            Prefix = prefix ?? throw new ArgumentNullException(nameof(prefix));
+        }
+
+        public QueueDeclareOk CreateQueue(IModel model)
+        {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            return model.QueueDeclare($"{Prefix}-{Guid.NewGuid():N}", durable: true);
+        }
+    }
 }

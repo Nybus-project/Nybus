@@ -68,6 +68,16 @@ namespace Tests
         }
 
         [Test, CustomAutoMoqData]
+        public void UseRabbitMqBusEngine_registers_PrefixedTemporaryQueueFactoryProvider(TestNybusConfigurator configurator, IServiceCollection services)
+        {
+            RabbitMqConfiguratorExtensions.UseRabbitMqBusEngine(configurator);
+
+            configurator.ApplyServiceConfigurations(services);
+
+            Mock.Get(services).Verify(p => p.Add(It.Is<ServiceDescriptor>(sd => sd.ServiceType == typeof(IQueueFactoryProvider) && sd.ImplementationType == typeof(PrefixedTemporaryQueueFactoryProvider))), Times.Once);
+        }
+
+        [Test, CustomAutoMoqData]
         public void UseRabbitMqBusEngine_invokes_configuration_delegate(TestNybusConfigurator configurator, IServiceCollection services)
         {
             Mock<Action<IRabbitMqConfigurator>> configurationDelegate = new Mock<Action<IRabbitMqConfigurator>>();

@@ -19,6 +19,8 @@ namespace Nybus
 
             configurator.RegisterQueueFactoryProvider<TemporaryQueueFactoryProvider>();
 
+            configurator.RegisterQueueFactoryProvider<PrefixedTemporaryQueueFactoryProvider>();
+
             configure?.Invoke(configurator);
 
             configurator.Apply(nybus);
