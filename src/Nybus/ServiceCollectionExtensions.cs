@@ -17,6 +17,7 @@ namespace Nybus
 
             configurator.RegisterErrorFilterProvider<RetryErrorFilterProvider>();
             configurator.RegisterErrorFilterProvider<DiscardErrorFilterProvider>();
+            configurator.RegisterErrorFilterProvider<DeadLetterQueueErrorFilterProvider>();
 
             services.AddSingleton<DiscardErrorFilter>();
             

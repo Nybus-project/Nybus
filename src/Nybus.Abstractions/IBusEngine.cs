@@ -18,5 +18,7 @@ namespace Nybus
         Task NotifySuccessAsync(Message message);
 
         Task NotifyFailAsync(Message message);
+
+        Task SendMessageToErrorQueueAsync(Message message);
     }
 }

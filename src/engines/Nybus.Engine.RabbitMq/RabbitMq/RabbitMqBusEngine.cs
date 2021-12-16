@@ -214,30 +214,7 @@ namespace Nybus.RabbitMq
 
             var body = _configuration.Serializer.SerializeObject(message.Item, _configuration.OutboundEncoding);
 
-            var properties = _channel.CreateBasicProperties();
-            properties.ContentEncoding = _configuration.OutboundEncoding.WebName;
-
-            properties.Headers = new Dictionary<string, object>
-            {
-                [Nybus(Headers.MessageId)] = message.MessageId,
-                [Nybus(Headers.MessageType)] = message.Descriptor.ToString()
-            };
-
-            foreach (var header in message.Headers)
-            {
-                if (Headers.IsNybus(header.Key))
-                {
-                    properties.Headers.Add(Nybus(header.Key), header.Value);
-                }
-                else if (RabbitMqHeaders.IsRabbitMq(header.Key))
-                {
-                    properties.Headers.Add(header.Key, header.Value);
-                }
-                else
-                {
-                    properties.Headers.Add(Custom(header.Key), header.Value);
-                }
-            }
+            var properties = GetBasicProperties(message);
 
             var exchangeName = MessageDescriptor.CreateFromType(type);
 
@@ -314,6 +291,49 @@ namespace Nybus.RabbitMq
             }
 
             return Task.CompletedTask;
+        }
+
+        public Task SendMessageToErrorQueueAsync(Message message)
+        {
+            var errorQueue = _configuration.ErrorQueueFactory.CreateQueue(_channel);
+            
+            var body = _configuration.Serializer.SerializeObject(message.Item, _configuration.OutboundEncoding);
+
+            var properties = GetBasicProperties(message);
+
+            _channel.BasicPublish(exchange: string.Empty, routingKey: errorQueue.QueueName, body: body, basicProperties: properties);
+
+            return Task.CompletedTask;
+        }
+
+        private IBasicProperties GetBasicProperties(Message message)
+        {
+            var properties = _channel.CreateBasicProperties();
+            properties.ContentEncoding = _configuration.OutboundEncoding.WebName;
+
+            properties.Headers = new Dictionary<string, object>
+            {
+                [Nybus(Headers.MessageId)] = message.MessageId,
+                [Nybus(Headers.MessageType)] = message.Descriptor.ToString()
+            };
+
+            foreach (var header in message.Headers)
+            {
+                if (Headers.IsNybus(header.Key))
+                {
+                    properties.Headers.Add(Nybus(header.Key), header.Value);
+                }
+                else if (RabbitMqHeaders.IsRabbitMq(header.Key))
+                {
+                    properties.Headers.Add(header.Key, header.Value);
+                }
+                else
+                {
+                    properties.Headers.Add(Custom(header.Key), header.Value);
+                }
+            }
+
+            return properties;
         }
 
         private void NackMessage(ulong deliveryTag)

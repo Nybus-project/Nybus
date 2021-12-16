@@ -48,7 +48,7 @@ namespace Nybus.Filters
             }
             catch (Exception discardException)
             {
-                _logger.LogError(discardException, ex => $"Unable to discard message: {ex.Message}");
+                _logger.LogError(new { }, discardException, (s, ex) => $"Unable to discard message: {ex.Message}");
                 await next(context, exception).ConfigureAwait(false);
             }
         }
@@ -62,7 +62,7 @@ namespace Nybus.Filters
             }
             catch (Exception discardException)
             {
-                _logger.LogError(discardException, ex => $"Unable to discard message: {ex.Message}");
+                _logger.LogError(new { }, discardException, (s, ex) => $"Unable to discard message: {ex.Message}");
                 await next(context, exception).ConfigureAwait(false);
             }
         }

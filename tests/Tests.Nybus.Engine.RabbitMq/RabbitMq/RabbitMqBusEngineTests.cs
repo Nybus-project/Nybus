@@ -992,5 +992,182 @@ namespace Tests.RabbitMq
             Assert.That(message.Headers["RabbitMq:DeliveryTag"], Is.EqualTo(deliveryTag.ToString()));
         }
 
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_creates_error_queue_for_Command(
+            [Frozen] IRabbitMqConfiguration configuration, [Frozen] IModel channel, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message)
+        {
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ErrorQueueFactory).Verify(i => i.CreateQueue(channel), Times.Once);
+            Mock.Get(configuration.ErrorQueueFactory).Verify(i => i.CreateQueue(It.IsAny<IModel>()), Times.Once);
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_creates_error_queue_for_Event(
+            [Frozen] IRabbitMqConfiguration configuration, [Frozen] IModel channel, RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message)
+        {
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ErrorQueueFactory).Verify(i => i.CreateQueue(channel), Times.Once);
+            Mock.Get(configuration.ErrorQueueFactory).Verify(i => i.CreateQueue(It.IsAny<IModel>()), Times.Once);
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_publishes_message_without_exchange_for_Command(
+            [Frozen] IRabbitMqConfiguration configuration, [Frozen] IModel channel, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message)
+        {
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(channel).Verify(i => i.BasicPublish(string.Empty, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()), Times.Once);
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_publishes_message_without_exchange_for_Event(
+            [Frozen] IRabbitMqConfiguration configuration, [Frozen] IModel channel, RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message)
+        {
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(channel).Verify(i => i.BasicPublish(string.Empty, It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()), Times.Once);
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_publishes_message_with_errorqueue_name_for_Command(
+            [Frozen] IRabbitMqConfiguration configuration, [Frozen] IModel channel, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message, QueueDeclareOk errorQueue)
+        {
+            Mock.Get(configuration.ErrorQueueFactory).Setup(i => i.CreateQueue(channel)).Returns(errorQueue);
+
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(channel).Verify(i => i.BasicPublish(It.IsAny<string>(), errorQueue.QueueName, It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()), Times.Once);
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_publishes_message_with_errorqueue_name_for_Event(
+            [Frozen] IRabbitMqConfiguration configuration, [Frozen] IModel channel, RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message, QueueDeclareOk errorQueue)
+        {
+            Mock.Get(configuration.ErrorQueueFactory).Setup(i => i.CreateQueue(channel)).Returns(errorQueue);
+
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(channel).Verify(i => i.BasicPublish(It.IsAny<string>(), errorQueue.QueueName, It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()), Times.Once);
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_Commands_can_be_sent(
+            [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, CommandMessage<FirstTestCommand> message)
+        {
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_Commands_can_be_sent(
+            [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, 
+            CommandMessage<FirstTestCommand> message, string headerKey, string headerValue)
+        {
+            message.Headers[headerKey] = headerValue;
+
+            await sut.StartAsync();
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(bp => bp.Headers.ContainsKey($"Custom:{headerKey}") && (string)bp.Headers[$"Custom:{headerKey}"] == headerValue), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_Arbitrary_RabbitMq_headers_are_forwarded_when_sending_commands(
+            [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, 
+            CommandMessage<FirstTestCommand> message, string headerKey, string headerValue)
+        {
+            message.Headers[$"RabbitMq:{headerKey}"] = headerValue;
+
+            await sut.StartAsync();
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(bp => bp.Headers.ContainsKey($"RabbitMq:{headerKey}") && (string)bp.Headers[$"RabbitMq:{headerKey}"] == headerValue), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_Arbitrary_headers_are_forwarded_when_sending_commands(
+            [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, 
+            CommandMessage<FirstTestCommand> message, string headerKey, string headerValue)
+        {
+            message.Headers.Add(headerKey, headerValue);
+
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Custom:{headerKey}")), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_Events_can_be_sent(
+            [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, EventMessage<FirstTestEvent> message)
+        {
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<IBasicProperties>(), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_Events_can_be_sent(
+            [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, 
+            EventMessage<FirstTestEvent> message, string headerKey, string headerValue)
+        {
+            message.Headers[headerKey] = headerValue;
+
+            await sut.StartAsync();
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(bp => bp.Headers.ContainsKey($"Custom:{headerKey}") && (string)bp.Headers[$"Custom:{headerKey}"] == headerValue), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_Arbitrary_headers_are_forwarded_when_sending_events(
+            [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, 
+            EventMessage<FirstTestEvent> message, string headerKey, string headerValue)
+        {
+            message.Headers.Add(headerKey, headerValue);
+
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(o => o.Headers.ContainsKey($"Custom:{headerKey}")), It.IsAny<byte[]>()));
+        }
+
+        [Test, CustomAutoMoqData]
+        public async Task SendMessageToErrorQueueAsync_Arbitrary_RabbitMq_headers_are_forwarded_when_sending_events(
+            [Frozen] IRabbitMqConfiguration configuration, RabbitMqBusEngine sut, 
+            EventMessage<FirstTestEvent> message, string headerKey, string headerValue)
+        {
+            message.Headers[$"RabbitMq:{headerKey}"] = headerValue;
+
+            await sut.StartAsync().ConfigureAwait(false);
+
+            await sut.SendMessageToErrorQueueAsync(message);
+
+            Mock.Get(configuration.ConnectionFactory.CreateConnection().CreateModel()).Verify(p => p.BasicPublish(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.Is<IBasicProperties>(bp => bp.Headers.ContainsKey($"RabbitMq:{headerKey}") && (string)bp.Headers[$"RabbitMq:{headerKey}"] == headerValue), It.IsAny<byte[]>()));
+        }
     }
 }

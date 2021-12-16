@@ -119,6 +119,33 @@ namespace Tests.Configuration
         }
 
         [Test, CustomAutoMoqData]
+        public void Create_uses_valid_errorQueue([Frozen] IEnumerable<IQueueFactoryProvider> providers, ConfigurationFactory sut, RabbitMqOptions options, IQueueFactory queueFactory)
+        {
+            Mock.Get(providers.First()).Setup(p => p.CreateFactory(It.IsAny<IConfigurationSection>())).Returns(queueFactory);
+            Mock.Get(options.ErrorQueue.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(providers.First().ProviderName);
+
+            options.ConnectionString = null;
+            options.Connection = null;
+
+            var configuration = sut.Create(options);
+
+            Assert.That(configuration.ErrorQueueFactory, Is.SameAs(queueFactory));
+        }
+
+        [Test, CustomAutoMoqData]
+        public void Create_uses_TemporaryQueueFactory_for_errors_if_provider_is_unknown(ConfigurationFactory sut, RabbitMqOptions options, string unknownProviderName)
+        {
+            Mock.Get(options.ErrorQueue.GetSection("ProviderName")).SetupGet(p => p.Value).Returns(unknownProviderName);
+
+            options.ConnectionString = null;
+            options.Connection = null;
+
+            var configuration = sut.Create(options);
+
+            Assert.That(configuration.ErrorQueueFactory, Is.SameAs(TemporaryQueueFactory.Instance));
+        }
+
+        [Test, CustomAutoMoqData]
         public void Create_uses_ConnectionStringConnectionFactory_when_connectionString_is_provided([Frozen] IConnectionFactoryProviders providers, ConfigurationFactory sut, RabbitMqOptions options, string connectionString)
         {
             Mock.Get(options.ConnectionString).SetupGet(p => p.Value).Returns(connectionString);

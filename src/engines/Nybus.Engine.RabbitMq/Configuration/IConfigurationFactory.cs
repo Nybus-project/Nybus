@@ -25,6 +25,8 @@ namespace Nybus.Configuration
 
         public IConfigurationSection EventQueue { get; set; }
 
+        public IConfigurationSection ErrorQueue { get; set; }
+
         public ExchangeOptions CommandExchange { get; set; }
 
         public ExchangeOptions EventExchange { get; set; }
@@ -65,6 +67,7 @@ namespace Nybus.Configuration
             var outboundEncoding = GetOutboundEncoding();
             var commandQueueFactory = GetQueueFactory(options.CommandQueue);
             var eventQueueFactory = GetQueueFactory(options.EventQueue);
+            var errorQueueFactory = GetQueueFactory(options.ErrorQueue);
             var connectionFactory = GetConnectionFactory();
             var commandExchangeManager = GetExchangeManager(options.CommandExchange);
             var eventExchangeManager = GetExchangeManager(options.EventExchange);
@@ -75,6 +78,7 @@ namespace Nybus.Configuration
                 OutboundEncoding = outboundEncoding,
                 CommandQueueFactory = commandQueueFactory,
                 EventQueueFactory = eventQueueFactory,
+                ErrorQueueFactory = errorQueueFactory,
                 ConnectionFactory = connectionFactory,
                 CommandExchangeManager = commandExchangeManager,
                 EventExchangeManager = eventExchangeManager,
