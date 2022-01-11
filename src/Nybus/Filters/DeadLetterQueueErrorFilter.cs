@@ -43,6 +43,8 @@ namespace Nybus.Filters
         {
             try
             {
+                _logger.LogTrace($"Sending command to dead letter queue");
+
                 await SendToErrorQueue(context.Message, exception);
             }
             catch (Exception dlqException)
@@ -56,6 +58,8 @@ namespace Nybus.Filters
         {
             try
             {
+                _logger.LogTrace($"Sending event to dead letter queue");
+
                 await SendToErrorQueue(context.Message, exception);
             }
             catch (Exception dlqException)
