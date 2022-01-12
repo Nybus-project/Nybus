@@ -73,22 +73,31 @@ namespace Nybus.Filters
         {
             if (exception != null)
             {
-                message.Headers["DLQ-Fault-Message"] = exception.Message;
-                message.Headers["DLQ-Fault-StackTrace"] = exception.StackTrace;
+                message.Headers[DeadLetterQueueHeaders.FaultMessage] = exception.Message;
+                message.Headers[DeadLetterQueueHeaders.FaultStackTrace] = exception.StackTrace;
             }
 
-            message.Headers["DLQ-Error-Host"] = Environment.MachineName;
-            message.Headers["DLQ-Error-Process"] = Process.GetCurrentProcess().ProcessName;
+            message.Headers[DeadLetterQueueHeaders.ErrorHost] = Environment.MachineName;
+            message.Headers[DeadLetterQueueHeaders.ErrorProcess] = Process.GetCurrentProcess().ProcessName;
 
             var entryAssembly = Assembly.GetEntryAssembly();
             if (entryAssembly != null)
             {
-                message.Headers["DLQ-Error-Assembly"] = entryAssembly.GetName().Name;
+                message.Headers[DeadLetterQueueHeaders.ErrorAssembly] = entryAssembly.GetName().Name;
             }
 
             await _engine.NotifySuccessAsync(message).ConfigureAwait(false);
 
             await _engine.SendMessageToErrorQueueAsync(message).ConfigureAwait(false);
         }
+    }
+
+    public static class DeadLetterQueueHeaders
+    {
+        public static readonly string FaultMessage = "DLQ-Fault-Message";
+        public static readonly string FaultStackTrace = "DLQ-Fault-StackTrace";
+        public static readonly string ErrorHost = "DLQ-Error-Host";
+        public static readonly string ErrorProcess = "DLQ-Error-Process";
+        public static readonly string ErrorAssembly = "DLQ-Error-Assembly";
     }
 }

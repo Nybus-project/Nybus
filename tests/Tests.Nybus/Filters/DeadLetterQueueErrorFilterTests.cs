@@ -267,7 +267,7 @@ namespace Tests.Filters
                 await HandleErrorAsync(sut, context, exception, errorDelegate);
 
                 Mock.Get(logger).Verify(
-                    l => l.Log(It.Is<LogLevel>(i => i == LogLevel.Error), It.IsAny<EventId>(),
+                    l => l.Log(LogLevel.Error, It.IsAny<EventId>(),
                         It.IsAny<It.IsAnyType>(), It.IsAny<Exception>(),
                         It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
             }
