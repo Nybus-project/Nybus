@@ -128,6 +128,11 @@ namespace Nybus.InMemory
 
         public bool IsTypeAccepted(Type type) => _acceptedTypes.Contains(type);
 
+        public Task SendMessageToErrorQueueAsync(Message message)
+        {
+            return Task.CompletedTask;
+        }
+
         public event EventHandler<MessageEventArgs> OnMessageNotifySuccess;
 
         public event EventHandler<MessageEventArgs> OnMessageNotifyFail;

@@ -39,8 +39,10 @@ namespace ErrorFilters
                 ["Nybus:RabbitMq:Connection:VirtualHost"] = VirtualHost,
                 ["Nybus:CommandErrorFilters:0:type"] = "retry",
                 ["Nybus:CommandErrorFilters:0:maxRetries"] = Retries.ToString(),
+                ["Nybus:CommandErrorFilters:1:type"] = "dead-letter-queue",
                 ["Nybus:EventErrorFilters:0:type"] = "retry",
                 ["Nybus:EventErrorFilters:0:maxRetries"] = Retries.ToString(),
+                ["Nybus:EventErrorFilters:1:type"] = "dead-letter-queue",
             };
 
             var configurationBuilder = new ConfigurationBuilder();

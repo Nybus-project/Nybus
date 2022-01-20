@@ -34,4 +34,20 @@ namespace Nybus.Configuration
 
         public IQueueFactory CreateFactory(IConfigurationSection settings) => TemporaryQueueFactory.Instance;
     }
+
+    public class PrefixedTemporaryQueueFactoryProvider : IQueueFactoryProvider
+    {
+        public string ProviderName { get; } = "prefix";
+
+        public IQueueFactory CreateFactory(IConfigurationSection settings)
+        {
+            if (settings.TryGetValue("Prefix", out var prefix))
+            {
+                return new PrefixedTemporaryQueueFactory(prefix);
+            }
+
+            // ReSharper disable once NotResolvedInText
+            throw new ArgumentNullException("Prefix", "Prefix setting is required");
+        }
+    }
 }

@@ -56,6 +56,11 @@ namespace Tests
         {
             throw new NotImplementedException();
         }
+
+        public Task SendMessageToErrorQueueAsync(Message message)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }

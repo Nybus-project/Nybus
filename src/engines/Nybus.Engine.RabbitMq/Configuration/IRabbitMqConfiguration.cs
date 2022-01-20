@@ -11,6 +11,8 @@ namespace Nybus.Configuration
 
         IQueueFactory EventQueueFactory { get; set; }
 
+        IQueueFactory ErrorQueueFactory { get; set; }
+
         Encoding OutboundEncoding { get; set; }
 
         ISerializer Serializer { get; set; }
@@ -31,6 +33,8 @@ namespace Nybus.Configuration
         public IQueueFactory CommandQueueFactory { get; set; }
 
         public IQueueFactory EventQueueFactory { get; set; }
+
+        public IQueueFactory ErrorQueueFactory { get; set; }
 
         public Encoding OutboundEncoding { get; set; }
 
